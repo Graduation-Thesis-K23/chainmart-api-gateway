@@ -1,0 +1,20 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches-ignore:
+      - develop
+      - production
+
+jobs:
+  ci:
+    name: Continuous Integration
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
