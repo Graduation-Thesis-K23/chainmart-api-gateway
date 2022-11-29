@@ -15,4 +15,4 @@ jobs:
           message: |
             ${{ github.actor }} created a new ${{ github.event_name }} on ${{ github.repository }}.
 
-            [View ${{ github.event_name }}](${{ github.event.pull_request.html_url }})
+            See changes here: ${{ github.event.compare }}
