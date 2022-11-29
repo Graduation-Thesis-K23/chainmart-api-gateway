@@ -11,10 +11,7 @@ jobs:
     name: Continuous Integration
     runs-on: self-hosted
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
+      - name: Run
+        run: |
+          echo "Not implemented yet"
+          echo "The event that triggered this workflow was ${{ github.event_name }}."
