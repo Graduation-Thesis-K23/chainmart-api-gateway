@@ -1,6 +1,5 @@
 # Tutorial
 
-API Development: `https://api-dev.chainmart.site`
-API Production: `https://api.chainmart.site`
+- API Development: `https://api-dev.chainmart.site`
 
-Folder at Server: /var/www/
+- API Production: `https://api.chainmart.site`
