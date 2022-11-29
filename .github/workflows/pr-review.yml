@@ -1,7 +1,6 @@
 name: Pull Request Review
 
-on:
-  push: pull_request
+on: pull_request
 
 jobs:
   pull_request_review:
