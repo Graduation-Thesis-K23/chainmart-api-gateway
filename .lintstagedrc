@@ -1,0 +1,11 @@
+{
+  "*.{ts}": [
+    "npm run format",
+    "npm run lint",
+    "git add"
+  ],
+  "package.json": [
+    "prettier --write",
+    "git add"
+  ]
+}
