@@ -5,7 +5,7 @@ on: pull_request
 jobs:
   pull_request_review:
     name: Pull Request Review
-    runs-on: self-hosted
+    runs-on: ubuntu-22.04
     steps:
       - name: Run
         run: |

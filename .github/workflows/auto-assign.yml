@@ -6,7 +6,7 @@ on:
     types: [opened]
 jobs:
   auto_assign:
-    runs-on: self-hosted
+    runs-on: ubuntu-22.04
     steps:
       - uses: wow-actions/auto-assign@v2
         with:

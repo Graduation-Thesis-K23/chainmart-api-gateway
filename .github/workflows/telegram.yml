@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   telegram-notification:
     name: Telegram Notification
-    runs-on: self-hosted
+    runs-on: ubuntu-22.04
     steps:
       - uses: appleboy/telegram-action@master
         with:
