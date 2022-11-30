@@ -1,4 +1,4 @@
-name: Continuous Development DEV
+name: Continuous Development
 
 on:
   push:
