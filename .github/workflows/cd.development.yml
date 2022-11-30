@@ -36,7 +36,7 @@ jobs:
   ssh-to-server:
     name: SSH to Server
     needs: docker-hub
-    runs-on: self-hosted
+    runs-on: ubuntu-22.04
     steps:
       - name: SSH to Server
         uses: appleboy/ssh-action@master
