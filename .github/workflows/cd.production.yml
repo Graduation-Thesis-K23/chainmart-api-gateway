@@ -46,6 +46,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd api.chainmart.site
+            docker-compose stop
+            docker-compose rm -f
             docker-compose pull
             docker-compose up -d
 
