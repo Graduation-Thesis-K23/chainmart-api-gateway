@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { isUUID } from "class-validator";
+import { isQueryFailedError } from "src/utils/is-query-failed";
 import { Repository } from "typeorm";
 
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -9,11 +10,19 @@ import { User } from "./entities/user.entity";
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private usersRepository: Repository<User>) {}
+  constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const newUser = this.usersRepository.create(createUserDto);
-    return await this.usersRepository.save(newUser);
+    try {
+      const newUser = this.usersRepository.create(createUserDto);
+      return await this.usersRepository.save(newUser);
+    } catch (error) {
+      if (isQueryFailedError(error)) {
+        if (error.code === "23505") {
+          throw new BadRequestException("Duplicate key");
+        }
+      }
+    }
   }
 
   async findAll(): Promise<User[]> {
@@ -31,6 +40,11 @@ export class UsersService {
       throw new BadRequestException(`User with id(${id}) not found`);
     }
 
+    return user;
+  }
+
+  async findOneByUsername(username: string): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ username });
     return user;
   }
 
