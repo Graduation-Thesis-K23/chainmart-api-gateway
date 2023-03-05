@@ -9,7 +9,7 @@ import { AuthModule } from "./auth/auth.module";
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: [`.env.${process.env.STAGE}`],
+      envFilePath: [".env", `.env.${process.env.STAGE}`],
       validationSchema: configValidationSchema,
       isGlobal: true,
     }),
