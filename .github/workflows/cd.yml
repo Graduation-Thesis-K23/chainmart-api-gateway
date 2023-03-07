@@ -1,4 +1,4 @@
-name: Continuous Development
+name: Continuous Deploy
 
 on:
   push:
@@ -45,7 +45,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd api.chainmart.site
+            cd api
             sudo docker-compose stop
             sudo docker-compose rm -f
             sudo docker-compose pull
