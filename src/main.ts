@@ -9,7 +9,7 @@ async function bootstrap() {
 
   const configService = app.get<ConfigService>(ConfigService);
   const port = configService.get<number>("PORT") || 3000;
-  const clientUrl = configService.get<string>("PORT");
+  const clientUrl = configService.get<string>("CLIENT_URL");
 
   app.setGlobalPrefix("/api", {
     exclude: [],
