@@ -10,12 +10,13 @@ async function bootstrap() {
   const configService = app.get<ConfigService>(ConfigService);
   const port = configService.get<number>("PORT") || 3000;
   const clientUrl = configService.get<string>("CLIENT_URL");
+  const managerUrl = configService.get<string>("MANAGER_URL");
 
   app.setGlobalPrefix("/api", {
     exclude: [],
   });
   app.enableCors({
-    origin: [clientUrl, "http://localhost:8080"],
+    origin: [clientUrl, managerUrl, "http://localhost:8080"],
     credentials: true,
   });
   app.useGlobalPipes(
