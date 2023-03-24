@@ -18,7 +18,7 @@ export class CategoriesService {
   }
 
   async delete(id: string): Promise<string> {
-    const result = await this.categoriesRepository.delete(id);
+    const result = await this.categoriesRepository.softDelete(id);
 
     if (result.affected === 0) {
       throw new BadRequestException(`Category with id(${id}) not found`);
