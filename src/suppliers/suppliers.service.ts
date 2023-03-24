@@ -1,7 +1,8 @@
 import { Repository } from "typeorm";
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
+import { UpdateSupplierDto } from "./dto/update-supplier.dto";
 import { Supplier } from "./entities/supplier.entity";
 import { CreateSupplierDto } from "./dto/create-supplier.dto";
 
@@ -15,6 +16,21 @@ export class SuppliersService {
 
   async create(createSupplierDto: CreateSupplierDto): Promise<Supplier> {
     return await this.supplierRepository.save(createSupplierDto);
+  }
+
+  async update(id: string, updateSupplierDto: UpdateSupplierDto): Promise<Supplier> {
+    const supplier = await this.supplierRepository.findOne({ where: { id } });
+
+    if (!supplier) {
+      throw new NotFoundException(`Supplier with ID ${id} not found`);
+    }
+
+    const newSupplier = {
+      ...supplier,
+      ...updateSupplierDto,
+    };
+
+    return await this.supplierRepository.save(newSupplier);
   }
 
   async delete(id: string) {
