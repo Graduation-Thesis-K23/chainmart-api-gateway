@@ -14,6 +14,9 @@ export class Supplier extends BaseEntity {
   city: string;
 
   @Column({ nullable: true })
+  phone: string;
+
+  @Column({ nullable: true })
   country: string;
 
   @Column({ nullable: true })
