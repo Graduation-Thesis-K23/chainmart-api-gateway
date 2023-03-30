@@ -2,9 +2,9 @@ import { Column, Entity } from "typeorm";
 
 import { BaseEntity } from "src/common/base.entity";
 
-@Entity()
+@Entity("suppliers")
 export class Supplier extends BaseEntity {
-  @Column({ nullable: false })
+  @Column()
   name: string;
 
   @Column({ nullable: true })

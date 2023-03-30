@@ -7,6 +7,7 @@ import { UsersModule } from "./users/users.module";
 import { AuthModule } from "./auth/auth.module";
 import { CategoriesModule } from "./categories/categories.module";
 import { SuppliersModule } from "./suppliers/suppliers.module";
+import { ProductsModule } from "./products/products.module";
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { SuppliersModule } from "./suppliers/suppliers.module";
     AuthModule,
     CategoriesModule,
     SuppliersModule,
+    ProductsModule,
   ],
   providers: [],
 })

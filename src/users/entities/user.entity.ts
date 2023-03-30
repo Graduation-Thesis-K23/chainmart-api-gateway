@@ -4,7 +4,7 @@ import * as bcrypt from "bcrypt";
 import { BaseEntity } from "src/common/base.entity";
 import { Role } from "../enums/role.enum";
 
-@Entity()
+@Entity("users")
 export class User extends BaseEntity {
   @Column()
   name: string;

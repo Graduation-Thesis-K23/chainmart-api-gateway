@@ -2,11 +2,11 @@ import { Entity, Column } from "typeorm";
 
 import { BaseEntity } from "src/common/base.entity";
 
-@Entity()
+@Entity("categories")
 export class Category extends BaseEntity {
-  @Column({ nullable: false })
+  @Column()
   name: string;
 
-  @Column({ nullable: false })
+  @Column({ nullable: true })
   description: string;
 }
