@@ -1,6 +1,6 @@
 import { Column, Entity } from "typeorm";
 
-import { BaseEntity } from "src/common/base.entity";
+import { BaseEntity } from "../../common/base.entity";
 
 @Entity("suppliers")
 export class Supplier extends BaseEntity {

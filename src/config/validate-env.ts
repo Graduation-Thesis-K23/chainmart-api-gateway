@@ -12,4 +12,8 @@ export const configValidationSchema = joi.object({
   MANAGER_URL: joi.string().required(),
 
   JWT_SECRET: joi.string().required(),
+
+  BUCKET_NAME: joi.string().required(),
+  IAM_USER_KEY: joi.string().required(),
+  IAM_USER_SECRET: joi.string().required(),
 });

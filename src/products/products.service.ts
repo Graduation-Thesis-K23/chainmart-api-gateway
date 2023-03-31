@@ -5,13 +5,30 @@ import { Repository } from "typeorm";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { Product } from "./entities/product.entity";
+import { S3Service } from "../s3/s3.service";
+
+class AddProductType extends CreateProductDto {
+  image: string;
+  images: string[];
+}
 
 @Injectable()
 export class ProductsService {
-  constructor(@InjectRepository(Product) private readonly productRepository: Repository<Product>) {}
+  constructor(
+    @InjectRepository(Product) private readonly productRepository: Repository<Product>,
+    private readonly s3Service: S3Service,
+  ) {}
 
-  async create(createProductDto: CreateProductDto): Promise<Product> {
-    return await this.productRepository.save(createProductDto);
+  async create(createProductDto: CreateProductDto, arrBuffer: Buffer[]): Promise<Product> {
+    const [image, images]: [image: string, images: string[]] = await this.s3Service.uploadImagesToS3(arrBuffer);
+
+    const newProduct = {
+      ...createProductDto,
+      image,
+      images: images.join(","),
+    };
+
+    return await this.productRepository.save(newProduct);
   }
 
   async getAll(): Promise<Product[]> {

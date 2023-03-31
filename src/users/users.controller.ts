@@ -1,12 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseUUIDPipe } from "@nestjs/common";
 
-import { JwtAuthGuard } from "src/auth/guards/jwt.guard";
-import { Roles } from "src/auth/decorators/roles.decorator";
+import { JwtAuthGuard } from "../auth/guards/jwt.guard";
+import { Roles } from "../auth/decorators/roles.decorator";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { Role } from "./enums/role.enum";
-import { RolesGuard } from "src/auth/guards/role.guard";
+import { RolesGuard } from "../auth/guards/role.guard";
 
 @Controller("users")
 @UseGuards(JwtAuthGuard, RolesGuard)

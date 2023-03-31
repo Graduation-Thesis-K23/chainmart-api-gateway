@@ -1,4 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from "@nestjs/common";
+import { S3Service } from "./../s3/s3.service";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseUUIDPipe,
+  UseInterceptors,
+  UploadedFiles,
+  ParseFilePipeBuilder,
+  HttpStatus,
+  BadRequestException,
+} from "@nestjs/common";
+import { FilesInterceptor } from "@nestjs/platform-express";
 
 import { ProductsService } from "./products.service";
 import { CreateProductDto } from "./dto/create-product.dto";
@@ -10,8 +26,32 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
-  create(@Body() createProductDto: CreateProductDto): Promise<Product> {
-    return this.productsService.create(createProductDto);
+  @UseInterceptors(
+    FilesInterceptor("images", 10, {
+      // dest: "./images",
+      limits: { files: 10, fileSize: 1024 * 1000 * 10 },
+      fileFilter(_, file, callback) {
+        ["image/png", "image/jpeg", "image/webp"].includes(file.mimetype)
+          ? callback(null, true)
+          : callback(new BadRequestException("image/png, image/jpeg, image/webp is accept"), false);
+      },
+    }),
+  )
+  create(
+    @Body() createProductDto: CreateProductDto,
+    @UploadedFiles(
+      new ParseFilePipeBuilder().build({
+        errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+      }),
+    )
+    images: Express.Multer.File[],
+  ) {
+    if (images.length < 2) {
+      throw new BadRequestException("Minimum 2 images.");
+    }
+
+    const arrBuffer: Buffer[] = images.map((image) => image.buffer);
+    return this.productsService.create(createProductDto, arrBuffer);
   }
 
   @Get()

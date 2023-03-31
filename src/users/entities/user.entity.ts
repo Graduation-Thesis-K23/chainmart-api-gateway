@@ -1,7 +1,7 @@
 import { Entity, Column, BeforeInsert } from "typeorm";
 import * as bcrypt from "bcrypt";
 
-import { BaseEntity } from "src/common/base.entity";
+import { BaseEntity } from "../../common/base.entity";
 import { Role } from "../enums/role.enum";
 
 @Entity("users")

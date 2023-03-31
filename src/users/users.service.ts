@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { isUUID } from "class-validator";
-import { isQueryFailedError } from "src/utils/is-query-failed";
+import { isQueryFailedError } from "../utils/is-query-failed";
 import { Repository } from "typeorm";
 
 import { CreateUserDto } from "./dto/create-user.dto";

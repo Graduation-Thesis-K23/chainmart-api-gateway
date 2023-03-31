@@ -1,13 +1,12 @@
 import { BeforeInsert, Check, Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 
-import { BaseEntity } from "src/common/base.entity";
-import { Category } from "src/categories/entities/category.entity";
-import { Supplier } from "src/suppliers/entities/supplier.entity";
+import { BaseEntity } from "../../common/base.entity";
+import { Category } from "../../categories/entities/category.entity";
+import { Supplier } from "../../suppliers/entities/supplier.entity";
 
 @Entity("products")
 @Check('"quantity" >= 0')
 @Check('"price" > 0')
-@Check('"expiry_date" > NOW()')
 @Check('"units_in_stocks" >= 0 AND "units_in_stocks" <= "quantity" - "units_on_orders"')
 @Check('"units_on_orders" >= 0 AND "units_on_orders" <= "quantity" - "units_in_stocks"')
 @Check('"sale" > 0 AND "sale" < 100')
@@ -50,6 +49,12 @@ export class Product extends BaseEntity {
 
   @Column({ nullable: true, comment: "percentage sale" })
   sale: number;
+
+  @Column()
+  image: string;
+
+  @Column()
+  images: string;
 
   @BeforeInsert()
   async convertISOToTimestamp(): Promise<void> {
