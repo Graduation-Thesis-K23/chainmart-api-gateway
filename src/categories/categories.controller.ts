@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post } from "@nestjs/common";
 
 import { CreateCategoryDto } from "./dto/create-category.dto";
 import { CategoriesService } from "./categories.service";
@@ -18,7 +18,7 @@ export class CategoriesController {
   }
 
   @Delete(":id")
-  async delete(@Param("id") id: string) {
+  async delete(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     return await this.categoriesService.delete(id);
   }
 }

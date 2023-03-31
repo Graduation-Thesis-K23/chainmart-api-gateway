@@ -23,6 +23,5 @@ import { ProductsModule } from "./products/products.module";
     SuppliersModule,
     ProductsModule,
   ],
-  providers: [],
 })
 export class AppModule {}
