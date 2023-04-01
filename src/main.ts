@@ -1,4 +1,4 @@
-import { ValidationPipe } from "@nestjs/common";
+import { RequestMethod, ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 
@@ -13,7 +13,12 @@ async function bootstrap() {
   const managerUrl = configService.get<string>("MANAGER_URL");
 
   app.setGlobalPrefix("/api", {
-    exclude: [],
+    exclude: [
+      {
+        path: "s3",
+        method: RequestMethod.ALL,
+      },
+    ],
   });
   app.enableCors({
     origin: [clientUrl, managerUrl, "http://localhost:8080"],

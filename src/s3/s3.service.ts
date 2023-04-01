@@ -5,7 +5,11 @@ import { S3 } from "aws-sdk";
 
 @Injectable()
 export class S3Service {
-  constructor(private readonly configService: ConfigService) {}
+  private Bucket: string;
+
+  constructor(private readonly configService: ConfigService) {
+    this.Bucket = this.configService.get("BUCKET_NAME");
+  }
 
   getS3Instance() {
     return new S3({
@@ -17,7 +21,7 @@ export class S3Service {
   async uploadImageToS3(dataBuffer: Buffer) {
     const uploadResult = await this.getS3Instance()
       .upload({
-        Bucket: this.configService.get("BUCKET_NAME"),
+        Bucket: this.Bucket,
         ACL: "private",
         Body: dataBuffer,
         Key: uniqueFilename("", ""),
@@ -31,7 +35,7 @@ export class S3Service {
     const uploadPromises = dataBuffer.map((img) =>
       this.getS3Instance()
         .upload({
-          Bucket: this.configService.get("BUCKET_NAME"),
+          Bucket: this.Bucket,
           ACL: "private",
           Body: img,
           Key: uniqueFilename("", ""),
@@ -43,5 +47,12 @@ export class S3Service {
     const results = await Promise.all(uploadPromises);
 
     return [results.shift().Key, results.map((i) => i.Key)];
+  }
+
+  async getFile(key: string) {
+    return await this.getS3Instance().getSignedUrlPromise("getObject", {
+      Bucket: this.Bucket,
+      Key: key,
+    });
   }
 }
