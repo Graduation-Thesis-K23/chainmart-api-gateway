@@ -55,4 +55,23 @@ export class S3Service {
       Key: key,
     });
   }
+
+  async deleteFile(key: string) {
+    return this.getS3Instance().deleteObject({
+      Bucket: this.Bucket,
+      Key: key,
+    });
+  }
+
+  async deleteFiles(keys: string[]) {
+    return this.getS3Instance().deleteObjects({
+      Bucket: this.Bucket,
+      Delete: {
+        Objects: keys.map((i) => ({
+          Key: i,
+        })),
+        Quiet: false,
+      },
+    });
+  }
 }

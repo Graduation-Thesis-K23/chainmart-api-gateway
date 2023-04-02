@@ -1,4 +1,3 @@
-import { S3Service } from "./../s3/s3.service";
 import {
   Controller,
   Get,

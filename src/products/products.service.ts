@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
+import slugify from "slugify";
 
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
@@ -9,7 +10,8 @@ import { S3Service } from "../s3/s3.service";
 
 class AddProductType extends CreateProductDto {
   image: string;
-  images: string[];
+  images: string;
+  slug: string;
 }
 
 @Injectable()
@@ -22,10 +24,11 @@ export class ProductsService {
   async create(createProductDto: CreateProductDto, arrBuffer: Buffer[]): Promise<Product> {
     const [image, images]: [image: string, images: string[]] = await this.s3Service.uploadImagesToS3(arrBuffer);
 
-    const newProduct = {
+    const newProduct: AddProductType = {
       ...createProductDto,
       image,
       images: images.join(","),
+      slug: slugify(createProductDto.name, { lower: true }) + "-" + image,
     };
 
     return await this.productRepository.save(newProduct);
@@ -72,4 +75,7 @@ export class ProductsService {
     }
     return `Product ${id} have been deleted`;
   }
+}
+function uniqueFile(arg0: string, arg1: string) {
+  throw new Error("Function not implemented.");
 }

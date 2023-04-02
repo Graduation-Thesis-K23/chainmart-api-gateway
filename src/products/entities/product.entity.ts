@@ -1,4 +1,6 @@
 import { BeforeInsert, Check, Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import slugify from "slugify";
+import * as uniqueFile from "unique-filename";
 
 import { BaseEntity } from "../../common/base.entity";
 import { Category } from "../../categories/entities/category.entity";
@@ -49,6 +51,9 @@ export class Product extends BaseEntity {
 
   @Column({ nullable: true, comment: "percentage sale" })
   sale: number;
+
+  @Column({ unique: true })
+  slug: string;
 
   @Column()
   image: string;
