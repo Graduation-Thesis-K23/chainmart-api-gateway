@@ -31,7 +31,7 @@ export class S3Service {
     return uploadResult.Key;
   }
 
-  async uploadImagesToS3(dataBuffer: Buffer[]): Promise<[image: string, images: string[]]> {
+  async uploadImagesToS3(dataBuffer: Buffer[]): Promise<string> {
     const uploadPromises = dataBuffer.map((img) =>
       this.getS3Instance()
         .upload({
@@ -46,7 +46,7 @@ export class S3Service {
 
     const results = await Promise.all(uploadPromises);
 
-    return [results.shift().Key, results.map((i) => i.Key)];
+    return results.map((i) => i.Key).join(",");
   }
 
   async getFile(key: string) {

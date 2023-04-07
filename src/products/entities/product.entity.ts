@@ -1,6 +1,5 @@
 import { BeforeInsert, Check, Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import slugify from "slugify";
-import * as uniqueFile from "unique-filename";
 
 import { BaseEntity } from "../../common/base.entity";
 import { Category } from "../../categories/entities/category.entity";
@@ -43,20 +42,26 @@ export class Product extends BaseEntity {
   @Column({ type: "timestamptz" })
   expiry_date: Date;
 
-  @Column()
+  @Column({ type: "int", default: 0 })
   units_in_stocks: number;
 
-  @Column()
+  @Column({ type: "int", default: 0 })
   units_on_orders: number;
 
   @Column({ nullable: true, comment: "percentage sale" })
   sale: number;
 
-  @Column({ unique: true })
-  slug: string;
+  @Column()
+  description: string;
+
+  @Column({ nullable: true })
+  options: string;
 
   @Column()
-  image: string;
+  specifications: string;
+
+  @Column({ unique: true, type: "text", nullable: false })
+  slug: string;
 
   @Column()
   images: string;

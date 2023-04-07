@@ -9,7 +9,6 @@ import { Product } from "./entities/product.entity";
 import { S3Service } from "../s3/s3.service";
 
 class AddProductType extends CreateProductDto {
-  image: string;
   images: string;
   slug: string;
 }
@@ -22,13 +21,12 @@ export class ProductsService {
   ) {}
 
   async create(createProductDto: CreateProductDto, arrBuffer: Buffer[]): Promise<Product> {
-    const [image, images]: [image: string, images: string[]] = await this.s3Service.uploadImagesToS3(arrBuffer);
+    const images = await this.s3Service.uploadImagesToS3(arrBuffer);
 
     const newProduct: AddProductType = {
       ...createProductDto,
-      image,
-      images: images.join(","),
-      slug: slugify(createProductDto.name, { lower: true }) + "-" + image,
+      images,
+      slug: slugify(createProductDto.name, { lower: true }) + "-" + Date.now().toString(),
     };
 
     return await this.productRepository.save(newProduct);
