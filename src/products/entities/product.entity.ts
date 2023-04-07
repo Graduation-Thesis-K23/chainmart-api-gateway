@@ -7,8 +7,6 @@ import { Supplier } from "../../suppliers/entities/supplier.entity";
 @Entity("products")
 @Check('"quantity" >= 0')
 @Check('"price" > 0')
-@Check('"units_in_stocks" >= 0 AND "units_in_stocks" <= "quantity" - "units_on_orders"')
-@Check('"units_on_orders" >= 0 AND "units_on_orders" <= "quantity" - "units_in_stocks"')
 @Check('"sale" > 0 AND "sale" < 100')
 export class Product extends BaseEntity {
   @Column()
