@@ -48,7 +48,7 @@ export class Product extends BaseEntity {
   @Column({ type: "int", default: 0 })
   units_on_orders: number;
 
-  @Column({ nullable: true, comment: "percentage sale" })
+  @Column({ nullable: true })
   sale: number;
 
   @Column()
