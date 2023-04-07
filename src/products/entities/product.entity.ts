@@ -1,5 +1,4 @@
 import { BeforeInsert, Check, Column, Entity, JoinColumn, ManyToOne } from "typeorm";
-import slugify from "slugify";
 
 import { BaseEntity } from "../../common/base.entity";
 import { Category } from "../../categories/entities/category.entity";
