@@ -1,0 +1,9 @@
+services:
+  api.chainmart.site:
+    container_name: api.chainmart.site
+    image: api.chainmart.site:latest
+    ports:
+      - "3000:3000"
+    restart: always
+    env_file:
+      - .env

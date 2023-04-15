@@ -6,6 +6,14 @@ import * as bcrypt from "bcrypt";
 import { UsersService } from "../users/users.service";
 import { SignInDto } from "./dto/sign-in.dto";
 import { SignUpDto } from "./dto/sign-up.dto";
+import { Role } from "src/users/enums/role.enum";
+
+interface Payload {
+  username: string;
+  email: string;
+  name: string;
+  role: Role;
+}
 
 @Injectable()
 export class AuthService {
@@ -15,7 +23,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async validateSignIn(signInDto: SignInDto): Promise<{ access_token: string }> {
+  async validateSignIn(signInDto: SignInDto): Promise<[string, Payload]> {
     const { username, password } = signInDto;
 
     const userFound = await this.usersService.findOneByUsername(username);
@@ -28,16 +36,14 @@ export class AuthService {
       throw new UnauthorizedException("Invalid username or password");
     }
 
-    const payload = {
+    const payload: Payload = {
       username: userFound.username,
       email: userFound.email,
       name: userFound.name,
       role: userFound.role,
     };
 
-    return {
-      access_token: await this.signToken(payload),
-    };
+    return [await this.signToken(payload), payload];
   }
 
   private async signToken(payload: any): Promise<string> {

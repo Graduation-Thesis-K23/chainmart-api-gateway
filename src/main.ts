@@ -1,11 +1,12 @@
 import { RequestMethod, ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
+import * as cookieParser from "cookie-parser";
 
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { logger: ["log", "error", "warn", "debug", "verbose"] });
 
   const configService = app.get<ConfigService>(ConfigService);
   const port = configService.get<number>("PORT") || 3000;
@@ -24,6 +25,7 @@ async function bootstrap() {
     origin: [clientUrl, managerUrl, "http://localhost:8080"],
     credentials: true,
   });
+  app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

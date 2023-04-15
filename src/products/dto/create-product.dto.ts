@@ -29,6 +29,7 @@ export class CreateProductDto {
 
   @IsNumber()
   @IsOptional()
+  @Type(() => Number)
   sale: number;
 
   @IsJSON()
