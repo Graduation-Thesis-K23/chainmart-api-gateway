@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Post, Res, UseGuards } from "@nestjs/common";
-import { Response } from "express";
+import { Body, Controller, Get, Post, Req, Res, UseGuards } from "@nestjs/common";
+import { Request, Response } from "express";
 
 import { AuthService } from "./auth.service";
 import { SignInDto } from "./dto/sign-in.dto";
@@ -37,8 +37,8 @@ export class AuthController {
   @Post("check-token")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin, Role.Customer, Role.Employee, Role.User)
-  async checkToken() {
-    return;
+  async checkToken(@Req() req: Request) {
+    return req.user;
   }
 
   @Get("logout")
