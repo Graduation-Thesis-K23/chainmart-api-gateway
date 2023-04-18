@@ -25,6 +25,9 @@ export class User extends BaseEntity {
   })
   role: Role;
 
+  @Column({ nullable: true })
+  avatar: string;
+
   @BeforeInsert()
   async hashPassword(): Promise<void> {
     const saltOrRounds = 10;

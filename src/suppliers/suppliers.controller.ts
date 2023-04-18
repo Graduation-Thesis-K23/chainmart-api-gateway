@@ -1,10 +1,16 @@
 import { UpdateSupplierDto } from "./dto/update-supplier.dto";
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, UseGuards } from "@nestjs/common";
 
 import { CreateSupplierDto } from "./dto/create-supplier.dto";
 import { SuppliersService } from "./suppliers.service";
+import { JwtAuthGuard } from "../auth/guards/jwt.guard";
+import { RolesGuard } from "../auth/guards/role.guard";
+import { Roles } from "../auth/decorators/roles.decorator";
+import { Role } from "src/users/enums/role.enum";
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller("suppliers")
+@Roles(Role.Admin, Role.Employee)
 export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}
 

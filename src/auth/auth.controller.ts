@@ -7,13 +7,16 @@ import { SignUpDto } from "./dto/sign-up.dto";
 import { JwtAuthGuard } from "./guards/jwt.guard";
 import { RolesGuard } from "./guards/role.guard";
 import { Roles } from "./decorators/roles.decorator";
-import { Role } from "src/users/enums/role.enum";
+import { Role } from "../users/enums/role.enum";
+import { Public } from "./decorators/public.decorator";
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post("sign-in")
+  @Public()
   async signIn(@Body() signInDto: SignInDto, @Res({ passthrough: true }) res: Response) {
     const [access_token, payload] = await this.authService.validateSignIn(signInDto);
 
@@ -30,20 +33,19 @@ export class AuthController {
   }
 
   @Post("sign-up")
+  @Public()
   async signUp(@Body() signUpDto: SignUpDto) {
     return this.authService.handleSignUp(signUpDto);
   }
 
   @Post("check-token")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Customer, Role.Employee, Role.User)
+  @Roles(Role.Admin, Role.Employee, Role.User)
   async checkToken(@Req() req: Request) {
     return req.user;
   }
 
   @Get("logout")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Customer, Role.Employee, Role.User)
+  @Roles(Role.Admin, Role.Employee, Role.User)
   async logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie("access_token").send();
   }
