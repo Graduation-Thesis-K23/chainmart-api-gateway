@@ -42,6 +42,12 @@ export class ProductsService {
     });
   }
 
+  async getBySlug(slug: string): Promise<Product> {
+    return await this.productRepository.findOneBy({
+      slug,
+    });
+  }
+
   async update(id: string, updateProductDto: UpdateProductDto) {
     const product = await this.productRepository.findOne({ where: { id } });
 

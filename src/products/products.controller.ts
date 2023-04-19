@@ -73,6 +73,12 @@ export class ProductsController {
     return this.productsService.getById(id);
   }
 
+  @Get(":slug")
+  @Public()
+  getBySlug(@Param("slug") slug: string): Promise<Product> {
+    return this.productsService.getBySlug(slug);
+  }
+
   @Patch(":id")
   @Roles(Role.Admin, Role.Employee)
   update(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string, @Body() updateProductDto: UpdateProductDto) {
