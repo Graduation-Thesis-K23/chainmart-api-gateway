@@ -73,7 +73,7 @@ export class ProductsController {
     return this.productsService.getById(id);
   }
 
-  @Get(":slug")
+  @Get("slug/:slug")
   @Public()
   getBySlug(@Param("slug") slug: string): Promise<Product> {
     return this.productsService.getBySlug(slug);
