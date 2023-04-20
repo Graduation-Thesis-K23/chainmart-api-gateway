@@ -27,6 +27,7 @@ export class AuthController {
     res.cookie("access_token", access_token, {
       httpOnly: true,
       sameSite: "lax",
+      domain: this.configService.get("CLIENT_URL"),
       // secure: true,
     });
 
@@ -42,6 +43,7 @@ export class AuthController {
     res.cookie("access_token", access_token, {
       httpOnly: true,
       sameSite: "lax",
+      domain: this.configService.get("CLIENT_URL"),
       // secure: true,
     });
 
@@ -107,6 +109,7 @@ export class AuthController {
     res.cookie("access_token", access_token, {
       httpOnly: true,
       sameSite: "lax",
+      domain: this.configService.get("CLIENT_URL"),
       // secure: true,
     });
     res.send(payload);
