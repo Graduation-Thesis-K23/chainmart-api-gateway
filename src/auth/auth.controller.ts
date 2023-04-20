@@ -27,7 +27,6 @@ export class AuthController {
     res.cookie("access_token", access_token, {
       httpOnly: true,
       sameSite: "lax",
-      domain: this.configService.get("CLIENT_URL"),
       // secure: true,
     });
 
@@ -43,7 +42,6 @@ export class AuthController {
     res.cookie("access_token", access_token, {
       httpOnly: true,
       sameSite: "lax",
-      domain: this.configService.get("CLIENT_URL"),
       // secure: true,
     });
 
@@ -82,8 +80,15 @@ export class AuthController {
   async googleCallback(@Req() req: Request, @Res() res: Response) {
     const user: GoogleDto = req.user as GoogleDto;
 
-    const refresh_token = await this.authService.handleGoogleLogin(user);
-    res.redirect(this.configService.get("CLIENT_URL") + "/m/oauth?refresh_token=" + refresh_token);
+    const [access_token, payload] = await this.authService.handleGoogleLogin(user);
+    res.cookie("access_token", access_token, {
+      httpOnly: true,
+      sameSite: "lax",
+      // secure: true,
+    });
+
+    res.send(payload);
+    res.redirect(this.configService.get("CLIENT_URL"));
   }
 
   @Get("facebook")
@@ -96,11 +101,18 @@ export class AuthController {
   @UseGuards(FacebookOauthGuard)
   async facebookCallback(@Req() req: Request, @Res() res: Response) {
     const user: FacebookDto = req.user as FacebookDto;
-    const refresh_token = await this.authService.handleFacebookLogin(user);
-    res.redirect(this.configService.get("CLIENT_URL") + "/m/oauth?refresh_token=" + refresh_token);
+    const [access_token, payload] = await this.authService.handleFacebookLogin(user);
+    res.cookie("access_token", access_token, {
+      httpOnly: true,
+      sameSite: "lax",
+      // secure: true,
+    });
+
+    res.send(payload);
+    res.redirect(this.configService.get("CLIENT_URL"));
   }
 
-  @Get("oauth")
+  /* @Get("oauth")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Public()
   async getAccessToken(@Query("refresh_token") refresh_token: string, @Res() res: Response) {
@@ -113,5 +125,5 @@ export class AuthController {
       // secure: true,
     });
     res.send(payload);
-  }
+  } */
 }

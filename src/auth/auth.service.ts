@@ -89,8 +89,8 @@ export class AuthService {
     return [access_token, payload];
   }
 
-  async handleFacebookLogin(user: FacebookDto): Promise<string> {
-    const userExist = await this.usersService.findOneByEmail(user.email);
+  async handleFacebookLogin(user: FacebookDto): Promise<[string, Payload]> {
+    /* const userExist = await this.usersService.findOneByEmail(user.email);
 
     if (!userExist) {
       const username: string = uniqueFilename("", "");
@@ -118,15 +118,59 @@ export class AuthService {
     userExist.refresh_token = refresh_token;
     this.usersService.save(userExist);
 
-    return refresh_token;
-  }
-
-  async handleGoogleLogin(user: GoogleDto): Promise<string> {
+    return refresh_token; */
     const userExist = await this.usersService.findOneByEmail(user.email);
 
     if (!userExist) {
       const username: string = uniqueFilename("", "");
-      const refresh_token = await this.signToken({ email: user.email });
+
+      const userTemp = {
+        username,
+        email: user.email,
+        name: user.name,
+        password: Date.now().toString(),
+        facebook: true,
+      };
+      // save user to db
+      const { email, name, role, avatar } = await this.usersService.create(userTemp);
+
+      const payload: Payload = {
+        username,
+        email,
+        name,
+        role,
+        avatar,
+      };
+
+      const access_token = await this.signToken(payload);
+
+      return [access_token, payload];
+    }
+
+    if (!userExist.facebook) {
+      userExist.facebook = true;
+    }
+
+    this.usersService.save(userExist);
+
+    const payload: Payload = {
+      username: userExist.username,
+      email: userExist.email,
+      name: userExist.name,
+      role: userExist.role,
+      avatar: userExist.avatar,
+    };
+
+    const access_token = await this.signToken(payload);
+
+    return [access_token, payload];
+  }
+
+  async handleGoogleLogin(user: GoogleDto): Promise<[string, Payload]> {
+    const userExist = await this.usersService.findOneByEmail(user.email);
+
+    if (!userExist) {
+      const username: string = uniqueFilename("", "");
 
       const userTemp = {
         username,
@@ -135,12 +179,21 @@ export class AuthService {
         avatar: user.avatar,
         password: Date.now().toString(),
         google: true,
-        refresh_token,
       };
       // save user to db
-      await this.usersService.create(userTemp);
+      const { email, name, avatar, role } = await this.usersService.create(userTemp);
 
-      return refresh_token;
+      const payload: Payload = {
+        username,
+        email,
+        name,
+        avatar,
+        role,
+      };
+
+      const access_token = await this.signToken(payload);
+
+      return [access_token, payload];
     }
 
     if (!userExist.google) {
@@ -151,11 +204,19 @@ export class AuthService {
       userExist.avatar = user.avatar;
     }
 
-    const refresh_token = await this.signToken({ email: user.email });
-    userExist.refresh_token = refresh_token;
-    this.usersService.save(userExist);
+    const { username, email, name, role, avatar } = await this.usersService.save(userExist);
 
-    return refresh_token;
+    const payload: Payload = {
+      email,
+      username,
+      name,
+      role,
+      avatar,
+    };
+
+    const access_token = await this.signToken(payload);
+
+    return [access_token, payload];
   }
 
   async checkUsername(username: string) {
