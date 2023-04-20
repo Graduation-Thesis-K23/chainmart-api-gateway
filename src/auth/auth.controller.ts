@@ -86,8 +86,11 @@ export class AuthController {
       sameSite: "lax",
       // secure: true,
     });
+    res.cookie("user", JSON.stringify(payload), {
+      sameSite: "lax",
+      // secure: true,
+    });
 
-    res.send(payload);
     res.redirect(this.configService.get("CLIENT_URL"));
   }
 
@@ -107,8 +110,11 @@ export class AuthController {
       sameSite: "lax",
       // secure: true,
     });
+    res.cookie("user", JSON.stringify(payload), {
+      sameSite: "lax",
+      // secure: true,
+    });
 
-    res.send(payload);
     res.redirect(this.configService.get("CLIENT_URL"));
   }
 
