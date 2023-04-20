@@ -1,5 +1,5 @@
 import { ConfigService } from "@nestjs/config";
-import { Body, Controller, Get, Param, Post, Req, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, Req, Res, UseGuards } from "@nestjs/common";
 import { Request, Response } from "express";
 
 import { AuthService } from "./auth.service";
@@ -14,7 +14,6 @@ import { GoogleOauthGuard } from "./guards/google.guard";
 import { FacebookOauthGuard } from "./guards/facebook.guard";
 import { FacebookDto } from "./dto/facebook.dto";
 import { GoogleDto } from "./dto/google.dto";
-
 @Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService, private readonly configService: ConfigService) {}
@@ -80,15 +79,9 @@ export class AuthController {
   @UseGuards(GoogleOauthGuard)
   async googleCallback(@Req() req: Request, @Res() res: Response) {
     const user: GoogleDto = req.user as GoogleDto;
-    const [access_token, payload] = await this.authService.handleGoogleLogin(user);
-    res.cookie("access_token", access_token, {
-      httpOnly: true,
-      sameSite: "lax",
-      // secure: true,
-    });
 
-    res.redirect(this.configService.get("CLIENT_URL"));
-    res.send(payload);
+    const refresh_token = await this.authService.handleGoogleLogin(user);
+    res.redirect(this.configService.get("CLIENT_URL") + "/m/oauth?refresh_token=" + refresh_token);
   }
 
   @Get("facebook")
@@ -101,14 +94,21 @@ export class AuthController {
   @UseGuards(FacebookOauthGuard)
   async facebookCallback(@Req() req: Request, @Res() res: Response) {
     const user: FacebookDto = req.user as FacebookDto;
-    const [access_token, payload] = await this.authService.handleFacebookLogin(user);
+    const refresh_token = await this.authService.handleFacebookLogin(user);
+    res.redirect(this.configService.get("CLIENT_URL") + "/m/oauth?refresh_token=" + refresh_token);
+  }
+
+  @Get("oauth")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Public()
+  async getAccessToken(@Query("refresh_token") refresh_token: string, @Res() res: Response) {
+    const [access_token, payload] = await this.authService.createAccessFromRefresh(refresh_token);
+
     res.cookie("access_token", access_token, {
       httpOnly: true,
       sameSite: "lax",
       // secure: true,
     });
-
-    res.redirect(this.configService.get("CLIENT_URL"));
     res.send(payload);
   }
 }

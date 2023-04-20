@@ -23,11 +23,12 @@ export class FacebookStrategy extends PassportStrategy(Strategy, "facebook") {
     profile: Profile,
     done: (err: any, user: any, info?: any) => void,
   ): Promise<any> {
+    console.log(profile);
     if (!profile) {
       done(new Error("Not login"), null);
     }
 
-    const { name, emails } = profile;
+    const { name, emails = [{ value: profile.id + "@gmail.com" }] } = profile;
 
     const user: FacebookDto = {
       email: emails[0].value,

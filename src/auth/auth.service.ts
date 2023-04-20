@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
@@ -62,6 +62,17 @@ export class AuthService {
     return this.jwtService.signAsync(payload, options);
   }
 
+  private async verifyToken(token: string) {
+    const options = {
+      secret: this.configService.get<string>("JWT_SECRET"),
+      issuer: this.configService.get<string>("JWT_ISSUER") || "http://localhost:3000/auth",
+      audience: this.configService.get<string>("JWT_AUDIENCE") || "http://localhost:8080",
+      expiresIn: "1h",
+    };
+
+    return this.jwtService.verifyAsync(token, options);
+  }
+
   async handleSignUp(signUpDto: SignUpDto): Promise<[string, Payload]> {
     const newUser = await this.usersService.create(signUpDto);
 
@@ -78,11 +89,12 @@ export class AuthService {
     return [access_token, payload];
   }
 
-  async handleFacebookLogin(user: FacebookDto): Promise<[string, Payload]> {
+  async handleFacebookLogin(user: FacebookDto): Promise<string> {
     const userExist = await this.usersService.findOneByEmail(user.email);
 
     if (!userExist) {
       const username: string = uniqueFilename("", "");
+      const refresh_token = await this.signToken({ email: user.email });
 
       const userTemp = {
         username,
@@ -90,46 +102,32 @@ export class AuthService {
         name: user.name,
         password: Date.now().toString(),
         facebook: true,
+        refresh_token,
       };
       // save user to db
-      const newUser = await this.usersService.create(userTemp);
+      await this.usersService.create(userTemp);
 
-      const payload: Payload = {
-        username: newUser.username,
-        email: newUser.email,
-        name: newUser.name,
-        role: newUser.role,
-        avatar: newUser.avatar,
-      };
-
-      const access_token = await this.signToken(payload);
-
-      return [access_token, payload];
+      return refresh_token;
     }
 
     if (!userExist.facebook) {
       userExist.facebook = true;
-      this.usersService.save(userExist);
     }
 
-    const payload: Payload = {
-      username: userExist.username,
-      email: userExist.email,
-      name: userExist.name,
-      role: userExist.role,
-      avatar: userExist.avatar,
-    };
+    const refresh_token = await this.signToken({ email: user.email });
+    userExist.refresh_token = refresh_token;
+    this.usersService.save(userExist);
 
-    const access_token = await this.signToken(payload);
-
-    return [access_token, payload];
+    return refresh_token;
   }
 
-  async handleGoogleLogin(user: GoogleDto): Promise<[string, Payload]> {
+  async handleGoogleLogin(user: GoogleDto): Promise<string> {
     const userExist = await this.usersService.findOneByEmail(user.email);
 
     if (!userExist) {
       const username: string = uniqueFilename("", "");
+      const refresh_token = await this.signToken({ email: user.email });
+
       const userTemp = {
         username,
         email: user.email,
@@ -137,47 +135,54 @@ export class AuthService {
         avatar: user.avatar,
         password: Date.now().toString(),
         google: true,
+        refresh_token,
       };
       // save user to db
-      const newUser = await this.usersService.create(userTemp);
+      await this.usersService.create(userTemp);
 
-      const payload: Payload = {
-        username: newUser.username,
-        email: newUser.email,
-        name: newUser.name,
-        role: newUser.role,
-        avatar: newUser.avatar,
-      };
-
-      const access_token = await this.signToken(payload);
-
-      return [access_token, payload];
+      return refresh_token;
     }
 
     if (!userExist.google) {
       userExist.google = true;
-      this.usersService.save(userExist);
     }
 
     if (!userExist.avatar) {
       userExist.avatar = user.avatar;
-      this.usersService.save(userExist);
     }
 
-    const payload: Payload = {
-      username: userExist.username,
-      email: userExist.email,
-      name: userExist.name,
-      role: userExist.role,
-      avatar: userExist.avatar,
-    };
+    const refresh_token = await this.signToken({ email: user.email });
+    userExist.refresh_token = refresh_token;
+    this.usersService.save(userExist);
 
-    const access_token = await this.signToken(payload);
-
-    return [access_token, payload];
+    return refresh_token;
   }
 
   async checkUsername(username: string) {
     return this.usersService.checkUsername(username);
+  }
+
+  async createAccessFromRefresh(refresh_token: string) {
+    const { email } = await this.verifyToken(refresh_token);
+
+    const userExist = await this.usersService.findOneByEmail(email);
+
+    if (userExist.refresh_token === refresh_token) {
+      const payload: Payload = {
+        username: userExist.username,
+        email: userExist.email,
+        name: userExist.name,
+        role: userExist.role,
+        avatar: userExist.avatar,
+      };
+
+      userExist.refresh_token = null;
+
+      await this.usersService.save(userExist);
+
+      const access_token = await this.signToken(payload);
+      return [access_token, payload];
+    }
+    throw new BadRequestException("Token invalid");
   }
 }

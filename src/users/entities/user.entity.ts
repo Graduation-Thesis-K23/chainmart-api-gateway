@@ -34,6 +34,9 @@ export class User extends BaseEntity {
   @Column({ default: false })
   google: boolean;
 
+  @Column({ nullable: true })
+  refresh_token: string;
+
   @BeforeInsert()
   async hashPassword(): Promise<void> {
     const saltOrRounds = 10;
