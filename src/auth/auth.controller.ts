@@ -106,6 +106,7 @@ export class AuthController {
     console.log(access_token, payload);
     res.cookie("access_token", access_token, {
       httpOnly: true,
+      sameSite: "lax",
       // secure: true,
     });
     res.send(payload);
