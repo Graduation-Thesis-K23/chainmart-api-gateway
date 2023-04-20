@@ -48,7 +48,9 @@ export class AuthService {
       avatar: userFound.avatar,
     };
 
-    return [await this.signToken(payload), payload];
+    const access_token = await this.signToken(payload);
+
+    return [access_token, payload];
   }
 
   private async signToken(payload: any): Promise<string> {
@@ -60,17 +62,6 @@ export class AuthService {
     };
 
     return this.jwtService.signAsync(payload, options);
-  }
-
-  private async verifyToken(token: string) {
-    const options = {
-      secret: this.configService.get<string>("JWT_SECRET"),
-      issuer: this.configService.get<string>("JWT_ISSUER") || "http://localhost:3000/auth",
-      audience: this.configService.get<string>("JWT_AUDIENCE") || "http://localhost:8080",
-      expiresIn: "1h",
-    };
-
-    return this.jwtService.verifyAsync(token, options);
   }
 
   async handleSignUp(signUpDto: SignUpDto): Promise<[string, Payload]> {
@@ -90,35 +81,6 @@ export class AuthService {
   }
 
   async handleFacebookLogin(user: FacebookDto): Promise<[string, Payload]> {
-    /* const userExist = await this.usersService.findOneByEmail(user.email);
-
-    if (!userExist) {
-      const username: string = uniqueFilename("", "");
-      const refresh_token = await this.signToken({ email: user.email });
-
-      const userTemp = {
-        username,
-        email: user.email,
-        name: user.name,
-        password: Date.now().toString(),
-        facebook: true,
-        refresh_token,
-      };
-      // save user to db
-      await this.usersService.create(userTemp);
-
-      return refresh_token;
-    }
-
-    if (!userExist.facebook) {
-      userExist.facebook = true;
-    }
-
-    const refresh_token = await this.signToken({ email: user.email });
-    userExist.refresh_token = refresh_token;
-    this.usersService.save(userExist);
-
-    return refresh_token; */
     const userExist = await this.usersService.findOneByEmail(user.email);
 
     if (!userExist) {
@@ -221,29 +183,5 @@ export class AuthService {
 
   async checkUsername(username: string) {
     return this.usersService.checkUsername(username);
-  }
-
-  async createAccessFromRefresh(refresh_token: string) {
-    const { email } = await this.verifyToken(refresh_token);
-
-    const userExist = await this.usersService.findOneByEmail(email);
-
-    if (userExist.refresh_token === refresh_token) {
-      const payload: Payload = {
-        username: userExist.username,
-        email: userExist.email,
-        name: userExist.name,
-        role: userExist.role,
-        avatar: userExist.avatar,
-      };
-
-      userExist.refresh_token = null;
-
-      await this.usersService.save(userExist);
-
-      const access_token = await this.signToken(payload);
-      return [access_token, payload];
-    }
-    throw new BadRequestException("Token invalid");
   }
 }
