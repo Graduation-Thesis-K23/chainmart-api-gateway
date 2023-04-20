@@ -103,10 +103,9 @@ export class AuthController {
   @Public()
   async getAccessToken(@Query("refresh_token") refresh_token: string, @Res() res: Response) {
     const [access_token, payload] = await this.authService.createAccessFromRefresh(refresh_token);
-
+    console.log(access_token, payload);
     res.cookie("access_token", access_token, {
       httpOnly: true,
-      sameSite: "lax",
       // secure: true,
     });
     res.send(payload);
