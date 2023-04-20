@@ -15,7 +15,7 @@ export class User extends BaseEntity {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   password: string;
 
   @Column({
@@ -27,6 +27,12 @@ export class User extends BaseEntity {
 
   @Column({ nullable: true })
   avatar: string;
+
+  @Column({ default: false })
+  facebook: boolean;
+
+  @Column({ default: false })
+  google: boolean;
 
   @BeforeInsert()
   async hashPassword(): Promise<void> {

@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { Profile, Strategy } from "passport-facebook";
+import { FacebookDto } from "../dto/facebook.dto";
 
 @Injectable()
 export class FacebookStrategy extends PassportStrategy(Strategy, "facebook") {
@@ -28,7 +29,7 @@ export class FacebookStrategy extends PassportStrategy(Strategy, "facebook") {
 
     const { name, emails } = profile;
 
-    const user = {
+    const user: FacebookDto = {
       email: emails[0].value,
       name: `${name.familyName} ${name.givenName}`,
     };

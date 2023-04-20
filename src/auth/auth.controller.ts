@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { Body, Controller, Get, Param, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { Request, Response } from "express";
 
 import { AuthService } from "./auth.service";
@@ -11,10 +12,12 @@ import { Role } from "../users/enums/role.enum";
 import { Public } from "./decorators/public.decorator";
 import { GoogleOauthGuard } from "./guards/google.guard";
 import { FacebookOauthGuard } from "./guards/facebook.guard";
+import { FacebookDto } from "./dto/facebook.dto";
+import { GoogleDto } from "./dto/google.dto";
 
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService, private readonly configService: ConfigService) {}
 
   @Post("sign-in")
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -24,21 +27,33 @@ export class AuthController {
 
     res.cookie("access_token", access_token, {
       httpOnly: true,
+      sameSite: "lax",
       // secure: true,
-      // sameSite: "lax",
     });
-    res.locals.username = payload.username;
-    res.locals.email = payload.email;
-    res.locals.role = payload.role;
-    res.locals.name = payload.name;
+
     res.send(payload);
   }
 
   @Post("sign-up")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Public()
-  async signUp(@Body() signUpDto: SignUpDto) {
-    return this.authService.handleSignUp(signUpDto);
+  async signUp(@Body() signUpDto: SignUpDto, @Res() res: Response) {
+    const [access_token, payload] = await this.authService.handleSignUp(signUpDto);
+
+    res.cookie("access_token", access_token, {
+      httpOnly: true,
+      sameSite: "lax",
+      // secure: true,
+    });
+
+    res.send(payload);
+  }
+
+  @Get("check-username/:username")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Public()
+  async checkUsername(@Param("username") username: string) {
+    return await this.authService.checkUsername(username);
   }
 
   @Post("check-token")
@@ -63,8 +78,17 @@ export class AuthController {
 
   @Get("google/callback")
   @UseGuards(GoogleOauthGuard)
-  async googleCallback(@Req() req: Request) {
-    return req.user;
+  async googleCallback(@Req() req: Request, @Res() res: Response) {
+    const user: GoogleDto = req.user as GoogleDto;
+    const [access_token, payload] = await this.authService.handleGoogleLogin(user);
+    res.cookie("access_token", access_token, {
+      httpOnly: true,
+      sameSite: "lax",
+      // secure: true,
+    });
+
+    res.redirect(this.configService.get("CLIENT_URL"));
+    res.send(payload);
   }
 
   @Get("facebook")
@@ -75,7 +99,16 @@ export class AuthController {
 
   @Get("facebook/callback")
   @UseGuards(FacebookOauthGuard)
-  async facebookCallback(@Req() req: Request) {
-    return req.user;
+  async facebookCallback(@Req() req: Request, @Res() res: Response) {
+    const user: FacebookDto = req.user as FacebookDto;
+    const [access_token, payload] = await this.authService.handleFacebookLogin(user);
+    res.cookie("access_token", access_token, {
+      httpOnly: true,
+      sameSite: "lax",
+      // secure: true,
+    });
+
+    res.redirect(this.configService.get("CLIENT_URL"));
+    res.send(payload);
   }
 }

@@ -25,6 +25,18 @@ export class UsersService {
     }
   }
 
+  async save(user: User): Promise<User> {
+    try {
+      return await this.usersRepository.save(user);
+    } catch (error) {
+      if (isQueryFailedError(error)) {
+        if (error.code === "23505") {
+          throw new BadRequestException("Duplicate key");
+        }
+      }
+    }
+  }
+
   async findAll(): Promise<User[]> {
     return await this.usersRepository.find();
   }
@@ -45,6 +57,11 @@ export class UsersService {
 
   async findOneByUsername(username: string): Promise<User> {
     const user = await this.usersRepository.findOneBy({ username });
+    return user;
+  }
+
+  async findOneByEmail(email: string): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ email });
     return user;
   }
 
@@ -76,5 +93,10 @@ export class UsersService {
       return "A user has been deleted";
     }
     return `${result.affected} users have been deleted`;
+  }
+
+  async checkUsername(username: string) {
+    const user = await this.usersRepository.findOneBy({ username });
+    return user !== null;
   }
 }

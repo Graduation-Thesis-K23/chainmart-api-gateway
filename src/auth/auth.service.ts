@@ -2,17 +2,21 @@ import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
+import * as uniqueFilename from "unique-filename";
 
 import { UsersService } from "../users/users.service";
 import { SignInDto } from "./dto/sign-in.dto";
 import { SignUpDto } from "./dto/sign-up.dto";
 import { Role } from "src/users/enums/role.enum";
+import { FacebookDto } from "./dto/facebook.dto";
+import { GoogleDto } from "./dto/google.dto";
 
 interface Payload {
   username: string;
   email: string;
   name: string;
   role: Role;
+  avatar: string;
 }
 
 @Injectable()
@@ -41,6 +45,7 @@ export class AuthService {
       email: userFound.email,
       name: userFound.name,
       role: userFound.role,
+      avatar: userFound.avatar,
     };
 
     return [await this.signToken(payload), payload];
@@ -57,18 +62,122 @@ export class AuthService {
     return this.jwtService.signAsync(payload, options);
   }
 
-  async handleSignUp(signUpDto: SignUpDto): Promise<{ access_token: string }> {
+  async handleSignUp(signUpDto: SignUpDto): Promise<[string, Payload]> {
     const newUser = await this.usersService.create(signUpDto);
 
-    const payload = {
+    const payload: Payload = {
       username: newUser.username,
       email: newUser.email,
       name: newUser.name,
       role: newUser.role,
+      avatar: newUser.avatar,
     };
 
-    return {
-      access_token: await this.signToken(payload),
+    const access_token = await this.signToken(payload);
+
+    return [access_token, payload];
+  }
+
+  async handleFacebookLogin(user: FacebookDto): Promise<[string, Payload]> {
+    const userExist = await this.usersService.findOneByEmail(user.email);
+
+    if (!userExist) {
+      const username: string = uniqueFilename("", "");
+
+      const userTemp = {
+        username,
+        email: user.email,
+        name: user.name,
+        password: Date.now().toString(),
+        facebook: true,
+      };
+      // save user to db
+      const newUser = await this.usersService.create(userTemp);
+
+      const payload: Payload = {
+        username: newUser.username,
+        email: newUser.email,
+        name: newUser.name,
+        role: newUser.role,
+        avatar: newUser.avatar,
+      };
+
+      const access_token = await this.signToken(payload);
+
+      return [access_token, payload];
+    }
+
+    if (!userExist.facebook) {
+      userExist.facebook = true;
+      this.usersService.save(userExist);
+    }
+
+    const payload: Payload = {
+      username: userExist.username,
+      email: userExist.email,
+      name: userExist.name,
+      role: userExist.role,
+      avatar: userExist.avatar,
     };
+
+    const access_token = await this.signToken(payload);
+
+    return [access_token, payload];
+  }
+
+  async handleGoogleLogin(user: GoogleDto): Promise<[string, Payload]> {
+    const userExist = await this.usersService.findOneByEmail(user.email);
+
+    if (!userExist) {
+      const username: string = uniqueFilename("", "");
+      const userTemp = {
+        username,
+        email: user.email,
+        name: user.name,
+        avatar: user.avatar,
+        password: Date.now().toString(),
+        google: true,
+      };
+      // save user to db
+      const newUser = await this.usersService.create(userTemp);
+
+      const payload: Payload = {
+        username: newUser.username,
+        email: newUser.email,
+        name: newUser.name,
+        role: newUser.role,
+        avatar: newUser.avatar,
+      };
+
+      const access_token = await this.signToken(payload);
+
+      return [access_token, payload];
+    }
+
+    if (!userExist.google) {
+      userExist.google = true;
+      this.usersService.save(userExist);
+    }
+
+    if (!userExist.avatar) {
+      userExist.avatar = user.avatar;
+      this.usersService.save(userExist);
+    }
+
+    const payload: Payload = {
+      username: userExist.username,
+      email: userExist.email,
+      name: userExist.name,
+      role: userExist.role,
+      avatar: userExist.avatar,
+    };
+
+    const access_token = await this.signToken(payload);
+
+    return [access_token, payload];
+  }
+
+  async checkUsername(username: string) {
+    return this.usersService.checkUsername(username);
   }
 }
