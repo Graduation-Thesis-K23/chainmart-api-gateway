@@ -65,6 +65,18 @@ export class AuthService {
   }
 
   async handleSignUp(signUpDto: SignUpDto): Promise<[string, Payload]> {
+    const userExist1 = await this.usersService.findOneByUsername(signUpDto.username);
+
+    if (userExist1) {
+      throw new BadRequestException("username.existed");
+    }
+
+    const userExist = await this.usersService.findOneByEmail(signUpDto.email);
+
+    if (userExist) {
+      throw new BadRequestException("email.existed");
+    }
+
     const newUser = await this.usersService.create(signUpDto);
 
     const payload: Payload = {
