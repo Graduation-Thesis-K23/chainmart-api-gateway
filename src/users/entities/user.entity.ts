@@ -35,7 +35,7 @@ export class User extends BaseEntity {
   google: boolean;
 
   @Column({ nullable: true })
-  refresh_token: string;
+  phone: string;
 
   @BeforeInsert()
   async hashPassword(): Promise<void> {
