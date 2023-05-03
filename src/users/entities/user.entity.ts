@@ -3,6 +3,7 @@ import * as bcrypt from "bcrypt";
 
 import { BaseEntity } from "../../common/base.entity";
 import { Role } from "../enums/role.enum";
+import { Gender } from "../enums/gender.enum";
 
 @Entity("users")
 export class User extends BaseEntity {
@@ -24,6 +25,12 @@ export class User extends BaseEntity {
     default: Role.User,
   })
   role: Role;
+
+  @Column({ type: "timestamptz", nullable: true })
+  birthday: Date;
+
+  @Column({ type: "enum", enum: Gender, nullable: true })
+  gender: string;
 
   @Column({ nullable: true })
   avatar: string;

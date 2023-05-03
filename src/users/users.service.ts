@@ -7,10 +7,16 @@ import { Repository } from "typeorm";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { User } from "./entities/user.entity";
+import { S3Service } from "../s3/s3.service";
+import { UpdateUserSettingDto } from "./dto/update-user-setting.dto";
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>) {}
+  constructor(
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
+    private readonly s3Service: S3Service,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
@@ -98,5 +104,50 @@ export class UsersService {
   async checkUsername(username: string) {
     const user = await this.usersRepository.findOneBy({ username });
     return user !== null;
+  }
+
+  async changeAvatar(img: Buffer, username: string) {
+    try {
+      const image = await this.s3Service.uploadImageToS3(img);
+      const user = await this.findOneByUsername(username);
+      user.avatar = image;
+      await this.save(user);
+      return image;
+    } catch (err) {
+      throw new BadRequestException(err.message);
+    }
+  }
+
+  async getUserInfoSetting(username: string) {
+    const user = await this.usersRepository.findOne({
+      where: {
+        username,
+      },
+      select: {
+        name: true,
+        birthday: true,
+        phone: true,
+        gender: true,
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException(`User with username(${username}) not found`);
+    }
+
+    return user;
+  }
+
+  async updateUserInfoSetting(username: string, updateUserDto: UpdateUserSettingDto) {
+    const user = await this.findOneByUsername(username);
+
+    const newUser = {
+      ...user,
+      ...updateUserDto,
+    };
+
+    const { name, birthday, phone, gender } = await this.usersRepository.save(newUser);
+
+    return { name, birthday, phone, gender };
   }
 }

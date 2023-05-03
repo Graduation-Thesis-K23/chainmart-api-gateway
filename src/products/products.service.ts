@@ -16,7 +16,8 @@ class AddProductType extends CreateProductDto {
 @Injectable()
 export class ProductsService {
   constructor(
-    @InjectRepository(Product) private readonly productRepository: Repository<Product>,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
     private readonly s3Service: S3Service,
   ) {}
 
