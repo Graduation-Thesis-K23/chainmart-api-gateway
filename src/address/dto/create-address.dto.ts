@@ -24,7 +24,4 @@ export class CreateAddressDto {
   @IsNotEmpty()
   @IsString()
   street: string;
-
-  @IsBoolean()
-  default: boolean;
 }

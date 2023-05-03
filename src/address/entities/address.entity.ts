@@ -31,7 +31,4 @@ export class Address extends BaseEntity {
 
   @Column()
   street: string;
-
-  @Column()
-  default: boolean;
 }
