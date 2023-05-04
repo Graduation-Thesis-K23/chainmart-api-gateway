@@ -1,5 +1,5 @@
 import { UsersService } from "./../users/users.service";
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
@@ -24,5 +24,20 @@ export class AddressService {
 
   async getAll(user: string) {
     return await this.addressRepository.createQueryBuilder().where({ user }).getMany();
+  }
+
+  async delete(user: string, id: string) {
+    const address = await this.addressRepository.createQueryBuilder().where({ user, id }).getOne();
+
+    if (!address) {
+      throw new BadRequestException("setting.deleteAddressFail");
+    }
+    const result = await this.addressRepository.softDelete(id);
+
+    if (result.affected > 0) {
+      return {
+        messageCode: "setting.deleteAddressSuccess",
+      };
+    }
   }
 }

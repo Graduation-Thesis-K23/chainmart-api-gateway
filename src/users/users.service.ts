@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { isUUID } from "class-validator";
 import { isQueryFailedError } from "../utils/is-query-failed";
 import { Repository } from "typeorm";
+import * as bcrypt from "bcrypt";
 
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
@@ -149,5 +150,25 @@ export class UsersService {
     const { name, birthday, phone, gender } = await this.usersRepository.save(newUser);
 
     return { name, birthday, phone, gender };
+  }
+
+  async changePassword(username: string, currentPassword: string, newPassword: string) {
+    if (currentPassword === newPassword) {
+      throw new BadRequestException("new password the same current password");
+    }
+
+    const user = await this.findOneByUsername(username);
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isMatch) {
+      throw new BadRequestException("current password is not correct");
+    }
+
+    user.password = newPassword;
+
+    return {
+      messageCode: "setting.changePasswordSuccess",
+    };
   }
 }

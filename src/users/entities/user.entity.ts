@@ -1,4 +1,4 @@
-import { Entity, Column, BeforeInsert } from "typeorm";
+import { Entity, Column, BeforeInsert, AfterLoad, BeforeUpdate } from "typeorm";
 import * as bcrypt from "bcrypt";
 
 import { BaseEntity } from "../../common/base.entity";
@@ -7,6 +7,8 @@ import { Gender } from "../enums/gender.enum";
 
 @Entity("users")
 export class User extends BaseEntity {
+  private tempPassword: string;
+
   @Column()
   name: string;
 
@@ -50,5 +52,20 @@ export class User extends BaseEntity {
     const password = this.password;
     const hashed = await bcrypt.hash(password, saltOrRounds);
     this.password = hashed;
+  }
+
+  @AfterLoad()
+  private async generateTempPassword() {
+    this.tempPassword = this.password;
+  }
+
+  @BeforeUpdate()
+  private async hashNewPassword() {
+    if (this.tempPassword !== this.password) {
+      const saltOrRounds = 10;
+      const password = this.password;
+      const hashed = await bcrypt.hash(password, saltOrRounds);
+      this.password = hashed;
+    }
   }
 }

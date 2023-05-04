@@ -1,5 +1,5 @@
 import { AddressService } from "./address.service";
-import { Body, Controller, Req, Post, UseGuards, Get } from "@nestjs/common";
+import { Body, Controller, Req, Post, UseGuards, Get, Delete, ParseUUIDPipe, Param } from "@nestjs/common";
 import { Request } from "express";
 
 import { CreateAddressDto } from "./dto/create-address.dto";
@@ -28,5 +28,13 @@ export class AddressController {
     const user = req.user as ReqUser;
 
     return await this.addressService.getAll(user.username);
+  }
+
+  @Delete(":id")
+  @Roles(Role.User)
+  async delete(@Req() req: Request, @Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
+    const user = req.user as ReqUser;
+
+    return await this.addressService.delete(user.username, id);
   }
 }
