@@ -3,14 +3,21 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { isUUID } from "class-validator";
 import { isQueryFailedError } from "../utils/is-query-failed";
 import { Repository } from "typeorm";
+import * as bcrypt from "bcrypt";
 
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { User } from "./entities/user.entity";
+import { S3Service } from "../s3/s3.service";
+import { UpdateUserSettingDto } from "./dto/update-user-setting.dto";
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>) {}
+  constructor(
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
+    private readonly s3Service: S3Service,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
@@ -98,5 +105,72 @@ export class UsersService {
   async checkUsername(username: string) {
     const user = await this.usersRepository.findOneBy({ username });
     return user !== null;
+  }
+
+  async changeAvatar(img: Buffer, username: string) {
+    try {
+      const image = await this.s3Service.uploadImageToS3(img);
+      const user = await this.findOneByUsername(username);
+      user.avatar = image;
+      await this.save(user);
+      return image;
+    } catch (err) {
+      throw new BadRequestException(err.message);
+    }
+  }
+
+  async getUserInfoSetting(username: string) {
+    const user = await this.usersRepository.findOne({
+      where: {
+        username,
+      },
+      select: {
+        name: true,
+        birthday: true,
+        phone: true,
+        gender: true,
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException(`User with username(${username}) not found`);
+    }
+
+    return user;
+  }
+
+  async updateUserInfoSetting(username: string, updateUserDto: UpdateUserSettingDto) {
+    const user = await this.findOneByUsername(username);
+
+    const newUser = {
+      ...user,
+      ...updateUserDto,
+    };
+
+    const { name, birthday, phone, gender } = await this.usersRepository.save(newUser);
+
+    return { name, birthday, phone, gender };
+  }
+
+  async changePassword(username: string, currentPassword: string, newPassword: string) {
+    if (currentPassword === newPassword) {
+      throw new BadRequestException("new password the same current password");
+    }
+
+    const user = await this.findOneByUsername(username);
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isMatch) {
+      throw new BadRequestException("current password is not correct");
+    }
+
+    user.password = newPassword;
+
+    await this.save(user);
+
+    return {
+      messageCode: "setting.changePasswordSuccess",
+    };
   }
 }
