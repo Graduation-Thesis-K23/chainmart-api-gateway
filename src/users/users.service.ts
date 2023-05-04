@@ -167,6 +167,8 @@ export class UsersService {
 
     user.password = newPassword;
 
+    await this.save(user);
+
     return {
       messageCode: "setting.changePasswordSuccess",
     };
