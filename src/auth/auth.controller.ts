@@ -1,5 +1,5 @@
 import { ConfigService } from "@nestjs/config";
-import { Body, Controller, Get, Param, Post, Query, Req, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { Request, Response } from "express";
 
 import { AuthService } from "./auth.service";
@@ -117,19 +117,4 @@ export class AuthController {
 
     res.redirect(this.configService.get("CLIENT_URL"));
   }
-
-  /* @Get("oauth")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Public()
-  async getAccessToken(@Query("refresh_token") refresh_token: string, @Res() res: Response) {
-    const [access_token, payload] = await this.authService.createAccessFromRefresh(refresh_token);
-    console.log(access_token, payload);
-    res.cookie("access_token", access_token, {
-      httpOnly: true,
-      sameSite: "lax",
-      domain: this.configService.get("CLIENT_URL"),
-      // secure: true,
-    });
-    res.send(payload);
-  } */
 }
