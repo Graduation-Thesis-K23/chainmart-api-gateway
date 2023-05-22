@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { MiddlewareConsumer, Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 
 import { configValidationSchema } from "./config/validate-env";
@@ -10,6 +10,7 @@ import { SuppliersModule } from "./suppliers/suppliers.module";
 import { ProductsModule } from "./products/products.module";
 import { S3Module } from "./s3/s3.module";
 import { AddressModule } from "./address/address.module";
+import { LogsMiddleware } from "./middlewares/logger";
 
 @Module({
   imports: [
@@ -28,4 +29,8 @@ import { AddressModule } from "./address/address.module";
     AddressModule,
   ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LogsMiddleware).forRoutes("*");
+  }
+}
