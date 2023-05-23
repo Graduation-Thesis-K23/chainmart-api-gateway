@@ -16,7 +16,7 @@ export class Employee extends BaseEntity {
   @Column({ unique: true })
   phone: string;
 
-  @Column()
+  @Column({ nullable: true })
   photo: string;
 
   @Column()
