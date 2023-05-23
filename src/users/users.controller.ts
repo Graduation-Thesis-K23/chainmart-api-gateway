@@ -46,7 +46,7 @@ export class UsersController {
     return await this.usersService.findAll();
   }
 
-  @Roles(Role.User, Role.Customer)
+  @Roles(Role.User, Role.Admin)
   @Get("setting")
   async getInfoUserSetting(@Req() req: Request) {
     const user = req.user as ReqUser;

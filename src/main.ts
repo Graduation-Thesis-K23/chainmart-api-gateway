@@ -4,6 +4,7 @@ import { NestFactory } from "@nestjs/core";
 import * as cookieParser from "cookie-parser";
 
 import { AppModule } from "./app.module";
+import { LogsMiddleware } from "./middlewares/logger";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { logger: ["log", "error", "warn", "debug", "verbose"] });
@@ -26,6 +27,7 @@ async function bootstrap() {
     credentials: true,
   });
   app.use(cookieParser());
+  app.use(LogsMiddleware);
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
