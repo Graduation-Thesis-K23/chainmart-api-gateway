@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
 import { Role } from "../../shared/enums";
 
 export class CreateEmployeeDto {
@@ -6,7 +6,7 @@ export class CreateEmployeeDto {
   @IsNotEmpty()
   name: string;
 
-  @IsString()
+  @IsUUID(4, { message: "branchId isn't UUID4" })
   @IsNotEmpty()
   branchId: string;
 

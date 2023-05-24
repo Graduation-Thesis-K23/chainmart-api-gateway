@@ -12,6 +12,7 @@ import { S3Module } from "./s3/s3.module";
 import { AddressModule } from "./address/address.module";
 import { EmployeeModule } from "./employee/employee.module";
 import { BranchModule } from "./branch/branch.module";
+import { SubscriberModule } from './subscriber/subscriber.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { BranchModule } from "./branch/branch.module";
     AddressModule,
     EmployeeModule,
     BranchModule,
+    SubscriberModule,
   ],
 })
 export class AppModule {}

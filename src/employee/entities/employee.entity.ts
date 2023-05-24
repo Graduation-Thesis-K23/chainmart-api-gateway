@@ -1,4 +1,4 @@
-import { Column, BeforeInsert, Entity, ManyToOne } from "typeorm";
+import { Column, BeforeInsert, Entity, ManyToOne, JoinColumn } from "typeorm";
 import * as bcrypt from "bcrypt";
 
 import { BaseEntity } from "../../common/base.entity";
@@ -10,7 +10,8 @@ export class Employee extends BaseEntity {
   @Column()
   name: string;
 
-  @ManyToOne(() => Branch, (branch) => branch.id)
+  @ManyToOne(() => Branch, (branch) => branch.id, { onDelete: "CASCADE" })
+  @JoinColumn({ name: "branchId" })
   branchId: string;
 
   @Column({ unique: true })
@@ -19,7 +20,8 @@ export class Employee extends BaseEntity {
   @Column({ nullable: true })
   photo: string;
 
-  @Column()
+  // You can get this column https://typeorm.io/select-query-builder#hidden-columns
+  @Column({ select: false })
   password: string;
 
   @Column({ type: "enum", enum: Role, default: Role.Employee })
