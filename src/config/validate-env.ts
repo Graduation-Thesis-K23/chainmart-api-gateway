@@ -6,7 +6,6 @@ export const configValidationSchema = joi.object({
   DB_USERNAME: joi.string().required(),
   DB_PASSWORD: joi.string().required(),
   DB_DATABASE: joi.string().required(),
-  DB_SCHEMA: joi.string().required(),
 
   CLIENT_URL: joi.string().required(),
   MANAGER_URL: joi.string().required(),
@@ -16,4 +15,12 @@ export const configValidationSchema = joi.object({
   BUCKET_NAME: joi.string().required(),
   IAM_USER_KEY: joi.string().required(),
   IAM_USER_SECRET: joi.string().required(),
+
+  OAUTH_CLIENT_ID: joi.string().required(),
+  OAUTH_CLIENT_SECRET: joi.string().required(),
+  OAUTH_CALLBACK_URL: joi.string().required(),
+
+  OAUTH_APP_ID: joi.string().required(),
+  OAUTH_APP_SECRET: joi.string().required(),
+  OAUTH_CALLBACK_URL_FACEBOOK: joi.string().required(),
 });
