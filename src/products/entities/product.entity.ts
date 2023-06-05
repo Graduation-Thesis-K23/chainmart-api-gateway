@@ -1,8 +1,9 @@
-import { BeforeInsert, Check, Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { BeforeInsert, Check, Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 
 import { BaseEntity } from "../../common/base.entity";
 import { Category } from "../../categories/entities/category.entity";
 import { Supplier } from "../../suppliers/entities/supplier.entity";
+import { CartDetail } from "src/carts/entities/cart-detail.entity";
 
 @Entity("products")
 @Check('"quantity" >= 0')
@@ -62,6 +63,9 @@ export class Product extends BaseEntity {
 
   @Column()
   images: string;
+
+  @OneToMany(() => CartDetail, (cartDetail) => cartDetail.product)
+  cart_details: CartDetail[];
 
   @BeforeInsert()
   async convertISOToTimestamp(): Promise<void> {

@@ -75,9 +75,6 @@ export class ProductsService {
       throw new BadRequestException(`Product with id(${id}) not found`);
     }
 
-    if (result.affected === 1) {
-      return "A product  has been deleted";
-    }
-    return `Product ${id} have been deleted`;
+    return `Product with id(${id}) have been deleted`;
   }
 }
