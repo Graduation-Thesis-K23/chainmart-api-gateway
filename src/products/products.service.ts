@@ -33,6 +33,14 @@ export class ProductsService {
     return await this.productRepository.save(newProduct);
   }
 
+  async getSearchProduct(searchText: string): Promise<Product[]> {
+    return await this.productRepository
+      .createQueryBuilder("products")
+      .select(["products.name", "products.price", "products.images", "products.slug"])
+      .where("LOWER(products.name) like LOWER(:searchText)", { searchText: `%${searchText}%` })
+      .getMany();
+  }
+
   async getAll(): Promise<Product[]> {
     return await this.productRepository.find();
   }

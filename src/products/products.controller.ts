@@ -67,6 +67,12 @@ export class ProductsController {
     return this.productsService.getAll();
   }
 
+  @Get("search/:searchText")
+  @Public()
+  getSearchProduct(@Param("searchText") searchText: string): Promise<Product[]> {
+    return this.productsService.getSearchProduct(searchText);
+  }
+
   @Get(":id")
   @Public()
   getById(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string): Promise<Product> {
