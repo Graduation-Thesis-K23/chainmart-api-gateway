@@ -5,8 +5,8 @@ import { Request } from "express";
 import { CreateAddressDto } from "./dto/create-address.dto";
 import { ReqUser } from "src/common/req-user.inter";
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard";
-import { RolesGuard } from "src/auth/guards/role.guard";
-import { Roles } from "src/auth/decorators/roles.decorator";
+import { RolesGuard } from "../auth-manager/guards/role.guard";
+import { Roles } from "../auth-manager/decorators/roles.decorator";
 import { Role } from "src/users/enums/role.enum";
 
 @Controller("address")

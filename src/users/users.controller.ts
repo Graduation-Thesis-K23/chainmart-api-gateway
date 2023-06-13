@@ -18,12 +18,12 @@ import {
 import { Request } from "express";
 
 import { JwtAuthGuard } from "../auth/guards/jwt.guard";
-import { Roles } from "../auth/decorators/roles.decorator";
+import { Roles } from "../auth-manager/decorators/roles.decorator";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { Role } from "./enums/role.enum";
-import { RolesGuard } from "../auth/guards/role.guard";
+import { RolesGuard } from "../auth-manager/guards/role.guard";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { UpdateUserSettingDto } from "./dto/update-user-setting.dto";
 import { ReqUser } from "src/common/req-user.inter";

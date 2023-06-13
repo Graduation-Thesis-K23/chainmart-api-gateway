@@ -111,7 +111,7 @@ export class UsersService {
     try {
       const image = await this.s3Service.uploadImageToS3(img);
       const user = await this.findOneByUsername(username);
-      user.avatar = image;
+      user.photo = image;
       await this.save(user);
       return image;
     } catch (err) {

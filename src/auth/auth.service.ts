@@ -7,17 +7,10 @@ import * as uniqueFilename from "unique-filename";
 import { UsersService } from "../users/users.service";
 import { SignInDto } from "./dto/sign-in.dto";
 import { SignUpDto } from "./dto/sign-up.dto";
-import { Role } from "src/users/enums/role.enum";
 import { FacebookDto } from "./dto/facebook.dto";
 import { GoogleDto } from "./dto/google.dto";
-
-interface Payload {
-  username: string;
-  email: string;
-  name: string;
-  role: Role;
-  avatar: string;
-}
+import { USER_ROLE } from "./constants";
+import { UserPayload } from "../shared";
 
 @Injectable()
 export class AuthService {
@@ -27,7 +20,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async validateSignIn(signInDto: SignInDto): Promise<[string, Payload]> {
+  async validateSignIn(signInDto: SignInDto): Promise<[string, UserPayload]> {
     const { username, password } = signInDto;
 
     const userFound = await this.usersService.findOneByUsername(username);
@@ -40,12 +33,12 @@ export class AuthService {
       throw new UnauthorizedException("Invalid username or password");
     }
 
-    const payload: Payload = {
+    const payload: UserPayload = {
       username: userFound.username,
       email: userFound.email,
       name: userFound.name,
-      role: userFound.role,
-      avatar: userFound.avatar,
+      photo: userFound.photo,
+      role: USER_ROLE,
     };
 
     const access_token = await this.signToken(payload);
@@ -64,27 +57,26 @@ export class AuthService {
     return this.jwtService.signAsync(payload, options);
   }
 
-  async handleSignUp(signUpDto: SignUpDto): Promise<[string, Payload]> {
-    const userExist1 = await this.usersService.findOneByUsername(signUpDto.username);
+  async handleSignUp(signUpDto: SignUpDto): Promise<[string, UserPayload]> {
+    const usernameExist = await this.usersService.findOneByUsername(signUpDto.username);
 
-    if (userExist1) {
+    if (usernameExist) {
       throw new BadRequestException("username.existed");
     }
 
-    const userExist = await this.usersService.findOneByEmail(signUpDto.email);
+    const emailExist = await this.usersService.findOneByEmail(signUpDto.email);
 
-    if (userExist) {
+    if (emailExist) {
       throw new BadRequestException("email.existed");
     }
 
     const newUser = await this.usersService.create(signUpDto);
 
-    const payload: Payload = {
+    const payload: UserPayload = {
       username: newUser.username,
       email: newUser.email,
       name: newUser.name,
-      role: newUser.role,
-      avatar: newUser.avatar,
+      role: USER_ROLE,
     };
 
     const access_token = await this.signToken(payload);
@@ -92,8 +84,8 @@ export class AuthService {
     return [access_token, payload];
   }
 
-  async handleFacebookLogin(user: FacebookDto): Promise<[string, Payload]> {
-    const userExist = await this.usersService.findOneByEmail(user.email);
+  async handleFacebookLogin(user: FacebookDto): Promise<[string, UserPayload]> {
+    /* const userExist = await this.usersService.findOneByEmail(user.email);
 
     if (!userExist) {
       const username: string = uniqueFilename("", "");
@@ -137,11 +129,12 @@ export class AuthService {
 
     const access_token = await this.signToken(payload);
 
-    return [access_token, payload];
+    return [access_token, payload]; */
+    return ["", {} as UserPayload];
   }
 
-  async handleGoogleLogin(user: GoogleDto): Promise<[string, Payload]> {
-    const userExist = await this.usersService.findOneByEmail(user.email);
+  async handleGoogleLogin(user: GoogleDto): Promise<[string, UserPayload]> {
+    /* const userExist = await this.usersService.findOneByEmail(user.email);
 
     if (!userExist) {
       const username: string = uniqueFilename("", "");
@@ -190,7 +183,8 @@ export class AuthService {
 
     const access_token = await this.signToken(payload);
 
-    return [access_token, payload];
+    return [access_token, payload]; */
+    return ["", {} as UserPayload];
   }
 
   async checkUsername(username: string) {

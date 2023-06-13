@@ -1,26 +1,17 @@
 import { ConfigService } from "@nestjs/config";
-import { Body, Controller, Get, Param, Post, Req, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { Request, Response } from "express";
 
 import { AuthService } from "./auth.service";
-import { SignInDto } from "./dto/sign-in.dto";
-import { SignUpDto } from "./dto/sign-up.dto";
-import { JwtAuthGuard } from "./guards/jwt.guard";
-import { RolesGuard } from "./guards/role.guard";
-import { Roles } from "./decorators/roles.decorator";
-import { Role } from "../users/enums/role.enum";
-import { Public } from "./decorators/public.decorator";
-import { GoogleOauthGuard } from "./guards/google.guard";
-import { FacebookOauthGuard } from "./guards/facebook.guard";
-import { FacebookDto } from "./dto/facebook.dto";
-import { GoogleDto } from "./dto/google.dto";
+import { FacebookOauthGuard, GoogleOauthGuard, JwtAuthGuard, UserGuard } from "./guards";
+import { FacebookDto, GoogleDto, SignInDto, SignUpDto } from "./dto";
+import { User } from "./decorators";
+
 @Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService, private readonly configService: ConfigService) {}
 
   @Post("sign-in")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Public()
   async signIn(@Body() signInDto: SignInDto, @Res({ passthrough: true }) res: Response) {
     const [access_token, payload] = await this.authService.validateSignIn(signInDto);
 
@@ -34,8 +25,6 @@ export class AuthController {
   }
 
   @Post("sign-up")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Public()
   async signUp(@Body() signUpDto: SignUpDto, @Res() res: Response) {
     const [access_token, payload] = await this.authService.handleSignUp(signUpDto);
 
@@ -48,23 +37,16 @@ export class AuthController {
     res.send(payload);
   }
 
-  @Get("check-username/:username")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Public()
-  async checkUsername(@Param("username") username: string) {
-    return await this.authService.checkUsername(username);
-  }
-
   @Post("check-token")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Employee, Role.User)
+  @UseGuards(JwtAuthGuard, UserGuard)
+  @User()
   async checkToken(@Req() req: Request) {
     return req.user;
   }
 
   @Get("logout")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Employee, Role.User)
+  @UseGuards(JwtAuthGuard, UserGuard)
+  @User()
   async logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie("access_token").send();
   }

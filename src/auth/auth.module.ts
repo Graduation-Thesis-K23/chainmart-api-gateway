@@ -10,7 +10,7 @@ import { GoogleStrategy } from "./strategies/google.strategy";
 import { FacebookStrategy } from "./strategies/facebook.strategy";
 
 @Module({
-  imports: [PassportModule, JwtModule.register({}), UsersModule],
+  imports: [JwtModule.register({}), UsersModule, PassportModule],
   controllers: [AuthController],
   providers: [GoogleStrategy, AuthService, JwtStrategy, FacebookStrategy],
 })

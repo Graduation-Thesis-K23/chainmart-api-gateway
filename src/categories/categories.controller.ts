@@ -3,8 +3,8 @@ import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, UseGuards } 
 import { CreateCategoryDto } from "./dto/create-category.dto";
 import { CategoriesService } from "./categories.service";
 import { JwtAuthGuard } from "../auth/guards/jwt.guard";
-import { RolesGuard } from "../auth/guards/role.guard";
-import { Roles } from "../auth/decorators/roles.decorator";
+import { RolesGuard } from "../auth-manager/guards/role.guard";
+import { Roles } from "../auth-manager/decorators/roles.decorator";
 import { Role } from "../users/enums/role.enum";
 
 @UseGuards(JwtAuthGuard, RolesGuard)

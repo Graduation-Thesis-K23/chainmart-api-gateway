@@ -12,6 +12,7 @@ import { S3Module } from "./s3/s3.module";
 import { AddressModule } from "./address/address.module";
 import { CartsModule } from "./carts/carts.module";
 import { LogsMiddleware } from "./middlewares/logger";
+import { AuthManagerModule } from './auth-manager/auth-manager.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { LogsMiddleware } from "./middlewares/logger";
     S3Module,
     AddressModule,
     CartsModule,
+    AuthManagerModule,
   ],
 })
 export class AppModule {

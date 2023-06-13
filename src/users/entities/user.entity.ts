@@ -15,36 +15,35 @@ export class User extends BaseEntity {
   @Column({ unique: true })
   username: string;
 
-  @Column({ unique: true })
-  email: string;
-
   @Column({ nullable: true })
   password: string;
 
-  @Column({
-    type: "enum",
-    enum: Role,
-    default: Role.User,
-  })
-  role: Role;
+  @Column({ unique: true, nullable: true })
+  phone: string;
 
-  @Column({ type: "timestamptz", nullable: true })
-  birthday: Date;
+  @Column({ default: false })
+  hasPhoneVerify: boolean;
 
-  @Column({ type: "enum", enum: Gender, nullable: true })
+  @Column({ unique: true, nullable: true })
+  email: string;
+
+  @Column({ default: false })
+  hasEmailVerify: boolean;
+
+  @Column({ unique: true, nullable: true })
+  facebook: string;
+
+  @Column({ default: false })
+  hasFacebookVerify: boolean;
+
+  @Column({ type: "enum", enum: Gender, default: Gender.Custom })
   gender: string;
 
   @Column({ nullable: true })
-  avatar: string;
+  photo: string;
 
-  @Column({ default: false })
-  facebook: boolean;
-
-  @Column({ default: false })
-  google: boolean;
-
-  @Column({ nullable: true })
-  phone: string;
+  @Column({ type: "date", nullable: true })
+  birthday: Date;
 
   @BeforeInsert()
   async hashPassword(): Promise<void> {
@@ -63,8 +62,7 @@ export class User extends BaseEntity {
   private async hashNewPassword() {
     if (this.tempPassword !== this.password) {
       const saltOrRounds = 10;
-      const password = this.password;
-      const hashed = await bcrypt.hash(password, saltOrRounds);
+      const hashed = await bcrypt.hash(this.password, saltOrRounds);
       this.password = hashed;
     }
   }
