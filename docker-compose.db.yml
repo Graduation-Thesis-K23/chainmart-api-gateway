@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  db:
+    container_name: pg_container
+    image: postgres:15.2
+    restart: always
+    environment:
+      POSTGRES_USER: hiepnguyen6014
+      POSTGRES_PASSWORD: Dh2903
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker-db/postgres:/var/lib/postgresql/data
+      # - ./docker-db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4:6.20
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: hiepnguyen6014@admin.com
+      PGADMIN_DEFAULT_PASSWORD: Dh2903@@
+    volumes:
+      - ./docker-db/pgadmin:/var/lib/pgadmin
+      - ./docker-db:/backup # select this folder when backup database
+    ports:
+      - "5050:80"
