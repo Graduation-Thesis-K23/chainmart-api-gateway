@@ -11,6 +11,8 @@ import { FacebookDto } from "./dto/facebook.dto";
 import { GoogleDto } from "./dto/google.dto";
 import { USER_ROLE } from "./constants";
 import { UserPayload } from "../shared";
+import { CreateGoogleUserDto } from "../users/dto/create-google-user.dto";
+import { CreateFacebookUserDto } from "../users/dto/create-facebook-user.dto";
 
 @Injectable()
 export class AuthService {
@@ -35,7 +37,6 @@ export class AuthService {
 
     const payload: UserPayload = {
       username: userFound.username,
-      email: userFound.email,
       name: userFound.name,
       photo: userFound.photo,
       role: USER_ROLE,
@@ -74,7 +75,6 @@ export class AuthService {
 
     const payload: UserPayload = {
       username: newUser.username,
-      email: newUser.email,
       name: newUser.name,
       role: USER_ROLE,
     };
@@ -85,106 +85,87 @@ export class AuthService {
   }
 
   async handleFacebookLogin(user: FacebookDto): Promise<[string, UserPayload]> {
-    /* const userExist = await this.usersService.findOneByEmail(user.email);
+    const userExist = await this.usersService.findOneByFacebookId(user.id);
 
     if (!userExist) {
       const username: string = uniqueFilename("", "");
 
-      const userTemp = {
+      const facebookUser: CreateFacebookUserDto = {
         username,
-        email: user.email,
+        facebook: user.id,
         name: user.name,
-        password: Date.now().toString(),
-        facebook: true,
+        hasFacebookVerify: true,
       };
       // save user to db
-      const { email, name, role, avatar } = await this.usersService.create(userTemp);
+      const { name } = await this.usersService.createUserFromFacebookLogin(facebookUser);
 
-      const payload: Payload = {
+      const payload: UserPayload = {
         username,
-        email,
         name,
-        role,
-        avatar,
+        role: USER_ROLE,
+      };
+
+      const access_token = await this.signToken(payload);
+
+      return [access_token, payload];
+    } else {
+      const payload: UserPayload = {
+        username: userExist.username,
+        name: userExist.name,
+        role: USER_ROLE,
       };
 
       const access_token = await this.signToken(payload);
 
       return [access_token, payload];
     }
-
-    if (!userExist.facebook) {
-      userExist.facebook = true;
-    }
-
-    this.usersService.save(userExist);
-
-    const payload: Payload = {
-      username: userExist.username,
-      email: userExist.email,
-      name: userExist.name,
-      role: userExist.role,
-      avatar: userExist.avatar,
-    };
-
-    const access_token = await this.signToken(payload);
-
-    return [access_token, payload]; */
-    return ["", {} as UserPayload];
   }
 
   async handleGoogleLogin(user: GoogleDto): Promise<[string, UserPayload]> {
-    /* const userExist = await this.usersService.findOneByEmail(user.email);
+    const userExist = await this.usersService.findOneByEmail(user.email);
 
     if (!userExist) {
       const username: string = uniqueFilename("", "");
 
-      const userTemp = {
+      const googleUser: CreateGoogleUserDto = {
         username,
         email: user.email,
         name: user.name,
-        avatar: user.avatar,
-        password: Date.now().toString(),
-        google: true,
+        photo: user.photo,
+        hasEmailVerify: true,
       };
-      // save user to db
-      const { email, name, avatar, role } = await this.usersService.create(userTemp);
 
-      const payload: Payload = {
+      // save user to db
+      const { name, photo } = await this.usersService.createUserFromGoogleLogin(googleUser);
+
+      const payload: UserPayload = {
         username,
-        email,
         name,
-        avatar,
-        role,
+        photo,
+        role: USER_ROLE,
+      };
+
+      const access_token = await this.signToken(payload);
+
+      return [access_token, payload];
+    } else {
+      if (!userExist.photo) {
+        userExist.photo = user.photo;
+      }
+
+      const { username, name, photo } = await this.usersService.save(userExist);
+
+      const payload: UserPayload = {
+        username,
+        name,
+        role: USER_ROLE,
+        photo,
       };
 
       const access_token = await this.signToken(payload);
 
       return [access_token, payload];
     }
-
-    if (!userExist.google) {
-      userExist.google = true;
-    }
-
-    if (!userExist.avatar) {
-      userExist.avatar = user.avatar;
-    }
-
-    const { username, email, name, role, avatar } = await this.usersService.save(userExist);
-
-    const payload: Payload = {
-      email,
-      username,
-      name,
-      role,
-      avatar,
-    };
-
-    const access_token = await this.signToken(payload);
-
-    return [access_token, payload]; */
-    return ["", {} as UserPayload];
   }
 
   async checkUsername(username: string) {

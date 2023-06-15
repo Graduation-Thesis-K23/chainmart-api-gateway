@@ -25,7 +25,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
     const user: GoogleDto = {
       email,
       name: displayName,
-      avatar: picture,
+      photo: picture,
     };
 
     done(null, user);

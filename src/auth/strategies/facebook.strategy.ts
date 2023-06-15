@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { Profile, Strategy } from "passport-facebook";
+
 import { FacebookDto } from "../dto/facebook.dto";
 
 @Injectable()
@@ -11,9 +12,8 @@ export class FacebookStrategy extends PassportStrategy(Strategy, "facebook") {
       clientID: configService.get("OAUTH_APP_ID"),
       clientSecret: configService.get("OAUTH_APP_SECRET"),
       callbackURL: configService.get("OAUTH_CALLBACK_URL_FACEBOOK"),
-      scope: "email",
-      profileFields: ["email", "name"],
-      fbGraphVersion: "v3.2",
+      profileFields: ["displayName"],
+      fbGraphVersion: "v3.0",
     });
   }
 
@@ -27,11 +27,9 @@ export class FacebookStrategy extends PassportStrategy(Strategy, "facebook") {
       done(new Error("Not login"), null);
     }
 
-    const { name, emails = [{ value: profile.id + "@gmail.com" }] } = profile;
-
     const user: FacebookDto = {
-      email: emails[0].value,
-      name: `${name.familyName} ${name.givenName}`,
+      id: profile.id,
+      name: profile.displayName,
     };
 
     done(null, user);

@@ -10,6 +10,8 @@ import { UpdateUserDto } from "./dto/update-user.dto";
 import { User } from "./entities/user.entity";
 import { S3Service } from "../s3/s3.service";
 import { UpdateUserSettingDto } from "./dto/update-user-setting.dto";
+import { CreateGoogleUserDto } from "./dto/create-google-user.dto";
+import { CreateFacebookUserDto } from "./dto/create-facebook-user.dto";
 
 @Injectable()
 export class UsersService {
@@ -23,6 +25,31 @@ export class UsersService {
     try {
       const newUser = this.usersRepository.create(createUserDto);
       return await this.usersRepository.save(newUser);
+    } catch (error) {
+      if (isQueryFailedError(error)) {
+        if (error.code === "23505") {
+          throw new BadRequestException("Duplicate key");
+        }
+      }
+    }
+  }
+
+  async createUserFromGoogleLogin(createGoogleUserDto: CreateGoogleUserDto): Promise<User> {
+    try {
+      return await this.usersRepository.save(createGoogleUserDto);
+    } catch (error) {
+      console.log(error);
+      if (isQueryFailedError(error)) {
+        if (error.code === "23505") {
+          throw new BadRequestException("Duplicate key");
+        }
+      }
+    }
+  }
+
+  async createUserFromFacebookLogin(createFacebookUserDto: CreateFacebookUserDto): Promise<User> {
+    try {
+      return await this.usersRepository.save(createFacebookUserDto);
     } catch (error) {
       if (isQueryFailedError(error)) {
         if (error.code === "23505") {
@@ -69,6 +96,11 @@ export class UsersService {
 
   async findOneByEmail(email: string): Promise<User> {
     const user = await this.usersRepository.findOneBy({ email });
+    return user;
+  }
+
+  async findOneByFacebookId(facebook: string): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ facebook });
     return user;
   }
 

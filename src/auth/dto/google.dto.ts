@@ -12,5 +12,5 @@ export class GoogleDto {
 
   @IsNotEmpty()
   @IsString()
-  avatar: string;
+  photo: string;
 }
