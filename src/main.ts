@@ -2,6 +2,7 @@ import { RequestMethod, ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import * as cookieParser from "cookie-parser";
+import * as session from "express-session";
 
 import { AppModule } from "./app.module";
 
@@ -26,6 +27,15 @@ async function bootstrap() {
     credentials: true,
   });
   app.use(cookieParser());
+
+  app.use(
+    session({
+      secret: "my-secret",
+      resave: false,
+      saveUninitialized: false,
+    }),
+  );
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

@@ -5,14 +5,13 @@ import { Strategy, VerifyCallback } from "passport-google-oauth2";
 import { GoogleDto } from "../dto/google.dto";
 
 @Injectable()
-export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
+export class GoogleConnectStrategy extends PassportStrategy(Strategy, "google-connect") {
   constructor(private readonly configService: ConfigService) {
     super({
       clientID: configService.get("OAUTH_CLIENT_ID"),
       clientSecret: configService.get("OAUTH_CLIENT_SECRET"),
-      callbackURL: configService.get("OAUTH_CALLBACK_URL"),
+      callbackURL: configService.get("OAUTH_CONNECT_CALLBACK_URL"),
       scope: ["profile", "email"],
-      state: true,
     });
   }
 

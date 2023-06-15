@@ -23,4 +23,8 @@ export const configValidationSchema = joi.object({
   OAUTH_APP_ID: joi.string().required(),
   OAUTH_APP_SECRET: joi.string().required(),
   OAUTH_CALLBACK_URL_FACEBOOK: joi.string().required(),
+
+  MAIL_HOST: joi.string().required(),
+  MAIL_USER: joi.string().required(),
+  MAIL_PASSWORD: joi.string().required(),
 });

@@ -5,14 +5,12 @@ import * as bcrypt from "bcrypt";
 import * as uniqueFilename from "unique-filename";
 
 import { UsersService } from "../users/users.service";
-import { SignInDto } from "./dto/sign-in.dto";
-import { SignUpDto } from "./dto/sign-up.dto";
-import { FacebookDto } from "./dto/facebook.dto";
-import { GoogleDto } from "./dto/google.dto";
+import { FacebookDto, GoogleDto, SignInDto, SignUpDto } from "./dto";
 import { USER_ROLE } from "./constants";
 import { UserPayload } from "../shared";
 import { CreateGoogleUserDto } from "../users/dto/create-google-user.dto";
 import { CreateFacebookUserDto } from "../users/dto/create-facebook-user.dto";
+import accountType, { AccountType } from "src/utils/account-type";
 
 @Injectable()
 export class AuthService {
@@ -45,6 +43,22 @@ export class AuthService {
     const access_token = await this.signToken(payload);
 
     return [access_token, payload];
+  }
+
+  async getAccountsByUsername(username: string) {
+    const { facebook, hasFacebookVerify, email, hasEmailVerify } = await this.usersService.findOneByUsername(username);
+    return { facebook, hasFacebookVerify, email, hasEmailVerify, username };
+  }
+
+  async resetPassword(account: string) {
+    const type = accountType(account);
+
+    if (type === AccountType.EMAIL) {
+    } else if (type === AccountType.PHONE) {
+    } else {
+    }
+
+    return type;
   }
 
   private async signToken(payload: any): Promise<string> {
@@ -113,6 +127,7 @@ export class AuthService {
         username: userExist.username,
         name: userExist.name,
         role: USER_ROLE,
+        photo: userExist.photo,
       };
 
       const access_token = await this.signToken(payload);
@@ -149,10 +164,6 @@ export class AuthService {
 
       return [access_token, payload];
     } else {
-      if (!userExist.photo) {
-        userExist.photo = user.photo;
-      }
-
       const { username, name, photo } = await this.usersService.save(userExist);
 
       const payload: UserPayload = {

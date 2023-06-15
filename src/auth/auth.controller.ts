@@ -1,11 +1,12 @@
 import { ConfigService } from "@nestjs/config";
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Req, Res, UnauthorizedException, UseGuards } from "@nestjs/common";
 import { Request, Response } from "express";
 
 import { AuthService } from "./auth.service";
 import { FacebookOauthGuard, GoogleOauthGuard, JwtAuthGuard, UserGuard } from "./guards";
 import { FacebookDto, GoogleDto, SignInDto, SignUpDto } from "./dto";
-import { User } from "./decorators";
+import { Public, User } from "./decorators";
+import { UserPayload } from "src/shared";
 
 @Controller("auth")
 export class AuthController {
@@ -42,6 +43,12 @@ export class AuthController {
   @User()
   async checkToken(@Req() req: Request) {
     return req.user;
+  }
+
+  @Post("reset-password")
+  @Public()
+  async resetPassword(@Body("account") account: string) {
+    return await this.authService.resetPassword(account);
   }
 
   @Get("logout")
@@ -98,5 +105,18 @@ export class AuthController {
     });
 
     res.redirect(this.configService.get("CLIENT_URL"));
+  }
+
+  @Get(":username")
+  @UseGuards(JwtAuthGuard, UserGuard)
+  @User()
+  async getAccountsByUsername(@Param("username") username: string, @Req() req: Request) {
+    const user = req.user as UserPayload;
+
+    if (user.username !== username) {
+      throw new UnauthorizedException();
+    }
+
+    return await this.authService.getAccountsByUsername(username);
   }
 }

@@ -38,13 +38,17 @@ export class UsersService {
     try {
       return await this.usersRepository.save(createGoogleUserDto);
     } catch (error) {
-      console.log(error);
       if (isQueryFailedError(error)) {
         if (error.code === "23505") {
           throw new BadRequestException("Duplicate key");
         }
       }
     }
+  }
+
+  async getAccountsByUsername(username: string) {
+    const { facebook, hasFacebookVerify, email, hasEmailVerify } = await this.findOneByUsername(username);
+    return { facebook, hasFacebookVerify, email, hasEmailVerify, username };
   }
 
   async createUserFromFacebookLogin(createFacebookUserDto: CreateFacebookUserDto): Promise<User> {
