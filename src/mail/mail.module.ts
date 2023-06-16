@@ -2,10 +2,9 @@ import { Module } from "@nestjs/common";
 import { HandlebarsAdapter } from "@nestjs-modules/mailer/dist/adapters/handlebars.adapter";
 import { MailerModule } from "@nestjs-modules/mailer";
 import { join } from "path";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 import { MailService } from "./mail.service";
-import { MailController } from "./mail.controller";
-import { ConfigModule, ConfigService } from "@nestjs/config";
 
 @Module({
   imports: [
@@ -17,14 +16,13 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
           host: configService.get<string>("MAIL_HOST"),
           port: 465,
           secure: true,
-          service: "gmail",
           auth: {
             user: configService.get<string>("MAIL_USER"),
             pass: configService.get<string>("MAIL_PASSWORD"),
           },
         },
         defaults: {
-          from: "chainmart.otp@gmail.com",
+          from: configService.get<string>("MAIL_USER"),
         },
         template: {
           dir: join(__dirname, "templates"),
@@ -37,6 +35,6 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
     }),
   ],
   providers: [MailService],
-  controllers: [MailController],
+  exports: [MailService],
 })
 export class MailModule {}

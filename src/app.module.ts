@@ -15,6 +15,7 @@ import { LogsMiddleware } from "./middlewares/logger";
 import { AuthManagerModule } from "./auth-manager/auth-manager.module";
 import { AccountsModule } from "./accounts/accounts.module";
 import { MailModule } from "./mail/mail.module";
+import { PhoneServiceModule } from "./phone-service/phone-service.module";
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { MailModule } from "./mail/mail.module";
     AuthManagerModule,
     AccountsModule,
     MailModule,
+    PhoneServiceModule,
   ],
 })
 export class AppModule {
