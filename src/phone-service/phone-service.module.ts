@@ -1,9 +1,9 @@
 import { Module } from "@nestjs/common";
 
-import { PhoneServiceService } from "./phone-service.service";
+import { PhoneService } from "./phone-service.service";
 
 @Module({
-  providers: [PhoneServiceService],
-  exports: [PhoneServiceService],
+  providers: [PhoneService],
+  exports: [PhoneService],
 })
 export class PhoneServiceModule {}

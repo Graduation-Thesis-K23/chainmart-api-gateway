@@ -3,9 +3,11 @@ import * as bcrypt from "bcrypt";
 
 import { BaseEntity } from "../../common/base.entity";
 import { Gender } from "../enums/gender.enum";
+import { Exclude } from "class-transformer";
 
 @Entity("users")
 export class User extends BaseEntity {
+  @Exclude()
   private tempPassword: string;
 
   @Column()
@@ -45,10 +47,10 @@ export class User extends BaseEntity {
   birthday: Date;
 
   @Column({ nullable: true })
-  phoneOTP: string;
+  otp: string;
 
-  @Column({ type: "timestamptz", nullable: true })
-  expiryPhoneOTP: Date;
+  @Column({ type: "timestamp", nullable: true })
+  expiryOtp: Date;
 
   @BeforeInsert()
   async hashPassword(): Promise<void> {

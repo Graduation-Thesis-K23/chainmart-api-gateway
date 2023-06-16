@@ -5,12 +5,15 @@ import * as bcrypt from "bcrypt";
 import * as uniqueFilename from "unique-filename";
 
 import { UsersService } from "../users/users.service";
+import { MailService } from "../mail/mail.service";
 import { FacebookDto, GoogleDto, SignInDto, SignUpDto } from "./dto";
 import { USER_ROLE } from "./constants";
 import { UserPayload } from "../shared";
 import { CreateGoogleUserDto } from "../users/dto/create-google-user.dto";
 import { CreateFacebookUserDto } from "../users/dto/create-facebook-user.dto";
 import accountType, { AccountType } from "src/utils/account-type";
+import { PhoneService } from "../phone-service/phone-service.service";
+import generateOTP from "../utils/generate-otp";
 
 @Injectable()
 export class AuthService {
@@ -18,6 +21,8 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
+    private readonly phoneService: PhoneService,
   ) {}
 
   async validateSignIn(signInDto: SignInDto): Promise<[string, UserPayload]> {
@@ -54,11 +59,42 @@ export class AuthService {
     const type = accountType(account);
 
     if (type === AccountType.EMAIL) {
+      const userExist = await this.usersService.findOneByEmail(account);
+
+      if (!userExist) {
+        throw new BadRequestException("account.emailNotExist");
+      }
+
+      const emailOtp = generateOTP();
+
+      userExist.otp = emailOtp;
+      userExist.expiryOtp = new Date(Date.now() + 5 * 60 * 1000); // otp take effect 5 minute
+
+      await this.mailService.sendOtp(userExist.name, emailOtp, account);
+
+      await this.usersService.save(userExist);
+
+      return { message: "success" };
     } else if (type === AccountType.PHONE) {
-    } else {
+      const userExist = await this.usersService.findOneByPhone(account);
+
+      if (!userExist) {
+        throw new BadRequestException("account.phoneNotExist");
+      }
+
+      const phoneOtp = generateOTP();
+
+      userExist.otp = phoneOtp;
+      userExist.expiryOtp = new Date(Date.now() + 5 * 60 * 1000); // otp take effect 5 minute
+
+      await this.phoneService.sendOtp(account, phoneOtp);
+
+      await this.usersService.save(userExist);
+
+      return { message: "success" };
     }
 
-    return type;
+    throw new BadRequestException("account.notValid");
   }
 
   private async signToken(payload: any): Promise<string> {
@@ -66,7 +102,7 @@ export class AuthService {
       secret: this.configService.get<string>("JWT_SECRET"),
       issuer: this.configService.get<string>("JWT_ISSUER") || "http://localhost:3000/auth",
       audience: this.configService.get<string>("JWT_AUDIENCE") || "http://localhost:8080",
-      expiresIn: "1h",
+      expiresIn: "365d",
     };
 
     return this.jwtService.signAsync(payload, options);

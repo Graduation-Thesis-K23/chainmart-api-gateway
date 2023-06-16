@@ -103,6 +103,11 @@ export class UsersService {
     return user;
   }
 
+  async findOneByPhone(phone: string) {
+    const user = await this.usersRepository.findOneBy({ phone });
+    return user;
+  }
+
   async findOneByFacebookId(facebook: string): Promise<User> {
     const user = await this.usersRepository.findOneBy({ facebook });
     return user;
