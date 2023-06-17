@@ -1,13 +1,13 @@
-import { AddressService } from "./address.service";
 import { Body, Controller, Req, Post, UseGuards, Get, Delete, ParseUUIDPipe, Param } from "@nestjs/common";
 import { Request } from "express";
 
 import { CreateAddressDto } from "./dto/create-address.dto";
-import { ReqUser } from "src/common/req-user.inter";
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard";
 import { RolesGuard } from "../auth-manager/guards/role.guard";
+import { AddressService } from "./address.service";
 import { Roles } from "../auth-manager/decorators/roles.decorator";
-import { Role } from "src/users/enums/role.enum";
+import { Role } from "src/shared";
+import { ReqUser } from "src/common/req-user.inter";
 
 @Controller("address")
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -15,7 +15,7 @@ export class AddressController {
   constructor(private readonly addressService: AddressService) {}
 
   @Post()
-  @Roles(Role.User)
+  @Roles(Role.Employee)
   async create(@Body() createAddressDto: CreateAddressDto, @Req() req: Request) {
     const user = req.user as ReqUser;
 
@@ -23,7 +23,7 @@ export class AddressController {
   }
 
   @Get()
-  @Roles(Role.User)
+  @Roles(Role.Employee)
   async getAll(@Req() req: Request) {
     const user = req.user as ReqUser;
 
@@ -31,7 +31,7 @@ export class AddressController {
   }
 
   @Delete(":id")
-  @Roles(Role.User)
+  @Roles(Role.Employee)
   async delete(@Req() req: Request, @Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     const user = req.user as ReqUser;
 

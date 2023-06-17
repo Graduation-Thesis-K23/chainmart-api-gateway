@@ -17,9 +17,9 @@ import { CartsService } from "./carts.service";
 import { CreateCartDto } from "./dto/create-cart.dto";
 import { UpdateCartDto } from "./dto/update-cart.dto";
 import { Roles } from "../auth-manager/decorators/roles.decorator";
-import { Role } from "src/users/enums/role.enum";
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard";
 import { RolesGuard } from "../auth-manager/guards/role.guard";
+import { Role } from "src/shared";
 
 @Controller("carts")
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -27,13 +27,13 @@ export class CartsController {
   constructor(private readonly cartsService: CartsService) {}
 
   @Post()
-  @Roles(Role.User)
+  @Roles(Role.Employee)
   create(@Body() createCartDto: CreateCartDto) {
     return this.cartsService.create(createCartDto);
   }
 
   @Get("user/:id")
-  @Roles(Role.User)
+  @Roles(Role.Employee)
   findOneByUserId(@Query("user") userId: string) {
     return this.cartsService.findOneByUserId(userId);
   }
@@ -45,7 +45,7 @@ export class CartsController {
   }
 
   @Get(":id")
-  @Roles(Role.User)
+  @Roles(Role.Employee)
   findOne(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     return this.cartsService.findOne(id);
   }
@@ -57,7 +57,7 @@ export class CartsController {
 
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Roles(Role.Employee, Role.User)
+  @Roles(Role.Employee, Role.Employee)
   remove(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     return this.cartsService.remove(id);
   }

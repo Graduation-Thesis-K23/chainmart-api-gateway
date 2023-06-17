@@ -1,9 +1,9 @@
-import { Role } from "src/users/enums/role.enum";
+import { USER_ROLE } from "./../auth/constants";
 
 export interface ReqUser {
   username: string;
   email: string;
   name: string;
-  role: Role;
+  role: typeof USER_ROLE;
   avatar: string;
 }

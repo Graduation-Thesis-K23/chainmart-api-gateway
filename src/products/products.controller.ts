@@ -21,10 +21,10 @@ import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { Product } from "./entities/product.entity";
 import { Roles } from "../auth-manager/decorators/roles.decorator";
-import { Role } from "src/users/enums/role.enum";
-import { JwtAuthGuard } from "src/auth/guards/jwt.guard";
+import { JwtAuthGuard } from "../auth/guards/jwt.guard";
 import { RolesGuard } from "../auth-manager/guards/role.guard";
-import { Public } from "src/auth/decorators/public.decorator";
+import { Public } from "../auth/decorators/public.decorator";
+import { Role } from "src/shared";
 
 @Controller("products")
 @UseGuards(JwtAuthGuard, RolesGuard)

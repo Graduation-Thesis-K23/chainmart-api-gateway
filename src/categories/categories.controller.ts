@@ -5,7 +5,7 @@ import { CategoriesService } from "./categories.service";
 import { JwtAuthGuard } from "../auth/guards/jwt.guard";
 import { RolesGuard } from "../auth-manager/guards/role.guard";
 import { Roles } from "../auth-manager/decorators/roles.decorator";
-import { Role } from "../users/enums/role.enum";
+import { Role } from "src/shared";
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.Admin, Role.Employee)
