@@ -16,6 +16,7 @@ import { AuthManagerModule } from "./auth-manager/auth-manager.module";
 import { AccountsModule } from "./accounts/accounts.module";
 import { MailModule } from "./mail/mail.module";
 import { PhoneServiceModule } from "./phone-service/phone-service.module";
+import { EmployeeModule } from "./employee/employee.module";
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { PhoneServiceModule } from "./phone-service/phone-service.module";
     AccountsModule,
     MailModule,
     PhoneServiceModule,
+    EmployeeModule,
   ],
 })
 export class AppModule {

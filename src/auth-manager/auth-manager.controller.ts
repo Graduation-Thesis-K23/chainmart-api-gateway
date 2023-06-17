@@ -1,34 +1,34 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { AuthManagerService } from './auth-manager.service';
-import { CreateAuthManagerDto } from './dto/create-auth-manager.dto';
-import { UpdateAuthManagerDto } from './dto/update-auth-manager.dto';
+import { Controller, Post, Body, Res, UseGuards, Req } from "@nestjs/common";
+import { Response, Request } from "express";
 
-@Controller('auth-manager')
+import { AuthManagerService } from "./auth-manager.service";
+import { SignInDto } from "./dto/sign-in.dto";
+import { JwtEmployeeAuthGuard } from "./guards/jwt-employee.guards";
+import { RolesGuard } from "./guards/role.guard";
+import { Roles } from "./decorators/roles.decorator";
+import { Role } from "src/shared";
+
+@Controller("auth-manager")
 export class AuthManagerController {
   constructor(private readonly authManagerService: AuthManagerService) {}
 
-  @Post()
-  create(@Body() createAuthManagerDto: CreateAuthManagerDto) {
-    return this.authManagerService.create(createAuthManagerDto);
+  @Post("sign-in")
+  async signIn(@Body() signInDto: SignInDto, @Res({ passthrough: true }) res: Response) {
+    const [access_token, payload] = await this.authManagerService.signIn(signInDto);
+
+    res.cookie("access_token", access_token, {
+      httpOnly: true,
+      sameSite: "lax",
+      // secure: true,
+    });
+
+    res.send(payload);
   }
 
-  @Get()
-  findAll() {
-    return this.authManagerService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authManagerService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthManagerDto: UpdateAuthManagerDto) {
-    return this.authManagerService.update(+id, updateAuthManagerDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authManagerService.remove(+id);
+  @Post("check-token")
+  @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Branch, Role.Employee, Role.Manager, Role.Shipper)
+  async checkToken(@Req() req: Request) {
+    return req.user;
   }
 }

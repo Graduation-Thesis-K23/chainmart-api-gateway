@@ -22,15 +22,17 @@ import { Roles } from "../auth-manager/decorators/roles.decorator";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { Role } from "./enums/role.enum";
 import { RolesGuard } from "../auth-manager/guards/role.guard";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { UpdateUserSettingDto } from "./dto/update-user-setting.dto";
 import { ReqUser } from "src/common/req-user.inter";
 import { ChangePasswordDto } from "./dto/change-password.dto";
+import { Role } from "src/shared";
+import { UserGuard } from "src/auth/guards";
+import { User } from "src/auth/decorators";
 
 @Controller("users")
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, UserGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -46,7 +48,7 @@ export class UsersController {
     return await this.usersService.findAll();
   }
 
-  @Roles(Role.User, Role.Customer)
+  @User()
   @Get("setting")
   async getInfoUserSetting(@Req() req: Request) {
     const user = req.user as ReqUser;
@@ -59,14 +61,14 @@ export class UsersController {
     return await this.usersService.findOne(id);
   }
 
-  @Roles(Role.User)
+  @User()
   @Post("setting")
   async updateUserInfoSetting(@Req() req: Request, @Body() updateUserDto: UpdateUserSettingDto) {
     const user = req.user as ReqUser;
     return await this.usersService.updateUserInfoSetting(user.username, updateUserDto);
   }
 
-  @Roles(Role.Admin)
+  @User()
   @Patch(":id")
   async update(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
@@ -78,7 +80,7 @@ export class UsersController {
     return await this.usersService.remove(id);
   }
 
-  @Roles(Role.User, Role.Employee)
+  @User()
   @Post("change-avatar")
   @UseInterceptors(
     FileInterceptor("image", {
@@ -105,7 +107,7 @@ export class UsersController {
     return await this.usersService.changeAvatar(imgBuffer, user.username);
   }
 
-  @Roles(Role.User)
+  @Roles(Role.Employee)
   @Post("change-password")
   async changePassword(@Body() changePasswordDto: ChangePasswordDto, @Req() req: Request) {
     const user = req.user as ReqUser;

@@ -6,7 +6,7 @@ import { SuppliersService } from "./suppliers.service";
 import { JwtAuthGuard } from "../auth/guards/jwt.guard";
 import { RolesGuard } from "../auth-manager/guards/role.guard";
 import { Roles } from "../auth-manager/decorators/roles.decorator";
-import { Role } from "src/users/enums/role.enum";
+import { Role } from "src/shared";
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller("suppliers")
