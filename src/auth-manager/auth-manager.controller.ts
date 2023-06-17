@@ -7,16 +7,18 @@ import { JwtEmployeeAuthGuard } from "./guards/jwt-employee.guards";
 import { RolesGuard } from "./guards/role.guard";
 import { Roles } from "./decorators/roles.decorator";
 import { Role } from "src/shared";
+import { Public } from "src/auth/decorators";
 
 @Controller("auth-manager")
 export class AuthManagerController {
   constructor(private readonly authManagerService: AuthManagerService) {}
 
   @Post("sign-in")
-  async signIn(@Body() signInDto: SignInDto, @Res({ passthrough: true }) res: Response) {
+  @Public()
+  async signIn(@Body() signInDto: SignInDto, @Res() res: Response) {
     const [access_token, payload] = await this.authManagerService.signIn(signInDto);
 
-    res.cookie("access_token", access_token, {
+    res.cookie("access_token_manager", access_token, {
       httpOnly: true,
       sameSite: "lax",
       // secure: true,

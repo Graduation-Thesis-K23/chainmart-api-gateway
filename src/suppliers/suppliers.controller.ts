@@ -3,14 +3,14 @@ import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, UseGu
 
 import { CreateSupplierDto } from "./dto/create-supplier.dto";
 import { SuppliersService } from "./suppliers.service";
-import { JwtAuthGuard } from "../auth/guards/jwt.guard";
 import { RolesGuard } from "../auth-manager/guards/role.guard";
 import { Roles } from "../auth-manager/decorators/roles.decorator";
 import { Role } from "src/shared";
+import { JwtEmployeeAuthGuard } from "src/auth-manager/guards/jwt-employee.guards";
 
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller("suppliers")
-@Roles(Role.Admin, Role.Employee)
+@UseGuards(JwtEmployeeAuthGuard, RolesGuard)
+@Roles(Role.Admin)
 export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}
 

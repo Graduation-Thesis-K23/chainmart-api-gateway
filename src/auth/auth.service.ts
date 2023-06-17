@@ -7,7 +7,7 @@ import * as uniqueFilename from "unique-filename";
 import { UsersService } from "../users/users.service";
 import { MailService } from "../mail/mail.service";
 import { FacebookDto, GoogleDto, SignInDto, SignUpDto } from "./dto";
-import { USER_ROLE } from "./constants";
+import { USER_ROLE } from "../shared/constants";
 import { UserPayload } from "../shared";
 import { CreateGoogleUserDto } from "../users/dto/create-google-user.dto";
 import { CreateFacebookUserDto } from "../users/dto/create-facebook-user.dto";
