@@ -14,7 +14,7 @@ export class EmployeeJwtStrategy extends PassportStrategy(Strategy, "jwt-employe
       secretOrKey: configService.get<string>("JWT_EMPLOYEE_SECRET"),
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => {
-          const data = request.cookies["access_token"];
+          const data = request.cookies["access_token_manager"];
 
           return data ? data : null;
         },

@@ -1,4 +1,4 @@
-import { USER_ROLE } from "./../auth/constants";
+import { USER_ROLE } from "../shared/constants";
 
 export interface ReqUser {
   username: string;
