@@ -20,6 +20,9 @@ export class Address extends BaseEntity {
   @Column()
   phone: string;
 
+  @Column({default: false})
+  hasPhoneVerify: boolean;
+
   @Column()
   city: string;
 
@@ -31,4 +34,10 @@ export class Address extends BaseEntity {
 
   @Column()
   street: string;
+
+  @Column({ nullable: true })
+  phoneOTP: string;
+
+  @Column({ type: "timestamptz", nullable: true })
+  expiryPhoneOTP: Date;
 }

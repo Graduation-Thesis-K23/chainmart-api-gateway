@@ -1,7 +1,8 @@
-import { RequestMethod, ValidationPipe } from "@nestjs/common";
+import { ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import * as cookieParser from "cookie-parser";
+import * as session from "express-session";
 
 import { AppModule } from "./app.module";
 
@@ -13,19 +14,22 @@ async function bootstrap() {
   const clientUrl = configService.get<string>("CLIENT_URL");
   const managerUrl = configService.get<string>("MANAGER_URL");
 
-  app.setGlobalPrefix("/api", {
-    exclude: [
-      {
-        path: "s3",
-        method: RequestMethod.ALL,
-      },
-    ],
-  });
+  app.setGlobalPrefix("/api");
+
   app.enableCors({
-    origin: [clientUrl, managerUrl, "http://localhost:8080"],
+    origin: [clientUrl, managerUrl],
     credentials: true,
   });
   app.use(cookieParser());
+
+  app.use(
+    session({
+      secret: configService.get<string>("SESSION_SECRET"),
+      resave: false,
+      saveUninitialized: false,
+    }),
+  );
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

@@ -12,6 +12,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
       clientSecret: configService.get("OAUTH_CLIENT_SECRET"),
       callbackURL: configService.get("OAUTH_CALLBACK_URL"),
       scope: ["profile", "email"],
+      state: true,
     });
   }
 
@@ -25,7 +26,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
     const user: GoogleDto = {
       email,
       name: displayName,
-      avatar: picture,
+      photo: picture,
     };
 
     done(null, user);

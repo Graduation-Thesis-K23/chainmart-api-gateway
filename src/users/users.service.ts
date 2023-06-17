@@ -10,6 +10,8 @@ import { UpdateUserDto } from "./dto/update-user.dto";
 import { User } from "./entities/user.entity";
 import { S3Service } from "../s3/s3.service";
 import { UpdateUserSettingDto } from "./dto/update-user-setting.dto";
+import { CreateGoogleUserDto } from "./dto/create-google-user.dto";
+import { CreateFacebookUserDto } from "./dto/create-facebook-user.dto";
 
 @Injectable()
 export class UsersService {
@@ -23,6 +25,35 @@ export class UsersService {
     try {
       const newUser = this.usersRepository.create(createUserDto);
       return await this.usersRepository.save(newUser);
+    } catch (error) {
+      if (isQueryFailedError(error)) {
+        if (error.code === "23505") {
+          throw new BadRequestException("Duplicate key");
+        }
+      }
+    }
+  }
+
+  async createUserFromGoogleLogin(createGoogleUserDto: CreateGoogleUserDto): Promise<User> {
+    try {
+      return await this.usersRepository.save(createGoogleUserDto);
+    } catch (error) {
+      if (isQueryFailedError(error)) {
+        if (error.code === "23505") {
+          throw new BadRequestException("Duplicate key");
+        }
+      }
+    }
+  }
+
+  async getAccountsByUsername(username: string) {
+    const { facebook, hasFacebookVerify, email, hasEmailVerify } = await this.findOneByUsername(username);
+    return { facebook, hasFacebookVerify, email, hasEmailVerify, username };
+  }
+
+  async createUserFromFacebookLogin(createFacebookUserDto: CreateFacebookUserDto): Promise<User> {
+    try {
+      return await this.usersRepository.save(createFacebookUserDto);
     } catch (error) {
       if (isQueryFailedError(error)) {
         if (error.code === "23505") {
@@ -72,6 +103,16 @@ export class UsersService {
     return user;
   }
 
+  async findOneByPhone(phone: string) {
+    const user = await this.usersRepository.findOneBy({ phone });
+    return user;
+  }
+
+  async findOneByFacebookId(facebook: string): Promise<User> {
+    const user = await this.usersRepository.findOneBy({ facebook });
+    return user;
+  }
+
   async update(id: string, updateUserDto: UpdateUserDto): Promise<string> {
     if (!isUUID(id)) {
       throw new BadRequestException("Invalid ID");
@@ -111,7 +152,7 @@ export class UsersService {
     try {
       const image = await this.s3Service.uploadImageToS3(img);
       const user = await this.findOneByUsername(username);
-      user.avatar = image;
+      user.photo = image;
       await this.save(user);
       return image;
     } catch (err) {

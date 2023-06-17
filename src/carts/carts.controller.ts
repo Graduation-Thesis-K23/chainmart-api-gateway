@@ -16,10 +16,10 @@ import {
 import { CartsService } from "./carts.service";
 import { CreateCartDto } from "./dto/create-cart.dto";
 import { UpdateCartDto } from "./dto/update-cart.dto";
-import { Roles } from "src/auth/decorators/roles.decorator";
+import { Roles } from "../auth-manager/decorators/roles.decorator";
 import { Role } from "src/users/enums/role.enum";
 import { JwtAuthGuard } from "src/auth/guards/jwt.guard";
-import { RolesGuard } from "src/auth/guards/role.guard";
+import { RolesGuard } from "../auth-manager/guards/role.guard";
 
 @Controller("carts")
 @UseGuards(JwtAuthGuard, RolesGuard)
