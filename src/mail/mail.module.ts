@@ -22,7 +22,7 @@ import { MailService } from "./mail.service";
           },
         },
         defaults: {
-          from: configService.get<string>("MAIL_USER"),
+          from: `Chainmart <${configService.get<string>("MAIL_USER")}>`,
         },
         template: {
           dir: join(__dirname, "templates"),

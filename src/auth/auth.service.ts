@@ -16,6 +16,7 @@ import { PhoneService } from "../phone-service/phone-service.service";
 import generateOTP from "../utils/generate-otp";
 import { ConfirmOtp } from "./dto/confirm-otp.dto";
 import checkExpiry from "../utils/check-expiry";
+import { User } from "../users/entities/user.entity";
 
 @Injectable()
 export class AuthService {
@@ -28,16 +29,31 @@ export class AuthService {
   ) {}
 
   async validateSignIn(signInDto: SignInDto): Promise<[string, UserPayload]> {
-    const { username, password } = signInDto;
+    const { account, password } = signInDto;
 
-    const userFound = await this.usersService.findOneByUsername(username);
-    if (!userFound) {
-      throw new UnauthorizedException("Invalid username or password");
+    const type = accountType(account);
+    let userFound: User;
+
+    if (type === AccountType.EMAIL) {
+      userFound = await this.usersService.findOneByEmail(account);
+      if (!userFound) {
+        throw new UnauthorizedException("account.accountNotExist");
+      }
+    } else if (type === AccountType.PHONE) {
+      userFound = await this.usersService.findOneByPhone(account);
+      if (!userFound) {
+        throw new UnauthorizedException("account.accountNotExist");
+      }
+    } else {
+      userFound = await this.usersService.findOneByUsername(account);
+      if (!userFound) {
+        throw new UnauthorizedException("account.accountNotExist");
+      }
     }
 
     const isMatch = await bcrypt.compare(password, userFound.password);
     if (!isMatch) {
-      throw new UnauthorizedException("Invalid username or password");
+      throw new UnauthorizedException("account.invalid");
     }
 
     const payload: UserPayload = {
@@ -119,18 +135,18 @@ export class AuthService {
         const newPassword: string = uniqueFilename("", "");
         userExist.password = newPassword;
 
-        await this.usersService.save(userExist);
+        this.usersService.save(userExist);
         // send new-password to mail
-        await this.mailService.sendNewPassword(userExist.name, newPassword, account);
+        this.mailService.sendNewPassword(userExist.name, newPassword, account);
       } else {
         if (otp !== userExist.otp) {
-          throw new BadRequestException("OTP Invalid");
+          throw new BadRequestException("account.otpInvalid");
         } else {
-          throw new BadRequestException("OTP Expiry");
+          throw new BadRequestException("account.otpExpiry");
         }
       }
 
-      return;
+      return { statusCode: 200 };
     } else if (type === AccountType.PHONE) {
       const userExist = await this.usersService.findOneByPhone(account);
 
@@ -146,18 +162,18 @@ export class AuthService {
         const newPassword: string = uniqueFilename("", "");
         userExist.password = newPassword;
 
-        await this.usersService.save(userExist);
+        this.usersService.save(userExist);
         // send new-password to mail
         this.phoneService.sendPassword(account, newPassword);
       } else {
         if (otp !== userExist.otp) {
-          throw new BadRequestException("OTP Invalid");
+          throw new BadRequestException("account.otpInvalid");
         } else {
-          throw new BadRequestException("OTP Expiry");
+          throw new BadRequestException("account.otpExpiry");
         }
       }
 
-      return;
+      return { statusCode: 200 };
     }
 
     throw new BadRequestException("account.notValid");
