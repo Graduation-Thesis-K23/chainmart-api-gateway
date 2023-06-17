@@ -16,4 +16,16 @@ export class MailService {
       },
     });
   }
+
+  async sendNewPassword(name: string, password: string, receiver: string) {
+    return await this.mailerService.sendMail({
+      to: receiver,
+      subject: "Chainmart Password",
+      template: "./password",
+      context: {
+        name,
+        password,
+      },
+    });
+  }
 }

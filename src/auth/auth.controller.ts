@@ -7,6 +7,7 @@ import { FacebookOauthGuard, GoogleOauthGuard, JwtAuthGuard, UserGuard } from ".
 import { FacebookDto, GoogleDto, SignInDto, SignUpDto } from "./dto";
 import { Public, User } from "./decorators";
 import { UserPayload } from "src/shared";
+import { ConfirmOtp } from "./dto/confirm-otp.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -49,6 +50,12 @@ export class AuthController {
   @Public()
   async resetPassword(@Body("account") account: string) {
     return await this.authService.resetPassword(account);
+  }
+
+  @Post("confirm-otp")
+  @Public()
+  async confirmOtp(@Body() confirmOtp: ConfirmOtp) {
+    return await this.authService.confirmOtp(confirmOtp);
   }
 
   @Get("logout")

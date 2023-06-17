@@ -14,6 +14,8 @@ import { CreateFacebookUserDto } from "../users/dto/create-facebook-user.dto";
 import accountType, { AccountType } from "src/utils/account-type";
 import { PhoneService } from "../phone-service/phone-service.service";
 import generateOTP from "../utils/generate-otp";
+import { ConfirmOtp } from "./dto/confirm-otp.dto";
+import checkExpiry from "../utils/check-expiry";
 
 @Injectable()
 export class AuthService {
@@ -74,7 +76,7 @@ export class AuthService {
 
       await this.usersService.save(userExist);
 
-      return { message: "success" };
+      return { statusCode: 200 };
     } else if (type === AccountType.PHONE) {
       const userExist = await this.usersService.findOneByPhone(account);
 
@@ -91,7 +93,71 @@ export class AuthService {
 
       await this.usersService.save(userExist);
 
-      return { message: "success" };
+      return { statusCode: 200 };
+    }
+
+    throw new BadRequestException("account.notValid");
+  }
+
+  async confirmOtp(confirmOtp: ConfirmOtp) {
+    const { account, otp } = confirmOtp;
+
+    const type = accountType(account);
+
+    if (type === AccountType.EMAIL) {
+      const userExist = await this.usersService.findOneByEmail(account);
+
+      if (!userExist) {
+        throw new BadRequestException("account.emailNotExist");
+      }
+
+      const expiryOtpIso = new Date(userExist.expiryOtp).toISOString();
+
+      if (checkExpiry(expiryOtpIso) && otp === userExist.otp) {
+        userExist.otp = null;
+        userExist.expiryOtp = null;
+        const newPassword: string = uniqueFilename("", "");
+        userExist.password = newPassword;
+
+        await this.usersService.save(userExist);
+        // send new-password to mail
+        await this.mailService.sendNewPassword(userExist.name, newPassword, account);
+      } else {
+        if (otp !== userExist.otp) {
+          throw new BadRequestException("OTP Invalid");
+        } else {
+          throw new BadRequestException("OTP Expiry");
+        }
+      }
+
+      return;
+    } else if (type === AccountType.PHONE) {
+      const userExist = await this.usersService.findOneByPhone(account);
+
+      if (!userExist) {
+        throw new BadRequestException("account.phoneNotExist");
+      }
+
+      const expiryOtpIso = new Date(userExist.expiryOtp).toISOString();
+
+      if (expiryOtpIso && otp === userExist.otp) {
+        userExist.otp = null;
+        userExist.expiryOtp = null;
+        const newPassword: string = uniqueFilename("", "");
+        userExist.password = newPassword;
+
+        await this.usersService.save(userExist);
+        // send new-password to mail
+        this.phoneService.sendPassword(account, newPassword);
+      } else {
+        if (otp !== userExist.otp) {
+          throw new BadRequestException("OTP Invalid");
+        } else {
+          throw new BadRequestException("OTP Expiry");
+        }
+      }
+
+      return;
     }
 
     throw new BadRequestException("account.notValid");
