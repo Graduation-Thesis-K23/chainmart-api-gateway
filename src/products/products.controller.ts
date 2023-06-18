@@ -23,8 +23,8 @@ import { Product } from "./entities/product.entity";
 import { Roles } from "../auth-manager/decorators/roles.decorator";
 import { RolesGuard } from "../auth-manager/guards/role.guard";
 import { Public } from "../auth/decorators/public.decorator";
-import { Role } from "src/shared";
-import { JwtEmployeeAuthGuard } from "src/auth-manager/guards/jwt-employee.guards";
+import { Role } from "~/shared";
+import { JwtEmployeeAuthGuard } from "~/auth-manager/guards/jwt-employee.guards";
 
 @Controller("products")
 export class ProductsController {

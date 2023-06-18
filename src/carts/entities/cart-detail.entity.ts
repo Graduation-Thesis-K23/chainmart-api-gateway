@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 
-import { Product } from "src/products/entities/product.entity";
+import { Product } from "~/products/entities/product.entity";
 import { Cart } from "./cart.entity";
 
 // Resources:

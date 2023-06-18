@@ -5,7 +5,7 @@ import { In, Repository } from "typeorm";
 import { CreateCartDto } from "./dto/create-cart.dto";
 import { UpdateCartDto } from "./dto/update-cart.dto";
 import { Cart } from "./entities/cart.entity";
-import { User } from "src/users/entities/user.entity";
+import { User } from "~/users/entities/user.entity";
 
 @Injectable()
 export class CartsService {

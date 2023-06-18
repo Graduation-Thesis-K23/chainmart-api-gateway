@@ -6,8 +6,8 @@ import { SignInDto } from "./dto/sign-in.dto";
 import { JwtEmployeeAuthGuard } from "./guards/jwt-employee.guards";
 import { RolesGuard } from "./guards/role.guard";
 import { Roles } from "./decorators/roles.decorator";
-import { Role } from "src/shared";
-import { Public } from "src/auth/decorators";
+import { Role } from "~/shared";
+import { Public } from "~/auth/decorators";
 
 @Controller("auth-manager")
 export class AuthManagerController {

@@ -2,7 +2,7 @@ import { Check, Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm
 
 import { BaseEntity } from "../../common/base.entity";
 import { Supplier } from "../../suppliers/entities/supplier.entity";
-import { CartDetail } from "src/carts/entities/cart-detail.entity";
+import { CartDetail } from "~/carts/entities/cart-detail.entity";
 
 @Entity("products")
 @Check('"price" > 0')

@@ -17,9 +17,9 @@ import { CartsService } from "./carts.service";
 import { CreateCartDto } from "./dto/create-cart.dto";
 import { UpdateCartDto } from "./dto/update-cart.dto";
 import { Roles } from "../auth-manager/decorators/roles.decorator";
-import { JwtAuthGuard } from "src/auth/guards/jwt.guard";
+import { JwtAuthGuard } from "~/auth/guards/jwt.guard";
 import { RolesGuard } from "../auth-manager/guards/role.guard";
-import { Role } from "src/shared";
+import { Role } from "~/shared";
 
 @Controller("carts")
 @UseGuards(JwtAuthGuard, RolesGuard)

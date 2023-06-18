@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { Role } from "src/shared";
+import { Role } from "~/shared";
 
 export class CreateEmployeeDto {
   @IsString()

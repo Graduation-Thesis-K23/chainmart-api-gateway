@@ -6,7 +6,7 @@ import { AuthService } from "./auth.service";
 import { FacebookOauthGuard, GoogleOauthGuard, JwtAuthGuard, UserGuard } from "./guards";
 import { FacebookDto, GoogleDto, SignInDto, SignUpDto } from "./dto";
 import { Public, User } from "./decorators";
-import { UserPayload } from "src/shared";
+import { UserPayload } from "~/shared";
 import { ConfirmOtp } from "./dto/confirm-otp.dto";
 
 @Controller("auth")

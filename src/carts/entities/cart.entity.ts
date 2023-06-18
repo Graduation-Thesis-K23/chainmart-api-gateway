@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm";
 
-import { BaseEntity } from "src/common/base.entity";
-import { User } from "src/users/entities/user.entity";
+import { BaseEntity } from "~/common/base.entity";
+import { User } from "~/users/entities/user.entity";
 import { CartDetail } from "./cart-detail.entity";
 
 @Entity("carts")
