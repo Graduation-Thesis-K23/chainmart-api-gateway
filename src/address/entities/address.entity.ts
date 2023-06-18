@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 
 import { BaseEntity } from "../../common/base.entity";
-import { User } from "src/users/entities/user.entity";
+import { User } from "~/users/entities/user.entity";
 
 @Entity("address")
 export class Address extends BaseEntity {

@@ -21,18 +21,18 @@ import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { Product } from "./entities/product.entity";
 import { Roles } from "../auth-manager/decorators/roles.decorator";
-import { JwtAuthGuard } from "../auth/guards/jwt.guard";
 import { RolesGuard } from "../auth-manager/guards/role.guard";
 import { Public } from "../auth/decorators/public.decorator";
 import { Role } from "src/shared";
+import { JwtEmployeeAuthGuard } from "src/auth-manager/guards/jwt-employee.guards";
 
 @Controller("products")
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
-  @Roles(Role.Admin, Role.Employee)
+  @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   @UseInterceptors(
     FilesInterceptor("images", 10, {
       // dest: "./images",

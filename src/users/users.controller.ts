@@ -25,11 +25,11 @@ import { UpdateUserDto } from "./dto/update-user.dto";
 import { RolesGuard } from "../auth-manager/guards/role.guard";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { UpdateUserSettingDto } from "./dto/update-user-setting.dto";
-import { ReqUser } from "src/common/req-user.inter";
+import { ReqUser } from "~/common/req-user.inter";
 import { ChangePasswordDto } from "./dto/change-password.dto";
-import { Role } from "src/shared";
-import { UserGuard } from "src/auth/guards";
-import { User } from "src/auth/decorators";
+import { Role } from "~/shared";
+import { UserGuard } from "~/auth/guards";
+import { User } from "~/auth/decorators";
 
 @Controller("users")
 @UseGuards(JwtAuthGuard, RolesGuard, UserGuard)
