@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res, UseGuards, Req } from "@nestjs/common";
+import { Controller, Post, Body, Res, UseGuards, Req, Get } from "@nestjs/common";
 import { Response, Request } from "express";
 
 import { AuthManagerService } from "./auth-manager.service";
@@ -32,5 +32,12 @@ export class AuthManagerController {
   @Roles(Role.Admin, Role.Branch, Role.Employee, Role.Manager, Role.Shipper)
   async checkToken(@Req() req: Request) {
     return req.user;
+  }
+
+  @Get("logout")
+  @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
+  @Roles(Role.Admin, Role.Branch, Role.Employee, Role.Manager, Role.Shipper)
+  async logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie("access_token_manager").send();
   }
 }

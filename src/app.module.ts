@@ -5,7 +5,6 @@ import { configValidationSchema } from "./config/validate-env";
 import { DatabaseModule } from "./database/database.module";
 import { UsersModule } from "./users/users.module";
 import { AuthModule } from "./auth/auth.module";
-import { CategoriesModule } from "./categories/categories.module";
 import { SuppliersModule } from "./suppliers/suppliers.module";
 import { ProductsModule } from "./products/products.module";
 import { S3Module } from "./s3/s3.module";
@@ -17,6 +16,7 @@ import { AccountsModule } from "./accounts/accounts.module";
 import { MailModule } from "./mail/mail.module";
 import { PhoneServiceModule } from "./phone-service/phone-service.module";
 import { EmployeeModule } from "./employee/employee.module";
+import { BranchModule } from "./branch/branch.module";
 
 @Module({
   imports: [
@@ -28,7 +28,6 @@ import { EmployeeModule } from "./employee/employee.module";
     DatabaseModule,
     UsersModule,
     AuthModule,
-    CategoriesModule,
     SuppliersModule,
     ProductsModule,
     S3Module,
@@ -39,7 +38,9 @@ import { EmployeeModule } from "./employee/employee.module";
     MailModule,
     PhoneServiceModule,
     EmployeeModule,
+    BranchModule,
   ],
+  exports: [ConfigModule],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

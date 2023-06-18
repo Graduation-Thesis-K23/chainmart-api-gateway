@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsDateString, IsJSON, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
+import { IsDateString, IsJSON, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Max, Min } from "class-validator";
 
 export class CreateProductDto {
   @IsString()
@@ -10,31 +10,21 @@ export class CreateProductDto {
   @IsNotEmpty()
   supplier: string;
 
-  @IsUUID(4)
+  @IsString()
   @IsNotEmpty()
   category: string;
 
   @IsNumber()
   @Min(0)
   @Type(() => Number)
-  quantity: number;
+  price: number;
 
   @IsNumber()
   @Min(0)
-  @Type(() => Number)
-  price: number;
-
-  @IsDateString({ strict: true })
-  expiry_date: string;
-
-  @IsNumber()
+  @Max(100)
   @IsOptional()
   @Type(() => Number)
-  sale: number;
-
-  @IsJSON()
-  @IsNotEmpty()
-  options: string;
+  sale?: number;
 
   @IsJSON()
   @IsNotEmpty()

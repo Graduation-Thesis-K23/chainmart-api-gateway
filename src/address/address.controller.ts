@@ -2,13 +2,13 @@ import { Body, Controller, Req, Post, UseGuards, Get, Delete, ParseUUIDPipe, Par
 import { Request } from "express";
 
 import { CreateAddressDto } from "./dto/create-address.dto";
-import { JwtAuthGuard } from "src/auth/guards/jwt.guard";
+import { JwtAuthGuard } from "~/auth/guards/jwt.guard";
 import { AddressService } from "./address.service";
 import { Roles } from "../auth-manager/decorators/roles.decorator";
-import { Role } from "src/shared";
-import { ReqUser } from "src/common/req-user.inter";
-import { UserGuard } from "src/auth/guards";
-import { User } from "src/auth/decorators";
+import { Role } from "~/shared";
+import { ReqUser } from "~/common/req-user.inter";
+import { UserGuard } from "~/auth/guards";
+import { User } from "~/auth/decorators";
 
 @Controller("address")
 @UseGuards(JwtAuthGuard, UserGuard)

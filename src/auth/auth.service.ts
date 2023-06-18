@@ -11,7 +11,7 @@ import { USER_ROLE } from "../shared/constants";
 import { UserPayload } from "../shared";
 import { CreateGoogleUserDto } from "../users/dto/create-google-user.dto";
 import { CreateFacebookUserDto } from "../users/dto/create-facebook-user.dto";
-import accountType, { AccountType } from "src/utils/account-type";
+import accountType, { AccountType } from "~/utils/account-type";
 import { PhoneService } from "../phone-service/phone-service.service";
 import generateOTP from "../utils/generate-otp";
 import { ConfirmOtp } from "./dto/confirm-otp.dto";

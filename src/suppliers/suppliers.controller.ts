@@ -5,8 +5,8 @@ import { CreateSupplierDto } from "./dto/create-supplier.dto";
 import { SuppliersService } from "./suppliers.service";
 import { RolesGuard } from "../auth-manager/guards/role.guard";
 import { Roles } from "../auth-manager/decorators/roles.decorator";
-import { Role } from "src/shared";
-import { JwtEmployeeAuthGuard } from "src/auth-manager/guards/jwt-employee.guards";
+import { Role } from "~/shared";
+import { JwtEmployeeAuthGuard } from "~/auth-manager/guards/jwt-employee.guards";
 
 @Controller("suppliers")
 @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
