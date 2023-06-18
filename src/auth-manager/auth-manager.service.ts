@@ -4,7 +4,7 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 
 import { SignInDto } from "./dto/sign-in.dto";
-import { EmployeePayload } from "src/shared";
+import { EmployeePayload } from "~/shared";
 import { EmployeeService } from "./../employee/employee.service";
 
 @Injectable()

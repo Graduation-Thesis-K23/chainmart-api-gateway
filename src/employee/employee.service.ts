@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 
-import { S3Service } from "src/s3/s3.service";
+import { S3Service } from "~/s3/s3.service";
 import { Employee } from "./entities/employee.entity";
 import { CreateEmployeeDto } from "./dto/create-employee.dto";
 
