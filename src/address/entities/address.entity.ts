@@ -20,7 +20,7 @@ export class Address extends BaseEntity {
   @Column()
   phone: string;
 
-  @Column({default: false})
+  @Column({ default: false })
   hasPhoneVerify: boolean;
 
   @Column()

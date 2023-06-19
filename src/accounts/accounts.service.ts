@@ -15,6 +15,4 @@ export class AccountsService {
   async handleGoogleLogin(user: GoogleDto) {
     console.log(user);
   }
-
-
 }
