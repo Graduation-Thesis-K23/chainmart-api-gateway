@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsString } from "class-validator";
 
 export class CreateBranchDto {
   @IsString()
@@ -24,4 +24,8 @@ export class CreateBranchDto {
   @IsString()
   @IsNotEmpty()
   phone: string;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  active: boolean;
 }

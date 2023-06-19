@@ -59,19 +59,21 @@ export class BranchService {
   }
 
   async update(id: string, updateBranchDto: UpdateBranchDto) {
-    const product = await this.branchRepository.findOne({ where: { id } });
+    const branch = await this.branchRepository.findOne({ where: { id } });
 
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
+    if (!branch) {
+      throw new NotFoundException(`branch with ID ${id} not found`);
     }
 
-    const newProduct = {
-      ...product,
+    const newBranch = {
+      ...branch,
       ...updateBranchDto,
     };
 
+    console.log(newBranch);
+
     try {
-      return await this.branchRepository.save(newProduct);
+      return await this.branchRepository.save(newBranch);
     } catch (error) {
       throw new BadRequestException(error.code);
     }
