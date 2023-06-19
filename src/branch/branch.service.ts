@@ -1,26 +1,94 @@
-import { Injectable } from '@nestjs/common';
-import { CreateBranchDto } from './dto/create-branch.dto';
-import { UpdateBranchDto } from './dto/update-branch.dto';
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+
+import { CreateBranchDto } from "./dto/create-branch.dto";
+import { UpdateBranchDto } from "./dto/update-branch.dto";
+import { Branch } from "./entities/branch.entity";
 
 @Injectable()
 export class BranchService {
-  create(createBranchDto: CreateBranchDto) {
-    return 'This action adds a new branch';
+  constructor(@InjectRepository(Branch) private readonly branchRepository: Repository<Branch>) {}
+
+  async create(createBranchDto: CreateBranchDto): Promise<Branch> {
+    return await this.branchRepository.save(createBranchDto);
   }
 
-  findAll() {
-    return `This action returns all branch`;
+  async findAll(): Promise<Branch[]> {
+    return await this.branchRepository.createQueryBuilder("branch").take(30).getMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} branch`;
+  async findOne(id: string): Promise<Branch> {
+    try {
+      return this.branchRepository.findOne({
+        where: {
+          id,
+        },
+      });
+    } catch (error) {
+      throw new BadRequestException(`Cannot find branch with id(${id})`);
+    }
   }
 
-  update(id: number, updateBranchDto: UpdateBranchDto) {
-    return `This action updates a #${id} branch`;
+  async disable(id: string) {
+    try {
+      const branch = await this.branchRepository.findOne({
+        where: {
+          id,
+        },
+      });
+      branch.active = false;
+      return await this.branchRepository.save(branch);
+    } catch (error) {
+      throw new BadRequestException(`Cannot find branch with id(${id})`);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} branch`;
+  async enable(id: string) {
+    try {
+      const branch = await this.branchRepository.findOne({
+        where: {
+          id,
+        },
+      });
+      branch.active = true;
+      return await this.branchRepository.save(branch);
+    } catch (error) {
+      throw new BadRequestException(`Cannot find branch with id(${id})`);
+    }
+  }
+
+  async update(id: string, updateBranchDto: UpdateBranchDto) {
+    const product = await this.branchRepository.findOne({ where: { id } });
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+
+    const newProduct = {
+      ...product,
+      ...updateBranchDto,
+    };
+
+    try {
+      return await this.branchRepository.save(newProduct);
+    } catch (error) {
+      throw new BadRequestException(error.code);
+    }
+  }
+
+  async remove(id: string) {
+    try {
+      const result = await this.branchRepository.softDelete(id);
+
+      if (result.affected === 0) {
+        throw new BadRequestException(`branch with id(${id}) not found`);
+      }
+
+      return `branch with id(${id}) have been deleted`;
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(`Cannot delete branch with id(${id})`);
+    }
   }
 }
