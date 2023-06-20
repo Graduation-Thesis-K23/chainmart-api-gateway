@@ -1,17 +1,14 @@
 import { Column, Entity, BeforeInsert, AfterLoad, BeforeUpdate } from "typeorm";
 import * as bcrypt from "bcrypt";
+import { Exclude } from "class-transformer";
 
 import { BaseEntity } from "../../common/base.entity";
 import { Role } from "../../shared";
-import { Exclude } from "class-transformer";
 
 @Entity("employees")
 export class Employee extends BaseEntity {
   @Column()
   name: string;
-
-  @Column({ nullable: true })
-  title: string;
 
   @Column()
   branchId: string;
@@ -21,9 +18,6 @@ export class Employee extends BaseEntity {
 
   @Column()
   password: string;
-
-  @Column({ nullable: true })
-  photo: string;
 
   @Column({ type: "enum", default: Role.Employee, enum: Role, nullable: false })
   role: Role;

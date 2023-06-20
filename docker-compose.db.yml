@@ -5,8 +5,8 @@ services:
     image: postgres:15.2
     restart: always
     environment:
-      POSTGRES_USER: hiepnguyen6014
-      POSTGRES_PASSWORD: Dh2903
+      POSTGRES_USER: chainmart
+      POSTGRES_PASSWORD: Chainmart123@@
     ports:
       - "5432:5432"
     volumes:
@@ -18,10 +18,9 @@ services:
     image: dpage/pgadmin4:6.20
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: hiepnguyen6014@admin.com
-      PGADMIN_DEFAULT_PASSWORD: Dh2903@@
+      PGADMIN_DEFAULT_EMAIL: chainmart@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: Chainmart123@@
     volumes:
       - ./docker-db/pgadmin:/var/lib/pgadmin
-      - ./docker-db:/backup # select this folder when backup database
     ports:
-      - "5050:80"
+      - "10001:80"

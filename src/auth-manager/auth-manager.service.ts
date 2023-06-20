@@ -31,7 +31,6 @@ export class AuthManagerService {
     const payload: EmployeePayload = {
       phone: employeeFound.phone,
       name: employeeFound.name,
-      photo: employeeFound.photo,
       role: employeeFound.role,
     };
 
