@@ -72,7 +72,11 @@ export class EmployeeService {
   }
 
   async update(id: string, updateEmployeeDto: UpdateEmployeeDto) {
-    const employeeExist = this.getOne(id);
+    const employeeExist = await this.getOne(id);
+
+    if (!employeeExist) {
+      throw new BadRequestException("Employee not exist");
+    }
 
     const newEmployee = {
       ...employeeExist,

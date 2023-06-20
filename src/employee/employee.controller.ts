@@ -48,7 +48,7 @@ export class EmployeeController {
     return await this.employeeService.getAll(role);
   }
 
-  @Patch("update-manager")
+  @Patch(":id/update-manager")
   @Roles(Role.Admin)
   async update(
     @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
