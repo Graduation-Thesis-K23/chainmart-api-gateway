@@ -28,11 +28,15 @@ export class EmployeeService {
   }
 
   async createManager(createManagerDto: CreateManagerDto) {
+    console.log(createManagerDto);
+
     const newManager = this.employeeRepository.create({
       ...createManagerDto,
       password: "Chainmart123@@",
       role: Role.Manager,
     });
+
+    console.log(newManager);
 
     return this.employeeRepository.save(newManager);
   }
@@ -48,10 +52,13 @@ export class EmployeeService {
   }
 
   async getAll(role: Role) {
+    /* 
+      role = ADMIN select all role
+    */
     if (role === Role.Admin) {
       return await this.employeeRepository.find({
         take: 15,
-        select: ["branchId", "role", "id", "created_at", "name", "phone"],
+        select: ["role", "id", "created_at", "name", "phone", "branchId"],
       });
     } else {
       return await this.employeeRepository.find({
@@ -59,7 +66,7 @@ export class EmployeeService {
         where: {
           role,
         },
-        select: ["branchId", "role", "id", "created_at", "name", "phone"],
+        select: ["role", "id", "created_at", "name", "phone", "branchId"],
       });
     }
   }
