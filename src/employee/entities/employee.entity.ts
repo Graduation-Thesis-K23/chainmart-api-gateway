@@ -24,6 +24,9 @@ export class Employee extends BaseEntity {
   @Column({ type: "enum", default: Role.Employee, enum: Role, nullable: false })
   role: Role;
 
+  @Column({ default: true })
+  isActive: boolean;
+
   @Exclude()
   private tempPassword: string;
 

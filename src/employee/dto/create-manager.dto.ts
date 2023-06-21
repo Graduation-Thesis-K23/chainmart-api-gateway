@@ -1,4 +1,8 @@
-import { OmitType } from "@nestjs/mapped-types";
+import { IsNotEmpty, IsUUID } from "class-validator";
 import { CreateEmployeeDto } from "./create-employee.dto";
 
-export class CreateManagerDto extends OmitType(CreateEmployeeDto, ["role", "password"]) {}
+export class CreateManagerDto extends CreateEmployeeDto {
+  @IsUUID()
+  @IsNotEmpty()
+  branchId: string;
+}
