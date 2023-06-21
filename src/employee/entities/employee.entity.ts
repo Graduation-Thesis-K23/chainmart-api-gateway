@@ -1,4 +1,4 @@
-import { Column, Entity, BeforeInsert, AfterLoad, BeforeUpdate, ManyToOne } from "typeorm";
+import { Column, Entity, BeforeInsert, AfterLoad, BeforeUpdate, ManyToOne, JoinColumn } from "typeorm";
 import * as bcrypt from "bcrypt";
 import { Exclude } from "class-transformer";
 
@@ -8,12 +8,18 @@ import { Branch } from "~/branch/entities/branch.entity";
 
 @Entity("employees")
 export class Employee extends BaseEntity {
+  constructor(partial: Partial<Employee>) {
+    super();
+    Object.assign(this, partial);
+  }
+
   @Column()
   name: string;
 
   @ManyToOne(() => Branch, (branch) => branch.id, { eager: true })
   @Column()
-  branchId: string;
+  @JoinColumn({ name: "branchId", referencedColumnName: "id" })
+  branchId: Branch;
 
   @Column({ unique: true })
   phone: string;

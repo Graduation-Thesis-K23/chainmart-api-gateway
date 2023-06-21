@@ -10,6 +10,7 @@ import {
   Query,
   ParseEnumPipe,
   Req,
+  BadRequestException,
 } from "@nestjs/common";
 import { Request } from "express";
 
@@ -52,7 +53,11 @@ export class EmployeeController {
   @Post("create-manager")
   @Roles(Role.Admin)
   async createManager(@Body() createManagerDto: CreateManagerDto) {
-    return await this.employeeService.createManager(createManagerDto);
+    try {
+      return await this.employeeService.createManager(createManagerDto);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
   @Get("manager")

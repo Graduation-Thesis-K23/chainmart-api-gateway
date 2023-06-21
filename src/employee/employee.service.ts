@@ -6,6 +6,7 @@ import { S3Service } from "~/s3/s3.service";
 import { Employee } from "./entities/employee.entity";
 import { CreateEmployeeDto } from "./dto/create-employee.dto";
 import { CreateManagerDto } from "./dto/create-manager.dto";
+import { BranchService } from "./../branch/branch.service";
 import { Role } from "~/shared";
 import { UpdateEmployeeDto } from "./dto/update-employee.dto";
 import { Branch } from "~/branch/entities/branch.entity";
@@ -15,6 +16,7 @@ export class EmployeeService {
   constructor(
     @InjectRepository(Employee)
     private readonly employeeRepository: Repository<Employee>,
+    private readonly branchService: BranchService,
     private readonly s3Service: S3Service,
   ) {}
 
@@ -32,30 +34,66 @@ export class EmployeeService {
 
     const branch: Branch = await this.getBranchIdByEmployeePhone(phone);
 
-    const employee = this.employeeRepository.create({
+    const employee = new Employee({
       ...createEmployeeDto,
       password: "Chainmart123@@",
       role: Role.Employee,
-      branchId: branch.id,
+      branchId: branch,
     });
 
-    return await this.employeeRepository.save(employee);
+    const { name, id, phone: employeePhone, role, isActive, created_at } = await this.employeeRepository.save(employee);
+
+    return {
+      id,
+      name,
+      phone: employeePhone,
+      role,
+      created_at,
+      branchId: {
+        id: branch.id,
+        name: branch.name,
+      },
+      isActive,
+    };
   }
 
   async createManager(createManagerDto: CreateManagerDto) {
-    const newManager = this.employeeRepository.create({
+    // check employee exist
+    const employeeExist = await this.findOneByPhone(createManagerDto.phone);
+
+    if (employeeExist) {
+      throw new BadRequestException(`Employee with ${createManagerDto.phone} phone number already exist`);
+    }
+
+    const branch = await this.branchService.findOne(createManagerDto.branchId);
+
+    const employee = new Employee({
       ...createManagerDto,
-      password: "Chainmart123@@",
       role: Role.Manager,
+      password: "Chainmart123@@",
+      branchId: branch,
     });
 
-    return await this.employeeRepository.save(newManager);
+    const { name, id, phone, role, isActive, created_at } = await this.employeeRepository.save(employee);
+
+    return {
+      id,
+      name,
+      phone,
+      role,
+      created_at,
+      branchId: {
+        id: branch.id,
+        name: branch.name,
+      },
+      isActive,
+    };
   }
 
   async disableEmployee(phone: string, id: string) {
     const branch: Branch = await this.getBranchIdByEmployeePhone(phone);
 
-    const employee = await this.employeeRepository.findOneBy({ id, branchId: branch.id });
+    const employee = await this.employeeRepository.findOneBy({ id, branchId: branch });
 
     if (!employee) {
       throw new BadRequestException(`Employee with branch ${branch.id} and id ${id} not exist`);
@@ -69,7 +107,7 @@ export class EmployeeService {
   async resetPasswordEmployee(phone: string, id: string) {
     const branch: Branch = await this.getBranchIdByEmployeePhone(phone);
 
-    const employee = await this.employeeRepository.findOneBy({ id, branchId: branch.id });
+    const employee = await this.employeeRepository.findOneBy({ id, branchId: branch });
 
     if (!employee) {
       throw new BadRequestException(`Employee with branch ${branch.id} and id ${id} not exist`);
@@ -91,7 +129,21 @@ export class EmployeeService {
   }
 
   async getOne(id: string) {
-    const employee = await this.employeeRepository.findOneBy({ id });
+    const employee = await this.employeeRepository
+      .createQueryBuilder("employee")
+      .where("employee.id = :id", { id })
+      .select([
+        "employee.id",
+        "employee.name",
+        "employee.phone",
+        "employee.created_at",
+        "employee.isActive",
+        "employee.role",
+        "branch.name",
+        "branch.id",
+      ])
+      .leftJoin("employee.branchId", "branch")
+      .getOne();
 
     if (!employee) {
       throw new BadRequestException("Employee not exist");
@@ -105,33 +157,60 @@ export class EmployeeService {
       role = ADMIN select all role
     */
     if (role === Role.Admin) {
-      return await this.employeeRepository.find({
-        take: 15,
-        select: ["role", "id", "created_at", "name", "phone", "branchId"],
-      });
+      return await this.employeeRepository
+        .createQueryBuilder("employee")
+        .select([
+          "employee.id",
+          "employee.name",
+          "employee.phone",
+          "employee.created_at",
+          "employee.isActive",
+          "employee.role",
+          "branch.name",
+          "branch.id",
+        ])
+        .leftJoin("employee.branchId", "branch")
+        .take(15)
+        .getMany();
     } else {
-      return await this.employeeRepository.find({
-        take: 15,
-        where: {
-          role,
-        },
-        select: ["role", "id", "created_at", "name", "phone", "branchId"],
-      });
+      return await this.employeeRepository
+        .createQueryBuilder("employee")
+        .where("employee.role = :role", { role })
+        .select([
+          "employee.id",
+          "employee.name",
+          "employee.phone",
+          "employee.created_at",
+          "employee.isActive",
+          "employee.role",
+          "branch.name",
+          "branch.id",
+        ])
+        .leftJoin("employee.branchId", "branch")
+        .take(15)
+        .getMany();
     }
   }
 
   async getAllEmployee(phone: string) {
     const branch: Branch = await this.getBranchIdByEmployeePhone(phone);
 
-    return await this.employeeRepository.find({
-      take: 15,
-      where: {
-        branchId: branch.id,
-        role: Role.Employee,
-      },
-      select: ["role", "id", "created_at", "name", "phone", "branchId"],
-      relations: ["branchId"],
-    });
+    return await this.employeeRepository
+      .createQueryBuilder("employee")
+      .where("employee.branchId = :branchId", { branchId: branch.id })
+      .select([
+        "employee.id",
+        "employee.name",
+        "employee.phone",
+        "employee.created_at",
+        "employee.isActive",
+        "employee.role",
+        "branch.name",
+        "branch.id",
+      ])
+      .leftJoin("employee.branchId", "branch")
+      .take(15)
+      .getMany();
   }
 
   async update(id: string, updateEmployeeDto: UpdateEmployeeDto) {
