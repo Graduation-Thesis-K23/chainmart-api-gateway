@@ -29,7 +29,7 @@ export class EmployeeService {
     const employeeExist = await this.findOneByPhone(createEmployeeDto.phone);
 
     if (employeeExist) {
-      throw new BadRequestException(`Employee with ${phone} phone number already exist`);
+      throw new BadRequestException(`Employee with ${createEmployeeDto.phone} phone number already exist`);
     }
 
     const branch: Branch = await this.getBranchIdByEmployeePhone(phone);
@@ -146,7 +146,7 @@ export class EmployeeService {
       .getOne();
 
     if (!employee) {
-      throw new BadRequestException("Employee not exist");
+      throw new BadRequestException(`Employee with id ${id} not exist`);
     }
 
     return employee;
@@ -198,6 +198,7 @@ export class EmployeeService {
     return await this.employeeRepository
       .createQueryBuilder("employee")
       .where("employee.branchId = :branchId", { branchId: branch.id })
+      .andWhere("employee.role = :role", { role: Role.Employee })
       .select([
         "employee.id",
         "employee.name",

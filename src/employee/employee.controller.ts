@@ -1,3 +1,4 @@
+import { ErrorsService } from "./../errors/errors.service";
 import {
   Body,
   Controller,
@@ -11,6 +12,7 @@ import {
   ParseEnumPipe,
   Req,
   BadRequestException,
+  BadGatewayException,
 } from "@nestjs/common";
 import { Request } from "express";
 
@@ -26,28 +28,40 @@ import { UpdateEmployeeDto } from "./dto/update-employee.dto";
 @Controller("employee")
 @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
 export class EmployeeController {
-  constructor(private readonly employeeService: EmployeeService) {}
+  constructor(private readonly employeeService: EmployeeService, private readonly errorsService: ErrorsService) {}
 
   @Post("create-employee")
   @Roles(Role.Manager)
   async createEmployee(@Body() createEmployeeDto: CreateEmployeeDto, @Req() req: Request) {
-    const { phone } = req.user as EmployeePayload;
-    return await this.employeeService.createEmployee(phone, createEmployeeDto);
+    try {
+      const { phone } = req.user as EmployeePayload;
+      return await this.employeeService.createEmployee(phone, createEmployeeDto);
+    } catch (error) {
+      await this.errorsService.save(error.response);
+    }
   }
 
   @Get("disable-employee/:id")
   @Roles(Role.Manager)
   async disableEmployee(@Req() req: Request, @Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
-    const { phone } = req.user as EmployeePayload;
-    return await this.employeeService.disableEmployee(phone, id);
+    try {
+      const { phone } = req.user as EmployeePayload;
+      return await this.employeeService.disableEmployee(phone, id);
+    } catch (error) {
+      await this.errorsService.save(error.response);
+    }
   }
 
   // reset password employee use by manager
   @Get("reset-password-manager/:id")
   @Roles(Role.Manager)
   async resetPasswordEmployee(@Req() req: Request, @Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
-    const { phone } = req.user as EmployeePayload;
-    return await this.employeeService.resetPasswordEmployee(phone, id);
+    try {
+      const { phone } = req.user as EmployeePayload;
+      return await this.employeeService.resetPasswordEmployee(phone, id);
+    } catch (error) {
+      await this.errorsService.save(error.response);
+    }
   }
 
   @Post("create-manager")
@@ -56,28 +70,39 @@ export class EmployeeController {
     try {
       return await this.employeeService.createManager(createManagerDto);
     } catch (error) {
-      throw new BadRequestException(error.message);
+      await this.errorsService.save(error.response);
     }
   }
 
   @Get("manager")
   @Roles(Role.Manager)
   async getAllEmployee(@Req() req: Request) {
-    const { phone } = req.user as EmployeePayload;
-
-    return await this.employeeService.getAllEmployee(phone);
+    try {
+      const { phone } = req.user as EmployeePayload;
+      return await this.employeeService.getAllEmployee(phone);
+    } catch (error) {
+      await this.errorsService.save(error.response);
+    }
   }
 
   @Get(":id")
   @Roles(Role.Admin)
   async getOne(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
-    return await this.employeeService.getOne(id);
+    try {
+      return await this.employeeService.getOne(id);
+    } catch (error) {
+      await this.errorsService.save(error.response);
+    }
   }
 
   @Get()
   @Roles(Role.Admin)
   async getAll(@Query("role", new ParseEnumPipe(Role)) role: Role) {
-    return await this.employeeService.getAll(role);
+    try {
+      return await this.employeeService.getAll(role);
+    } catch (error) {
+      await this.errorsService.save(error.response);
+    }
   }
 
   @Patch(":id/update-manager")
@@ -86,6 +111,10 @@ export class EmployeeController {
     @Param("id", new ParseUUIDPipe({ version: "4" })) id: string,
     @Body() updateEmployeeDto: UpdateEmployeeDto,
   ) {
-    return await this.employeeService.update(id, updateEmployeeDto);
+    try {
+      return await this.employeeService.update(id, updateEmployeeDto);
+    } catch (error) {
+      await this.errorsService.save(error.response);
+    }
   }
 }
