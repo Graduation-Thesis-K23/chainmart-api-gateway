@@ -1,5 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { Role } from "~/shared";
+import { IsNotEmpty, IsString } from "class-validator";
 
 export class CreateEmployeeDto {
   @IsString()
@@ -7,22 +6,6 @@ export class CreateEmployeeDto {
   name: string;
 
   @IsString()
-  @IsOptional()
-  title?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  branchId: string;
-
-  @IsString()
   @IsNotEmpty()
   phone: string;
-
-  @IsString()
-  @IsNotEmpty()
-  password: string;
-
-  @IsEnum(Role)
-  @IsOptional()
-  role?: Role;
 }

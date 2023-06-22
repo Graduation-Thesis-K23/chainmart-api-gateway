@@ -17,6 +17,8 @@ import { MailModule } from "./mail/mail.module";
 import { PhoneServiceModule } from "./phone-service/phone-service.module";
 import { EmployeeModule } from "./employee/employee.module";
 import { BranchModule } from "./branch/branch.module";
+import { BatchModule } from './batch/batch.module';
+import { ErrorsModule } from './errors/errors.module';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import { BranchModule } from "./branch/branch.module";
     PhoneServiceModule,
     EmployeeModule,
     BranchModule,
+    BatchModule,
+    ErrorsModule,
   ],
   exports: [ConfigModule],
 })

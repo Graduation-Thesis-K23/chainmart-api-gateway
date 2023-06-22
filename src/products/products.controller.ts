@@ -23,7 +23,7 @@ import { Product } from "./entities/product.entity";
 import { Roles } from "../auth-manager/decorators/roles.decorator";
 import { RolesGuard } from "../auth-manager/guards/role.guard";
 import { Public } from "../auth/decorators/public.decorator";
-import { Role } from "~/shared";
+import { ProductListType, ProductType, Role } from "~/shared";
 import { JwtEmployeeAuthGuard } from "~/auth-manager/guards/jwt-employee.guards";
 
 @Controller("products")
@@ -63,7 +63,7 @@ export class ProductsController {
 
   @Get()
   @Public()
-  getAll(): Promise<Product[]> {
+  getAll(): Promise<ProductListType[]> {
     return this.productsService.getAll();
   }
 
@@ -81,7 +81,7 @@ export class ProductsController {
 
   @Get("slug/:slug")
   @Public()
-  getBySlug(@Param("slug") slug: string): Promise<Product> {
+  getBySlug(@Param("slug") slug: string): Promise<ProductType> {
     return this.productsService.getBySlug(slug);
   }
 
