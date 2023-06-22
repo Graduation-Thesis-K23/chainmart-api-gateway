@@ -11,8 +11,6 @@ import {
   Query,
   ParseEnumPipe,
   Req,
-  BadRequestException,
-  BadGatewayException,
 } from "@nestjs/common";
 import { Request } from "express";
 
@@ -41,13 +39,15 @@ export class EmployeeController {
     }
   }
 
-  @Get("disable-employee/:id")
+  @Get("active-employee/:id")
   @Roles(Role.Manager)
-  async disableEmployee(@Req() req: Request, @Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
+  async disableEmployee(@Req() req: Request, @Param("id") id: string, @Query("active") active: boolean) {
     try {
       const { phone } = req.user as EmployeePayload;
-      return await this.employeeService.disableEmployee(phone, id);
+
+      return await this.employeeService.disableEmployee(phone, id, active);
     } catch (error) {
+      console.log(error);
       await this.errorsService.save(error.response);
     }
   }

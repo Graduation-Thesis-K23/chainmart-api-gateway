@@ -17,7 +17,6 @@ export class ErrorsService {
   ) {}
 
   async save(error: ErrorType) {
-    console.log(error);
     if (error.statusCode >= 400 && error.statusCode < 500) {
       throw new BadRequestException(error.message);
     }
