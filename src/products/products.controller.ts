@@ -13,6 +13,7 @@ import {
   HttpStatus,
   BadRequestException,
   UseGuards,
+  Query,
 } from "@nestjs/common";
 import { FilesInterceptor } from "@nestjs/platform-express";
 
@@ -25,10 +26,12 @@ import { RolesGuard } from "../auth-manager/guards/role.guard";
 import { Public } from "../auth/decorators/public.decorator";
 import { ProductListType, ProductType, Role } from "~/shared";
 import { JwtEmployeeAuthGuard } from "~/auth-manager/guards/jwt-employee.guards";
+import { SearchAndFilterQueryDto } from "./dto/search-and-filter.dto";
+import { ErrorsService } from "~/errors/errors.service";
 
 @Controller("products")
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(private readonly productsService: ProductsService, private readonly errorsService: ErrorsService) {}
 
   @Post()
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
@@ -65,6 +68,16 @@ export class ProductsController {
   @Public()
   getAll(): Promise<ProductListType[]> {
     return this.productsService.getAll();
+  }
+
+  @Get("search-and-filter")
+  @Public()
+  async searchAndFilter(@Query() query: SearchAndFilterQueryDto): Promise<ProductListType[]> {
+    try {
+      return this.productsService.searchAndFilter(query);
+    } catch (error) {
+      await this.errorsService.save(error.response);
+    }
   }
 
   @Get("search/:searchText")

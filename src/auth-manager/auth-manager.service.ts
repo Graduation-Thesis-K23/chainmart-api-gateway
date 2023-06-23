@@ -6,6 +6,7 @@ import { JwtService } from "@nestjs/jwt";
 import { SignInDto } from "./dto/sign-in.dto";
 import { EmployeePayload } from "~/shared";
 import { EmployeeService } from "./../employee/employee.service";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 
 @Injectable()
 export class AuthManagerService {
@@ -37,6 +38,29 @@ export class AuthManagerService {
     const access_token = await this.signToken(payload);
 
     return [access_token, payload];
+  }
+
+  async changePassword(phone: string, changePasswordDto: ChangePasswordDto): Promise<EmployeePayload> {
+    const employee = await this.employeeService.findOneByPhone(phone);
+
+    if (!employee) {
+      throw new UnauthorizedException("Account not exist");
+    }
+
+    const isMatch = await bcrypt.compare(changePasswordDto.password, employee.password);
+    if (!isMatch) {
+      throw new UnauthorizedException("Old password not correct");
+    }
+
+    employee.password = changePasswordDto.newPassword;
+
+    await this.employeeService.save(employee);
+
+    return {
+      phone: employee.phone,
+      name: employee.name,
+      role: employee.role,
+    };
   }
 
   private async signToken(payload: any): Promise<string> {

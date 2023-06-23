@@ -6,8 +6,9 @@ import { SignInDto } from "./dto/sign-in.dto";
 import { JwtEmployeeAuthGuard } from "./guards/jwt-employee.guards";
 import { RolesGuard } from "./guards/role.guard";
 import { Roles } from "./decorators/roles.decorator";
-import { Role } from "~/shared";
+import { EmployeePayload, Role } from "~/shared";
 import { Public } from "~/auth/decorators";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 
 @Controller("auth-manager")
 export class AuthManagerController {
@@ -32,6 +33,15 @@ export class AuthManagerController {
   @Roles(Role.Admin, Role.Branch, Role.Employee, Role.Manager, Role.Shipper)
   async checkToken(@Req() req: Request) {
     return req.user;
+  }
+
+  @Post("change-password")
+  @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
+  @Roles(Role.Branch, Role.Employee, Role.Manager, Role.Shipper)
+  async changePassword(@Req() req: Request, @Body() changePasswordDto: ChangePasswordDto) {
+    const { phone } = req.user as EmployeePayload;
+
+    return this.authManagerService.changePassword(phone, changePasswordDto);
   }
 
   @Get("logout")

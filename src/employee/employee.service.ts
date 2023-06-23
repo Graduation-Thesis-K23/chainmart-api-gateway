@@ -24,6 +24,10 @@ export class EmployeeService {
     return await this.employeeRepository.findOneBy({ phone });
   }
 
+  async save(obj: unknown) {
+    return await this.employeeRepository.save(obj);
+  }
+
   async createEmployee(phone: string, createEmployeeDto: CreateEmployeeDto) {
     // check employee exist
     const employeeExist = await this.findOneByPhone(createEmployeeDto.phone);
@@ -90,24 +94,43 @@ export class EmployeeService {
     };
   }
 
-  async disableEmployee(phone: string, id: string) {
+  async disableEmployee(phone: string, id: string, active: boolean) {
     const branch: Branch = await this.getBranchIdByEmployeePhone(phone);
 
-    const employee = await this.employeeRepository.findOneBy({ id, branchId: branch });
+    const employee = await this.employeeRepository
+      .createQueryBuilder("employee")
+      .where("employee.phone = :id", { id })
+      .andWhere("employee.branchId = :branchId", { branchId: branch.id })
+      .getOne();
 
     if (!employee) {
       throw new BadRequestException(`Employee with branch ${branch.id} and id ${id} not exist`);
     }
 
-    employee.isActive = false;
+    const newEmployee = new Employee({
+      ...employee,
+      isActive: active,
+    });
 
-    return await this.employeeRepository.save(employee);
+    await this.employeeRepository.save(newEmployee);
+
+    return {
+      id: newEmployee.id,
+      name: newEmployee.name,
+      phone: newEmployee.phone,
+      created_at: newEmployee.created_at,
+      isActive: newEmployee.isActive,
+    };
   }
 
   async resetPasswordEmployee(phone: string, id: string) {
     const branch: Branch = await this.getBranchIdByEmployeePhone(phone);
 
-    const employee = await this.employeeRepository.findOneBy({ id, branchId: branch });
+    const employee = await this.employeeRepository
+      .createQueryBuilder("employee")
+      .where("employee.id = :id", { id })
+      .andWhere("employee.branchId = :branchId", { branchId: branch.id })
+      .getOne();
 
     if (!employee) {
       throw new BadRequestException(`Employee with branch ${branch.id} and id ${id} not exist`);
@@ -115,7 +138,13 @@ export class EmployeeService {
 
     employee.password = "Chainmart123@@"; // default password
 
-    return await this.employeeRepository.save(employee);
+    const newPassword = await this.employeeRepository.save(employee);
+
+    return {
+      id: newPassword.id,
+      name: newPassword.name,
+      phone: newPassword.phone,
+    };
   }
 
   async getBranchIdByEmployeePhone(phone: string): Promise<Branch> {
