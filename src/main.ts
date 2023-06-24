@@ -13,11 +13,12 @@ async function bootstrap() {
   const port = configService.get<number>("PORT") || 3000;
   const clientUrl = configService.get<string>("CLIENT_URL");
   const managerUrl = configService.get<string>("MANAGER_URL");
+  const branchUrl = configService.get<string>("BRANCH_URL");
 
   app.setGlobalPrefix("/api");
 
   app.enableCors({
-    origin: [clientUrl, managerUrl],
+    origin: [clientUrl, managerUrl, branchUrl],
     credentials: true,
   });
   app.use(cookieParser());
