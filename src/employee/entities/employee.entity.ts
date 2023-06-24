@@ -16,10 +16,12 @@ export class Employee extends BaseEntity {
   @Column()
   name: string;
 
-  @ManyToOne(() => Branch, (branch) => branch.id, { eager: true })
-  @Column()
-  @JoinColumn({ name: "branchId", referencedColumnName: "id" })
-  branchId: Branch;
+  @Column({ nullable: true })
+  branch_id: string;
+
+  @ManyToOne(() => Branch)
+  @JoinColumn({ name: "branch_id" })
+  branch: Branch;
 
   @Column({ unique: true })
   phone: string;

@@ -18,10 +18,6 @@ export class CreateProductDto {
   @IsNotEmpty()
   category: string;
 
-  @IsString()
-  @IsNotEmpty()
-  brand_name: string;
-
   @IsNumber()
   @Min(0)
   @Type(() => Number)
