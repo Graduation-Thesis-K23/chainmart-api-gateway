@@ -1,18 +1,26 @@
 import { Type } from "class-transformer";
-import { IsDateString, IsJSON, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Max, Min } from "class-validator";
+import { IsJSON, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Max, Min } from "class-validator";
 
 export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
   name: string;
 
+  @IsString()
+  @IsNotEmpty()
+  product_code: string;
+
   @IsUUID(4)
   @IsNotEmpty()
-  supplier: string;
+  supplier_id: string;
 
   @IsString()
   @IsNotEmpty()
   category: string;
+
+  @IsString()
+  @IsNotEmpty()
+  brand_name: string;
 
   @IsNumber()
   @Min(0)

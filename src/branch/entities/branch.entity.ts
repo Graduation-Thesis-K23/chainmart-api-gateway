@@ -1,4 +1,6 @@
-import { Column, Entity } from "typeorm";
+import { Column, Entity, OneToMany } from "typeorm";
+
+import { Batch } from "~/batches/entities/batch.entity";
 import { BaseEntity } from "~/common/base.entity";
 
 @Entity()
@@ -23,4 +25,7 @@ export class Branch extends BaseEntity {
 
   @Column({ type: "boolean", default: true })
   active: boolean;
+
+  @OneToMany(() => Batch, (batch) => batch.branch)
+  batchs: Batch[];
 }

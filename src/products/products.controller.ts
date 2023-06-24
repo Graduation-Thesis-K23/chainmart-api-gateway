@@ -35,7 +35,7 @@ export class ProductsController {
 
   @Post()
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
-  @Roles(Role.Admin)
+  // @Roles(Role.Admin)
   @UseInterceptors(
     FilesInterceptor("images", 10, {
       // dest: "./images",
