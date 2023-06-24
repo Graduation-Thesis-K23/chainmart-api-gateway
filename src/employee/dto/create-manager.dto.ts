@@ -4,5 +4,5 @@ import { CreateEmployeeDto } from "./create-employee.dto";
 export class CreateManagerDto extends CreateEmployeeDto {
   @IsUUID()
   @IsNotEmpty()
-  branchId: string;
+  branch_id: string;
 }

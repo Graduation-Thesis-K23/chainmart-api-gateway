@@ -36,13 +36,13 @@ export class EmployeeService {
       throw new BadRequestException(`Employee with ${createEmployeeDto.phone} phone number already exist`);
     }
 
-    const branch: Branch = await this.getBranchIdByEmployeePhone(phone);
+    const branch = await this.getBranchIdByEmployeePhone(phone);
 
     const employee = new Employee({
       ...createEmployeeDto,
       password: "Chainmart123@@",
       role: Role.Employee,
-      branchId: branch,
+      branch,
     });
 
     const { name, id, phone: employeePhone, role, isActive, created_at } = await this.employeeRepository.save(employee);
@@ -53,7 +53,7 @@ export class EmployeeService {
       phone: employeePhone,
       role,
       created_at,
-      branchId: {
+      branch: {
         id: branch.id,
         name: branch.name,
       },
@@ -69,13 +69,12 @@ export class EmployeeService {
       throw new BadRequestException(`Employee with ${createManagerDto.phone} phone number already exist`);
     }
 
-    const branch = await this.branchService.findOne(createManagerDto.branchId);
+    const branch = await this.branchService.findOne(createManagerDto.branch_id);
 
     const employee = new Employee({
       ...createManagerDto,
       role: Role.Manager,
       password: "Chainmart123@@",
-      branchId: branch,
     });
 
     const { name, id, phone, role, isActive, created_at } = await this.employeeRepository.save(employee);
@@ -86,7 +85,7 @@ export class EmployeeService {
       phone,
       role,
       created_at,
-      branchId: {
+      branch: {
         id: branch.id,
         name: branch.name,
       },
@@ -95,12 +94,12 @@ export class EmployeeService {
   }
 
   async disableEmployee(phone: string, id: string, active: boolean) {
-    const branch: Branch = await this.getBranchIdByEmployeePhone(phone);
+    const branch = await this.getBranchIdByEmployeePhone(phone);
 
     const employee = await this.employeeRepository
       .createQueryBuilder("employee")
       .where("employee.phone = :id", { id })
-      .andWhere("employee.branchId = :branchId", { branchId: branch.id })
+      .andWhere("employee.branch_id = :branch_id", { branch_id: branch.id })
       .getOne();
 
     if (!employee) {
@@ -124,12 +123,12 @@ export class EmployeeService {
   }
 
   async resetPasswordEmployee(phone: string, id: string) {
-    const branch: Branch = await this.getBranchIdByEmployeePhone(phone);
+    const branch = await this.getBranchIdByEmployeePhone(phone);
 
     const employee = await this.employeeRepository
       .createQueryBuilder("employee")
       .where("employee.id = :id", { id })
-      .andWhere("employee.branchId = :branchId", { branchId: branch.id })
+      .andWhere("employee.branch_id = :branch_id", { branch_id: branch.id })
       .getOne();
 
     if (!employee) {
@@ -154,7 +153,7 @@ export class EmployeeService {
       throw new BadRequestException("Employee not exist");
     }
 
-    return employee.branchId as unknown as Branch;
+    return employee.branch;
   }
 
   async getOne(id: string) {
@@ -171,7 +170,7 @@ export class EmployeeService {
         "branch.name",
         "branch.id",
       ])
-      .leftJoin("employee.branchId", "branch")
+      .leftJoin("employee.branch_id", "branch")
       .getOne();
 
     if (!employee) {
@@ -198,7 +197,7 @@ export class EmployeeService {
           "branch.name",
           "branch.id",
         ])
-        .leftJoin("employee.branchId", "branch")
+        .leftJoin("employee.branch_id", "branch")
         .take(15)
         .getMany();
     } else {
@@ -215,18 +214,18 @@ export class EmployeeService {
           "branch.name",
           "branch.id",
         ])
-        .leftJoin("employee.branchId", "branch")
+        .leftJoin("employee.branch_id", "branch")
         .take(15)
         .getMany();
     }
   }
 
   async getAllEmployee(phone: string) {
-    const branch: Branch = await this.getBranchIdByEmployeePhone(phone);
+    const branch = await this.getBranchIdByEmployeePhone(phone);
 
     return await this.employeeRepository
       .createQueryBuilder("employee")
-      .where("employee.branchId = :branchId", { branchId: branch.id })
+      .where("employee.branch_id = :branch_id", { branch_id: branch.id })
       .andWhere("employee.role = :role", { role: Role.Employee })
       .select([
         "employee.id",
@@ -238,7 +237,7 @@ export class EmployeeService {
         "branch.name",
         "branch.id",
       ])
-      .leftJoin("employee.branchId", "branch")
+      .leftJoin("employee.branch_id", "branch")
       .take(15)
       .getMany();
   }

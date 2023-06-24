@@ -11,7 +11,7 @@ import { ProductListType, ProductType } from "~/shared";
 import { SearchAndFilterQueryDto } from "./dto/search-and-filter.dto";
 
 class AddProductType extends CreateProductDto {
-  images: string;
+  images: string[];
   slug: string;
 }
 
@@ -44,7 +44,7 @@ export class ProductsService {
   }
 
   async getAll(): Promise<ProductListType[]> {
-    const products = await this.productRepository
+    return this.productRepository
       .createQueryBuilder("products")
       .select([
         "products.id",
@@ -54,21 +54,9 @@ export class ProductsService {
         "products.images",
         "products.created_at",
         "products.slug",
-        "products.sold",
-        "products.rating",
-        "products.isHot",
       ])
-      .orderBy("products.sold", "DESC")
       .limit(20)
       .getMany();
-
-    return products.map((product) => {
-      return {
-        ...product,
-        images: product.images.split(","),
-        created_at: product.created_at.toISOString(),
-      };
-    });
   }
 
   async searchAndFilter(query: SearchAndFilterQueryDto): Promise<ProductListType[]> {
@@ -83,9 +71,6 @@ export class ProductsService {
         "products.images",
         "products.created_at",
         "products.slug",
-        "products.sold",
-        "products.rating",
-        "products.isHot",
         "products.sale",
       ])
       .where("products.name like :keyword", { keyword: `%${query.keyword}%` });
@@ -116,15 +101,7 @@ export class ProductsService {
     }
 
     // execute query
-    const result = await products.getMany();
-
-    return result.map((product) => {
-      return {
-        ...product,
-        images: product.images.split(","),
-        created_at: product.created_at.toISOString(),
-      };
-    });
+    return products.getMany();
   }
 
   async getById(id: string): Promise<Product> {
@@ -144,13 +121,9 @@ export class ProductsService {
         "products.images",
         "products.created_at",
         "products.slug",
-        "products.sold",
-        "products.rating",
-        "products.isHot",
         "products.description",
         "products.specifications",
         "products.category",
-        "products.numberOfComments",
       ])
       .where("products.slug = :slug", { slug })
       .getOne();
@@ -159,11 +132,7 @@ export class ProductsService {
       throw new NotFoundException(`Product with slug(${slug}) not found`);
     }
 
-    return {
-      ...product,
-      images: product.images.split(","),
-      created_at: product.created_at.toISOString(),
-    };
+    return product;
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {

@@ -18,19 +18,13 @@ export class Product extends BaseEntity {
   category: string;
 
   @Column()
-  brand_name: string;
-
-  @Column()
   price: number;
-
-  @Column({ type: "int", default: 0 })
-  sold: number;
 
   @Column({ nullable: true })
   sale: number;
 
-  @Column()
-  images: string;
+  @Column("text", { array: true })
+  images: string[];
 
   @ManyToOne(() => Supplier)
   @JoinColumn({ name: "supplier_id" })
@@ -46,5 +40,5 @@ export class Product extends BaseEntity {
   slug: string;
 
   @OneToMany(() => Batch, (batch) => batch.product)
-  batchs: Batch[];
+  batches: Batch[];
 }

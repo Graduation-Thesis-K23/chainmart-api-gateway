@@ -14,6 +14,7 @@ import {
   BadRequestException,
   UseGuards,
   Query,
+  HttpCode,
 } from "@nestjs/common";
 import { FilesInterceptor } from "@nestjs/platform-express";
 
@@ -66,8 +67,12 @@ export class ProductsController {
 
   @Get()
   @Public()
-  getAll(): Promise<ProductListType[]> {
-    return this.productsService.getAll();
+  async getAll(): Promise<ProductListType[]> {
+    try {
+      return this.productsService.getAll();
+    } catch (error) {
+      await this.errorsService.save(error.response);
+    }
   }
 
   @Get("search-and-filter")
@@ -105,6 +110,7 @@ export class ProductsController {
   }
 
   @Delete(":id")
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(Role.Admin, Role.Employee)
   delete(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     return this.productsService.delete(id);
