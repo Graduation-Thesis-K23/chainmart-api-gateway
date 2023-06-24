@@ -2,7 +2,7 @@ import { Check, Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm
 
 import { BaseEntity } from "../../common/base.entity";
 import { Supplier } from "../../suppliers/entities/supplier.entity";
-import { CartDetail } from "~/carts/entities/cart-detail.entity";
+import { Batch } from "~/batches/entities/batch.entity";
 
 @Entity("products")
 @Check('"price" > 0')
@@ -11,8 +11,14 @@ export class Product extends BaseEntity {
   @Column()
   name: string;
 
+  @Column({ unique: true })
+  product_code: string;
+
   @Column()
   category: string;
+
+  @Column()
+  brand_name: string;
 
   @Column()
   price: number;
@@ -26,20 +32,9 @@ export class Product extends BaseEntity {
   @Column()
   images: string;
 
-  @ManyToOne(() => Supplier, (supplier) => supplier.id, {
-    onUpdate: "NO ACTION",
-    onDelete: "NO ACTION",
-    nullable: false,
-    eager: true,
-  })
+  @ManyToOne(() => Supplier)
   @JoinColumn({ name: "supplier_id" })
-  supplier: string;
-
-  @Column({ type: "float", default: 0.0 })
-  rating: number;
-
-  @Column({ default: false })
-  isHot: boolean;
+  supplier: Supplier;
 
   @Column()
   specifications: string;
@@ -50,9 +45,6 @@ export class Product extends BaseEntity {
   @Column({ unique: true, type: "text", nullable: false })
   slug: string;
 
-  @Column({ type: "int", default: 0 })
-  numberOfComments: number;
-
-  @OneToMany(() => CartDetail, (cartDetail) => cartDetail.product)
-  cart_details: CartDetail[];
+  @OneToMany(() => Batch, (batch) => batch.product)
+  batchs: Batch[];
 }

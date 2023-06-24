@@ -11,6 +11,7 @@ export const configValidationSchema = joi.object({
   MANAGER_URL: joi.string().required(),
 
   JWT_SECRET: joi.string().required(),
+  JWT_EMPLOYEE_SECRET: joi.string().required(),
 
   BUCKET_NAME: joi.string().required(),
   IAM_USER_KEY: joi.string().required(),
@@ -23,6 +24,11 @@ export const configValidationSchema = joi.object({
   OAUTH_APP_ID: joi.string().required(),
   OAUTH_APP_SECRET: joi.string().required(),
   OAUTH_CALLBACK_URL_FACEBOOK: joi.string().required(),
+
+  SMS_API_KEY: joi.string().required(),
+  SMS_SECRET_KEY: joi.string().required(),
+
+  SESSION_SECRET: joi.string().required(),
 
   MAIL_HOST: joi.string().required(),
   MAIL_USER: joi.string().required(),
