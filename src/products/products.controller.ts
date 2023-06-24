@@ -13,6 +13,7 @@ import {
   HttpStatus,
   BadRequestException,
   UseGuards,
+  Query,
 } from "@nestjs/common";
 import { FilesInterceptor } from "@nestjs/platform-express";
 
@@ -23,12 +24,14 @@ import { Product } from "./entities/product.entity";
 import { Roles } from "../auth-manager/decorators/roles.decorator";
 import { RolesGuard } from "../auth-manager/guards/role.guard";
 import { Public } from "../auth/decorators/public.decorator";
-import { Role } from "~/shared";
+import { ProductListType, ProductType, Role } from "~/shared";
 import { JwtEmployeeAuthGuard } from "~/auth-manager/guards/jwt-employee.guards";
+import { SearchAndFilterQueryDto } from "./dto/search-and-filter.dto";
+import { ErrorsService } from "~/errors/errors.service";
 
 @Controller("products")
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(private readonly productsService: ProductsService, private readonly errorsService: ErrorsService) {}
 
   @Post()
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
@@ -63,8 +66,18 @@ export class ProductsController {
 
   @Get()
   @Public()
-  getAll(): Promise<Product[]> {
+  getAll(): Promise<ProductListType[]> {
     return this.productsService.getAll();
+  }
+
+  @Get("search-and-filter")
+  @Public()
+  async searchAndFilter(@Query() query: SearchAndFilterQueryDto): Promise<ProductListType[]> {
+    try {
+      return this.productsService.searchAndFilter(query);
+    } catch (error) {
+      await this.errorsService.save(error.response);
+    }
   }
 
   @Get("search/:searchText")
@@ -81,7 +94,7 @@ export class ProductsController {
 
   @Get("slug/:slug")
   @Public()
-  getBySlug(@Param("slug") slug: string): Promise<Product> {
+  getBySlug(@Param("slug") slug: string): Promise<ProductType> {
     return this.productsService.getBySlug(slug);
   }
 

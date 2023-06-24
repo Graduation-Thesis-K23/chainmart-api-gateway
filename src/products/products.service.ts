@@ -7,6 +7,8 @@ import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { Product } from "./entities/product.entity";
 import { S3Service } from "../s3/s3.service";
+import { ProductListType, ProductType } from "~/shared";
+import { SearchAndFilterQueryDto } from "./dto/search-and-filter.dto";
 
 class AddProductType extends CreateProductDto {
   images: string;
@@ -41,8 +43,88 @@ export class ProductsService {
       .getMany();
   }
 
-  async getAll(): Promise<Product[]> {
-    return await this.productRepository.find({ take: 15 });
+  async getAll(): Promise<ProductListType[]> {
+    const products = await this.productRepository
+      .createQueryBuilder("products")
+      .select([
+        "products.id",
+        "products.name",
+        "products.price",
+        "products.sale",
+        "products.images",
+        "products.created_at",
+        "products.slug",
+        "products.sold",
+        "products.rating",
+        "products.isHot",
+      ])
+      .orderBy("products.sold", "DESC")
+      .limit(20)
+      .getMany();
+
+    return products.map((product) => {
+      return {
+        ...product,
+        images: product.images.split(","),
+        created_at: product.created_at.toISOString(),
+      };
+    });
+  }
+
+  async searchAndFilter(query: SearchAndFilterQueryDto): Promise<ProductListType[]> {
+    const queryProperties = Object.keys(query);
+
+    const products = this.productRepository
+      .createQueryBuilder("products")
+      .select([
+        "products.id",
+        "products.name",
+        "products.price",
+        "products.images",
+        "products.created_at",
+        "products.slug",
+        "products.sold",
+        "products.rating",
+        "products.isHot",
+        "products.sale",
+      ])
+      .where("products.name like :keyword", { keyword: `%${query.keyword}%` });
+
+    if (queryProperties.includes("categories")) {
+      const categories = query.categories.split(",");
+      products.andWhere("products.category IN (:...categories)", { categories });
+    }
+    if (queryProperties.includes("minPrice")) {
+      products.andWhere("products.price >= :minPrice", { minPrice: query.minPrice });
+    }
+
+    if (queryProperties.includes("maxPrice")) {
+      products.andWhere("products.price <= :maxPrice", { maxPrice: query.maxPrice });
+    }
+
+    if (queryProperties.includes("orderBy")) {
+      const orderBy = query.orderBy.toLowerCase();
+      // ["asc", "desc", "latest", "sales"]
+      if (orderBy === "asc" || orderBy === "desc") {
+        const order: "ASC" | "DESC" = orderBy === "asc" ? "ASC" : "DESC";
+        products.orderBy("products.price", order);
+      } else if (orderBy === "latest") {
+        products.orderBy("products.created_at", "DESC");
+      } else if (orderBy === "sales") {
+        products.orderBy("COALESCE(sale, 0)", "DESC");
+      }
+    }
+
+    // execute query
+    const result = await products.getMany();
+
+    return result.map((product) => {
+      return {
+        ...product,
+        images: product.images.split(","),
+        created_at: product.created_at.toISOString(),
+      };
+    });
   }
 
   async getById(id: string): Promise<Product> {
@@ -51,10 +133,37 @@ export class ProductsService {
     });
   }
 
-  async getBySlug(slug: string): Promise<Product> {
-    return await this.productRepository.findOneBy({
-      slug,
-    });
+  async getBySlug(slug: string): Promise<ProductType> {
+    const product = await this.productRepository
+      .createQueryBuilder("products")
+      .select([
+        "products.id",
+        "products.name",
+        "products.price",
+        "products.sale",
+        "products.images",
+        "products.created_at",
+        "products.slug",
+        "products.sold",
+        "products.rating",
+        "products.isHot",
+        "products.description",
+        "products.specifications",
+        "products.category",
+        "products.numberOfComments",
+      ])
+      .where("products.slug = :slug", { slug })
+      .getOne();
+
+    if (!product) {
+      throw new NotFoundException(`Product with slug(${slug}) not found`);
+    }
+
+    return {
+      ...product,
+      images: product.images.split(","),
+      created_at: product.created_at.toISOString(),
+    };
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {

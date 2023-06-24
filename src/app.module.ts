@@ -19,6 +19,7 @@ import { EmployeeModule } from "./employee/employee.module";
 import { BranchModule } from "./branch/branch.module";
 import { OrdersModule } from "./orders/orders.module";
 import { BatchesModule } from "./batches/batches.module";
+import { ErrorsModule } from "./errors/errors.module";
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { BatchesModule } from "./batches/batches.module";
     BranchModule,
     OrdersModule,
     BatchesModule,
+    ErrorsModule,
   ],
   exports: [ConfigModule],
 })
