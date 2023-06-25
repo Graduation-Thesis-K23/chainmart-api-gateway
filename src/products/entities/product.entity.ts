@@ -26,6 +26,9 @@ export class Product extends BaseEntity {
   @Column("text", { array: true })
   images: string[];
 
+  @Column({ nullable: true })
+  supplier_id: string;
+
   @ManyToOne(() => Supplier)
   @JoinColumn({ name: "supplier_id" })
   supplier: Supplier;
@@ -35,6 +38,9 @@ export class Product extends BaseEntity {
 
   @Column()
   description: string;
+
+  @Column({ nullable: true })
+  acceptable_expiry_threshold?: number;
 
   @Column({ unique: true, type: "text", nullable: false })
   slug: string;

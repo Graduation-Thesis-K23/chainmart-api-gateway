@@ -22,6 +22,12 @@ export class BatchesController {
     return this.batchesService.findAll();
   }
 
+  @Get("products/:id")
+  @Roles(Role.Employee)
+  findAllByProductId(@Param("id", new ParseUUIDPipe({ version: "4" })) productId: string) {
+    return this.batchesService.findAllByProductId(productId);
+  }
+
   @Get(":id")
   @Roles(Role.Employee)
   findOne(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
