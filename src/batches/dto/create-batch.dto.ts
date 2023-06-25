@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsUUID } from "class-validator";
+import { IsDateString, IsNotEmpty, IsNumber, IsUUID } from "class-validator";
 
 export class CreateBatchDto {
   @IsUUID(4)
@@ -24,4 +24,8 @@ export class CreateBatchDto {
   @IsUUID(4)
   @IsNotEmpty()
   employee_create_id: string;
+
+  @IsDateString()
+  @IsNotEmpty()
+  expiry_date: string;
 }

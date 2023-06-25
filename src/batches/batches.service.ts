@@ -6,8 +6,6 @@ import { CreateBatchDto } from "./dto/create-batch.dto";
 import { UpdateBatchDto } from "./dto/update-batch.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Batch } from "./entities/batch.entity";
-import { User } from "~/users/entities/user.entity";
-import { Employee } from "~/employee/entities/employee.entity";
 import { Product } from "~/products/entities/product.entity";
 
 @Injectable()
@@ -15,12 +13,6 @@ export class BatchesService {
   constructor(
     @InjectRepository(Batch)
     private readonly batchRepository: Repository<Batch>,
-
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-
-    @InjectRepository(Employee)
-    private readonly employeeRepository: Repository<Employee>,
 
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
@@ -33,7 +25,7 @@ export class BatchesService {
     }
 
     const { product_code } = product;
-    const batch_code = product_code + "_" + moment().format("YYYY_MM_DD");
+    const batch_code = product_code + "-" + moment().format("YYYY_MM_DD") + "-" + Date.now();
 
     try {
       const batch = this.batchRepository.create({ ...createBatchDto, batch_code });
@@ -54,8 +46,31 @@ export class BatchesService {
         },
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       throw new BadRequestException("Cannot find batches");
+    }
+  }
+
+  async findAllByProductId(productId: string): Promise<Batch[]> {
+    const product = await this.productRepository.findOneBy({ id: productId });
+    if (!product) {
+      throw new BadRequestException("Product not found");
+    }
+
+    try {
+      return this.batchRepository.find({
+        relations: {
+          product: true,
+          branch: true,
+          employee_create: true,
+        },
+        where: {
+          product_id: productId,
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException("Cannot find batches by product_id");
     }
   }
 

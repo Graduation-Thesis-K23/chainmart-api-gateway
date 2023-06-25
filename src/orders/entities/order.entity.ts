@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, VirtualColumn } from "typeorm";
 
 import { BaseEntity } from "src/common/base.entity";
 import { User } from "src/users/entities/user.entity";
@@ -8,33 +8,30 @@ import { OrderDetail } from "./order-detail.entity";
 
 @Entity("orders")
 export class Order extends BaseEntity {
+  @Column({ nullable: true })
+  user_id: string;
+
   @ManyToOne(() => User)
   @JoinColumn({ name: "user_id" })
   user: User;
+
+  @Column({ nullable: true })
+  address_id: string;
 
   @OneToOne(() => Address)
   @JoinColumn({ name: "address_id" })
   address: Address;
 
-  @Column()
-  discount: number;
-
-  @Column()
-  total: number;
-
   @Column({ type: "date" })
   estimated_shipped_date: string;
 
-  @Column({ type: "date" })
+  @Column({ type: "date", nullable: true })
   shipped_date: string;
 
-  @Column({ type: "date" })
-  order_date: string;
+  @Column({ type: "date", nullable: true })
+  approved_date: string;
 
-  @Column({ type: "date" })
-  approve_date: string;
-
-  @Column({ type: "date" })
+  @Column({ type: "date", nullable: true })
   return_date: string;
 
   @Column({
@@ -43,9 +40,6 @@ export class Order extends BaseEntity {
     default: OrderStatus.Processing,
   })
   status: OrderStatus;
-
-  @ManyToOne(() => User)
-  Employee: User;
 
   @Column({
     type: "enum",
@@ -58,4 +52,14 @@ export class Order extends BaseEntity {
     cascade: true,
   })
   order_details: OrderDetail[];
+
+  @VirtualColumn({
+    query: (alias) => `
+      SELECT SUM("order_details".quantity * "products".price) 
+      FROM "order_details" 
+      LEFT JOIN "products" ON "products".id = "order_details".product_id
+      WHERE "order_details".order_id = ${alias}.id
+    `,
+  })
+  total: number;
 }

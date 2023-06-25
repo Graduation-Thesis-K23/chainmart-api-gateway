@@ -37,4 +37,9 @@ export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
   description: string;
+
+  @IsNumber()
+  @Type(() => Number)
+  @IsOptional()
+  acceptable_expiry_threshold?: number;
 }

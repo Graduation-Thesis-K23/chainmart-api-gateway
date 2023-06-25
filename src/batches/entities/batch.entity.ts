@@ -23,8 +23,8 @@ export class Batch extends BaseEntity {
   @Column({ type: "decimal" })
   import_cost: number;
 
-  @Column({ type: "int" })
-  acceptable_expiry_threshold: number;
+  @Column({ type: "date" })
+  expiry_date: string;
 
   @Column({ nullable: true })
   branch_id: string;
