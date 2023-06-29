@@ -48,7 +48,7 @@ export class ProductsController {
       },
     }),
   )
-  create(
+  async create(
     @Body() createProductDto: CreateProductDto,
     @UploadedFiles(
       new ParseFilePipeBuilder().build({
@@ -57,12 +57,16 @@ export class ProductsController {
     )
     images: Express.Multer.File[],
   ) {
-    if (images.length < 2) {
-      throw new BadRequestException("Minimum 2 images.");
-    }
+    try {
+      if (images.length < 2) {
+        throw new BadRequestException("Minimum 2 images.");
+      }
 
-    const arrBuffer: Buffer[] = images.map((image) => image.buffer);
-    return this.productsService.create(createProductDto, arrBuffer);
+      const arrBuffer: Buffer[] = images.map((image) => image.buffer);
+      return this.productsService.create(createProductDto, arrBuffer);
+    } catch (error) {
+      await this.errorsService.save(error.response);
+    }
   }
 
   @Get()
