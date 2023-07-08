@@ -3,19 +3,14 @@ import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { Branch } from "~/branch/entities/branch.entity";
 import { BaseEntity } from "~/common/base.entity";
 import { Employee } from "~/employee/entities/employee.entity";
-import { Product } from "~/products/entities/product.entity";
 
 @Entity("batches")
 export class Batch extends BaseEntity {
   @Column()
   batch_code: string;
 
-  @Column({ nullable: true })
+  @Column()
   product_id: string;
-
-  @ManyToOne(() => Product, (product) => product.id)
-  @JoinColumn({ name: "product_id" })
-  product: Product;
 
   @Column({ type: "int" })
   import_quantity: number;

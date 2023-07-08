@@ -24,9 +24,14 @@ export class CartsService {
         throw new BadRequestException("User not found");
       }
 
+      const userPreviousCart = await this.findOneByUserId(createCartDto.user_id);
+
       const cart = this.cartRepository.create({ ...createCartDto, user });
 
-      return this.cartRepository.save(cart);
+      return await this.cartRepository.save({
+        ...userPreviousCart,
+        ...cart,
+      });
     } catch (error) {
       console.error(error);
       throw new BadRequestException("Data is not valid!");
@@ -35,12 +40,10 @@ export class CartsService {
 
   async findAll(): Promise<Cart[]> {
     try {
-      return this.cartRepository.find({
+      return await this.cartRepository.find({
         relations: {
           user: true,
-          cart_details: {
-            product: true,
-          },
+          cart_details: true,
         },
       });
     } catch (error) {
@@ -51,12 +54,10 @@ export class CartsService {
 
   async findOne(id: string): Promise<Cart> {
     try {
-      return this.cartRepository.findOne({
+      return await this.cartRepository.findOne({
         relations: {
           user: true,
-          cart_details: {
-            product: true,
-          },
+          cart_details: true,
         },
         where: {
           id,
@@ -75,12 +76,10 @@ export class CartsService {
         throw new BadRequestException("User not found");
       }
 
-      return this.cartRepository.findOne({
+      return await this.cartRepository.findOne({
         relations: {
           user: true,
-          cart_details: {
-            product: true,
-          },
+          cart_details: true,
         },
         where: {
           user: {

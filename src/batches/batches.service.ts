@@ -6,7 +6,7 @@ import { CreateBatchDto } from "./dto/create-batch.dto";
 import { UpdateBatchDto } from "./dto/update-batch.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Batch } from "./entities/batch.entity";
-import { Product } from "~/products/entities/product.entity";
+import { ProductsService } from "~/products/products.service";
 
 @Injectable()
 export class BatchesService {
@@ -14,12 +14,11 @@ export class BatchesService {
     @InjectRepository(Batch)
     private readonly batchRepository: Repository<Batch>,
 
-    @InjectRepository(Product)
-    private readonly productRepository: Repository<Product>,
+    private readonly productService: ProductsService,
   ) {}
 
   async create(createBatchDto: CreateBatchDto): Promise<Batch> {
-    const product = await this.productRepository.findOneBy({ id: createBatchDto.product_id });
+    const product = await this.productService.findById(createBatchDto.product_id);
     if (!product) {
       throw new BadRequestException("Product not found");
     }
@@ -40,7 +39,6 @@ export class BatchesService {
     try {
       return this.batchRepository.find({
         relations: {
-          product: true,
           branch: true,
           employee_create: true,
         },
@@ -52,7 +50,7 @@ export class BatchesService {
   }
 
   async findAllByProductId(productId: string): Promise<Batch[]> {
-    const product = await this.productRepository.findOneBy({ id: productId });
+    const product = await this.productService.findById(productId);
     if (!product) {
       throw new BadRequestException("Product not found");
     }
@@ -60,7 +58,6 @@ export class BatchesService {
     try {
       return this.batchRepository.find({
         relations: {
-          product: true,
           branch: true,
           employee_create: true,
         },
@@ -78,7 +75,6 @@ export class BatchesService {
     try {
       return this.batchRepository.findOne({
         relations: {
-          product: true,
           branch: true,
           employee_create: true,
         },

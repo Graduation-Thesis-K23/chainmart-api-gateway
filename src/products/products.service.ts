@@ -1,166 +1,95 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import slugify from "slugify";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
+import { ClientKafka } from "@nestjs/microservices";
+import { firstValueFrom, lastValueFrom, timeout } from "rxjs";
 
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
-import { Product } from "./entities/product.entity";
-import { S3Service } from "../s3/s3.service";
-import { ProductListType, ProductType } from "~/shared";
-import { SearchAndFilterQueryDto } from "./dto/search-and-filter.dto";
 
-class AddProductType extends CreateProductDto {
-  images: string[];
-  slug: string;
-}
+import { S3Service } from "~/s3/s3.service";
 
 @Injectable()
 export class ProductsService {
   constructor(
-    @InjectRepository(Product)
-    private readonly productRepository: Repository<Product>,
+    @Inject("PRODUCT_SERVICE")
+    private readonly productClient: ClientKafka,
+
     private readonly s3Service: S3Service,
   ) {}
 
-  async create(createProductDto: CreateProductDto, arrBuffer: Buffer[]): Promise<Product> {
-    const images = await this.s3Service.uploadImagesToS3(arrBuffer);
-
-    const newProduct: AddProductType = {
-      ...createProductDto,
-      images,
-      slug: slugify(createProductDto.name, { lower: true }) + "-" + Date.now().toString(),
-    };
-
-    return await this.productRepository.save(newProduct);
-  }
-
-  async getSearchProduct(searchText: string): Promise<Product[]> {
-    return await this.productRepository
-      .createQueryBuilder("products")
-      .select(["products.name", "products.price", "products.images", "products.slug"])
-      .where("LOWER(products.name) like LOWER(:searchText)", { searchText: `%${searchText}%` })
-      .getMany();
-  }
-
-  async getAll(): Promise<ProductListType[]> {
-    return this.productRepository
-      .createQueryBuilder("products")
-      .select([
-        "products.id",
-        "products.name",
-        "products.price",
-        "products.sale",
-        "products.images",
-        "products.created_at",
-        "products.slug",
-      ])
-      .limit(20)
-      .getMany();
-  }
-
-  async searchAndFilter(query: SearchAndFilterQueryDto): Promise<ProductListType[]> {
-    const queryProperties = Object.keys(query);
-
-    const products = this.productRepository
-      .createQueryBuilder("products")
-      .select([
-        "products.id",
-        "products.name",
-        "products.price",
-        "products.images",
-        "products.created_at",
-        "products.slug",
-        "products.sale",
-      ])
-      .where("products.name like :keyword", { keyword: `%${query.keyword}%` });
-
-    if (queryProperties.includes("categories")) {
-      const categories = query.categories.split(",");
-      products.andWhere("products.category IN (:...categories)", { categories });
-    }
-    if (queryProperties.includes("minPrice")) {
-      products.andWhere("products.price >= :minPrice", { minPrice: query.minPrice });
+  async create(createProductDto: CreateProductDto, arrBuffer: Buffer[]) {
+    if (arrBuffer.length < 2) {
+      throw new BadRequestException("Require minimum 2 images.");
     }
 
-    if (queryProperties.includes("maxPrice")) {
-      products.andWhere("products.price <= :maxPrice", { maxPrice: query.maxPrice });
-    }
+    try {
+      const images = await this.s3Service.uploadImagesToS3(arrBuffer);
 
-    if (queryProperties.includes("orderBy")) {
-      const orderBy = query.orderBy.toLowerCase();
-      // ["asc", "desc", "latest", "sales"]
-      if (orderBy === "asc" || orderBy === "desc") {
-        const order: "ASC" | "DESC" = orderBy === "asc" ? "ASC" : "DESC";
-        products.orderBy("products.price", order);
-      } else if (orderBy === "latest") {
-        products.orderBy("products.created_at", "DESC");
-      } else if (orderBy === "sales") {
-        products.orderBy("COALESCE(sale, 0)", "DESC");
-      }
-    }
+      const $source = this.productClient.send("products.create", { ...createProductDto, images }).pipe(timeout(5000));
 
-    // execute query
-    return products.getMany();
+      return await firstValueFrom($source);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
   }
 
-  async getById(id: string): Promise<Product> {
-    return await this.productRepository.findOneBy({
-      id,
-    });
+  async findAll() {
+    try {
+      const $source = this.productClient.send("products.findall", {}).pipe(timeout(5000));
+      return await lastValueFrom($source);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
   }
 
-  async getBySlug(slug: string): Promise<ProductType> {
-    const product = await this.productRepository
-      .createQueryBuilder("products")
-      .select([
-        "products.id",
-        "products.name",
-        "products.price",
-        "products.sale",
-        "products.images",
-        "products.created_at",
-        "products.slug",
-        "products.description",
-        "products.specifications",
-        "products.category",
-      ])
-      .where("products.slug = :slug", { slug })
-      .getOne();
-
-    if (!product) {
-      throw new NotFoundException(`Product with slug(${slug}) not found`);
+  async findByIds(ids: string[]) {
+    try {
+      const $source = this.productClient.send("products.findbyids", ids).pipe(timeout(5000));
+      return await lastValueFrom($source);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
     }
+  }
 
-    return product;
+  async findById(id: string) {
+    try {
+      const $source = this.productClient.send("products.findbyid", id).pipe(timeout(5000));
+      return await lastValueFrom($source);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
+  }
+
+  async findBySlug(slug: string) {
+    try {
+      const $source = this.productClient.send("products.findbyslug", slug).pipe(timeout(5000));
+      return await lastValueFrom($source);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
-    const product = await this.productRepository.findOne({ where: { id } });
-
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
-    }
-
-    const newProduct = {
-      ...product,
-      ...updateProductDto,
-    };
-
     try {
-      return await this.productRepository.save(newProduct);
+      const $source = this.productClient.send("products.update", { id, ...updateProductDto }).pipe(timeout(5000));
+      return await lastValueFrom($source);
     } catch (error) {
-      throw new BadRequestException(error.code);
+      console.error(error);
+      throw new BadRequestException(error);
     }
   }
 
-  async delete(id: string): Promise<string> {
-    const result = await this.productRepository.softDelete(id);
-
-    if (result.affected === 0) {
-      throw new BadRequestException(`Product with id(${id}) not found`);
+  async delete(id: string) {
+    try {
+      const $source = this.productClient.send("products.delete", id).pipe(timeout(5000));
+      return await lastValueFrom($source);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
     }
-
-    return `Product with id(${id}) have been deleted`;
   }
 }

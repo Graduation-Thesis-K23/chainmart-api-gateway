@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, VirtualColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 
 import { BaseEntity } from "src/common/base.entity";
 import { User } from "src/users/entities/user.entity";
@@ -8,17 +8,17 @@ import { OrderDetail } from "./order-detail.entity";
 
 @Entity("orders")
 export class Order extends BaseEntity {
-  @Column({ nullable: true })
+  @Column()
   user_id: string;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: "user_id" })
   user: User;
 
-  @Column({ nullable: true })
+  @Column()
   address_id: string;
 
-  @OneToOne(() => Address)
+  @ManyToOne(() => Address)
   @JoinColumn({ name: "address_id" })
   address: Address;
 
@@ -52,14 +52,4 @@ export class Order extends BaseEntity {
     cascade: true,
   })
   order_details: OrderDetail[];
-
-  @VirtualColumn({
-    query: (alias) => `
-      SELECT SUM("order_details".quantity * "products".price) 
-      FROM "order_details" 
-      LEFT JOIN "products" ON "products".id = "order_details".product_id
-      WHERE "order_details".order_id = ${alias}.id
-    `,
-  })
-  total: number;
 }

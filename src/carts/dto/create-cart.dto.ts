@@ -27,7 +27,7 @@ export class CreateCartDto {
 }
 
 class CartDetailParam {
-  @IsUUID(4)
+  @IsString()
   @IsNotEmpty()
   product_id: string;
 

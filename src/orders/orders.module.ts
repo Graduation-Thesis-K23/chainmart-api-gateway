@@ -6,11 +6,11 @@ import { OrdersController } from "./orders.controller";
 import { Order } from "./entities/order.entity";
 import { OrderDetail } from "./entities/order-detail.entity";
 import { User } from "~/users/entities/user.entity";
-import { Product } from "~/products/entities/product.entity";
 import { Batch } from "~/batches/entities/batch.entity";
+import { ProductsModule } from "~/products/products.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, OrderDetail, User, Product, Batch])],
+  imports: [TypeOrmModule.forFeature([Order, OrderDetail, User, Batch]), ProductsModule],
   controllers: [OrdersController],
   providers: [OrdersService],
 })
