@@ -24,7 +24,7 @@ export class BatchesController {
 
   @Get("products/:id")
   @Roles(Role.Employee)
-  findAllByProductId(@Param("id", new ParseUUIDPipe({ version: "4" })) productId: string) {
+  findAllByProductId(@Param("id") productId: string) {
     return this.batchesService.findAllByProductId(productId);
   }
 

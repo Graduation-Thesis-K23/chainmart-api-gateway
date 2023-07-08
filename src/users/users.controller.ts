@@ -32,7 +32,7 @@ import { UserGuard } from "~/auth/guards";
 import { User } from "~/auth/decorators";
 
 @Controller("users")
-@UseGuards(JwtAuthGuard, RolesGuard, UserGuard)
+// @UseGuards(JwtAuthGuard, RolesGuard, UserGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

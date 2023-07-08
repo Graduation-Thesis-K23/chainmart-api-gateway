@@ -1,7 +1,7 @@
-import { IsDateString, IsNotEmpty, IsNumber, IsUUID } from "class-validator";
+import { IsDateString, IsNotEmpty, IsNumber, IsString, IsUUID } from "class-validator";
 
 export class CreateBatchDto {
-  @IsUUID(4)
+  @IsString()
   @IsNotEmpty()
   product_id: string;
 
