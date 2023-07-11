@@ -1,4 +1,6 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+@echo off
+git log -1 --pretty=%%B > %temp%\git.txt
+for /f "Tokens=*" %%a in (%temp%\git.txt) do @set commit_message=%%a
 
-npx --no -- commitlint --edit "$1"
+echo %commit_message%
+::export %commit_message%
