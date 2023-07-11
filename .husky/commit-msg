@@ -1,8 +1,27 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-npx --no -- commitlint --edit "$1"
+PREFIX=$(echo $(cat $1) | cut -d':' -f1)
 
-GIT_COMMIT_MSG=$(git show -s --format=%B HEAD)
+# PREFIX in ["feat", "fix", "chore"]
+if [ "$PREFIX" = "feat" ]; then
+  npm version major
+  git add package.json
+  git commit --amend --no-edit --no-verify
+  exit 0
+elif [ "$PREFIX" = "fix" ]; then
+  npm version minor
+  git add package.json
+  git commit --amend --no-edit --no-verify
+  exit 0
+elif [ "$PREFIX" = "chore" ]; then
+  npm version patch
+  git add package.json
+  git commit --amend --no-edit --no-verify
+  exit 0
+else
+  echo "["feat", "fix", "chore"] prefix is required."
+  exit 1
+fi
 
-echo "GIT_COMMIT_MSG_SASDSHKJDHKSJDH: $GIT_COMMIT_MSG"
+  
