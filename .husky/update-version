@@ -2,8 +2,6 @@
 git log -1 --pretty=%%B > %temp%\git.txt
 for /f "Tokens=*" %%a in (%temp%\git.txt) do @set commit_message=%%a
 
-echo %commit_message%
-
 # get prefix from commit message before :
 for /f "Tokens=1 Delims=:" %%a in ("%commit_message%") do @set prefix=%%a
 
