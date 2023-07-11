@@ -8,11 +8,17 @@ echo "Commit message prefix: $PREFIX"
 # PREFIX in ["feat", "fix", "chore"]
 if [ "$PREFIX" = "feat" ]; then
   npm version major
-  exit 0
 elif [ "$PREFIX" = "fix" ]; then
   npm version minor
-  exit 0
 elif [ "$PREFIX" = "chore" ]; then
   npm version patch
-  exit 0
 fi
+
+echo "Pushing to remote..."
+# wait 5 seconds
+sleep 5
+
+echo "Pushing to done..."
+
+exit 0
+
