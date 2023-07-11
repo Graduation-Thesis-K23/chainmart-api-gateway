@@ -15,7 +15,7 @@ import { S3Module } from "~/s3/s3.module";
         options: {
           client: {
             clientId: "product",
-            brokers: ["localhost:9092"],
+            brokers: [`${process.env.KAFKA_HOST}:${process.env.KAFKA_PORT}`],
           },
           consumer: {
             groupId: "product-consumer",

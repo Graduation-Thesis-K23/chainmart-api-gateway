@@ -1,28 +1,23 @@
-FROM node:18-alpine AS deps
+# https://www.tomray.dev/nestjs-docker-compose-postgres
+
+FROM node:18-alpine AS dev 
 WORKDIR /app
+COPY --chown=node:node package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+RUN yarn install --immutable --immutable-cache --check-cache
+COPY --chown=node:node . .
 
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
-RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
 
-FROM node:18-alpine
+FROM node:18-alpine AS build
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY --chown=node:node package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+COPY --chown=node:node --from=dev /app/node_modules ./node_modules
+COPY --chown=node:node . .
+RUN yarn build
+USER node
 
-RUN npm run build
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nestjs
-
-USER nestjs
-
+FROM node:18-alpine AS prod
+WORKDIR /app
+COPY --chown=node:node --from=build /app/dist ./dist
 EXPOSE 3000
-
-ENV PORT 3000
-
-CMD ["node", "dist/main"]
+CMD ["node", "dist/main.js"]
