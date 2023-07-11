@@ -1,9 +1,0 @@
-#!/usr/bin/env sh
-. "$(dirname "$0")/_/husky.sh"
-
-#! get value from git show -s --format=%B HEAD and print it
-#! https://stackoverflow.com/questions/4404172/how-to-get-the-last-commit-message-from-a-remote-git-repo
-
-GIT_COMMIT_MSG=$(git show -s --format=%B HEAD)
-
-echo "GIT_COMMIT_MSG_SASDSHKJDHKSJDH: $GIT_COMMIT_MSG"

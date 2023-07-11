@@ -2,3 +2,7 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 npx --no -- commitlint --edit "$1"
+
+GIT_COMMIT_MSG=$(git show -s --format=%B HEAD)
+
+echo "GIT_COMMIT_MSG_SASDSHKJDHKSJDH: $GIT_COMMIT_MSG"
