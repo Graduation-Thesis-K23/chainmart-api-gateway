@@ -3,6 +3,8 @@
 
 PREFIX=$(echo $(cat $1) | cut -d':' -f1)
 
+echo "Commit message prefix: $PREFIX"
+
 # PREFIX in ["feat", "fix", "chore"]
 if [ "$PREFIX" = "feat" ]; then
   npm version major
