@@ -8,17 +8,11 @@ echo "Commit message prefix: $PREFIX"
 # PREFIX in ["feat", "fix", "chore"]
 if [ "$PREFIX" = "feat" ]; then
   npm version major
-  git add package.json
-  git commit --amend --no-edit --no-verify
   exit 0
 elif [ "$PREFIX" = "fix" ]; then
   npm version minor
-  git add package.json
-  git commit --amend --no-edit --no-verify
   exit 0
 elif [ "$PREFIX" = "chore" ]; then
   npm version patch
-  git add package.json
-  git commit --amend --no-edit --no-verify
   exit 0
 fi
