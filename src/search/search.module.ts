@@ -1,38 +1,34 @@
 import { Module } from "@nestjs/common";
 import { ClientsModule, Transport } from "@nestjs/microservices";
-import { ConfigModule, ConfigService } from "@nestjs/config";
 
-import { ProductsService } from "./products.service";
-import { ProductsController } from "./products.controller";
-import { ErrorsModule } from "~/errors/errors.module";
-import { S3Module } from "~/s3/s3.module";
+import { SearchService } from "./search.service";
+import { SearchController } from "./search.controller";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 @Module({
   imports: [
     ClientsModule.registerAsync([
       {
-        name: "PRODUCT_SERVICE",
+        name: "SEARCH_SERVICE",
         imports: [ConfigModule],
         useFactory: async (configService: ConfigService) => ({
           transport: Transport.KAFKA,
           options: {
             client: {
-              clientId: "product",
+              clientId: "search",
               brokers: [`${configService.get("KAFKA_HOST")}:${configService.get("KAFKA_PORT")}`],
             },
             consumer: {
-              groupId: "product-consumer",
+              groupId: "search-consumer",
             },
           },
         }),
         inject: [ConfigService],
       },
     ]),
-    ErrorsModule,
-    S3Module,
   ],
-  controllers: [ProductsController],
-  providers: [ProductsService],
-  exports: [ProductsService],
+  controllers: [SearchController],
+  providers: [SearchService],
+  exports: [SearchService],
 })
-export class ProductsModule {}
+export class SearchModule {}
