@@ -1,8 +1,5 @@
 {
   "name": "chainmart-be",
-  "version": "4.0.0",
-  "description": "",
-  "author": "",
   "private": true,
   "license": "MIT",
   "scripts": {
@@ -94,6 +91,7 @@
     "jest": "29.5.0",
     "lint-staged": "^13.2.3",
     "prettier": "^2.8.8",
+    "semantic-release": "^21.0.7",
     "source-map-support": "^0.5.21",
     "supertest": "^6.3.3",
     "ts-jest": "29.1.1",
