@@ -1,1 +1,0 @@
-git show -s --format=%B
