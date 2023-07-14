@@ -41,8 +41,18 @@ jobs:
     steps:
       - run: echo "$VERSION"
 
+      - name: Check version
+        run: |
+          if [[ -z "$VERSION" ]]; then
+            echo "VERSION is empty"
+            exit 0
+          fi
+
       - name: Check out code
         uses: actions/checkout@v3
+        with:
+          submodules: true
+          token: ${{ secrets.CI_TOKEN }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
