@@ -124,9 +124,6 @@ jobs:
     runs-on: ubuntu-22.04
     needs: docker-build
     steps:
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v1
-
       - name: SSH to EC2
         if: needs.docker-build.outputs.status == 'success'
         uses: appleboy/ssh-action@master
