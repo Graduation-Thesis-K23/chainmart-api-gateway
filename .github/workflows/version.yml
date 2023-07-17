@@ -1,4 +1,4 @@
-name: Git Tag
+name: Update Version and Build Docker Image
 
 on:
   push:
@@ -72,10 +72,11 @@ jobs:
           ECR_REPOSITORY: chainmart-be
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION .
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION $ECR_REGISTRY/$ECR_REPOSITORY:lastest
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:lastest
         continue-on-error: true
     outputs:
-      imageUri: ${{ steps.build-image.outputs.imageUri }}
       status: ${{ steps.build-image.outcome }}
 
   telegram-notify:
@@ -110,6 +111,64 @@ jobs:
           message: |
 
             *Build Docker Image success!*
+
+            *Branch:* ${{ github.ref }}
+            *Workflow:* ${{ github.workflow }}
+            *Run number:* ${{ github.run_number }}
+            *Run id:* ${{ github.run_id }}
+            *Commit message:* ${{ github.event.head_commit.message }}
+            *Commit url:* ${{ github.event.head_commit.url }}
+            *Commit author:* ${{ github.event.head_commit.author.name }}
+
+  ssh-to-ec2:
+    runs-on: ubuntu-22.04
+    needs: docker-build
+    steps:
+      - name: SSH to EC2
+        if: needs.docker-build.outputs.status == 'success'
+        uses: appleboy/ssh-action@master
+        id: ssh
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            sudo aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 376597958889.dkr.ecr.ap-southeast-1.amazonaws.com
+            cd chainmart-be
+            sudo docker compose stop
+            sudo docker compose rm -f
+            sudo docker compose pull
+            sudo docker compose up -d
+        continue-on-error: true
+
+      - name: Send mesage to Telegram
+        if: steps.ssh.outcome == 'failure'
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: markdown
+          message: |
+
+            *SSH to EC2 failed!*
+            *Branch:* ${{ github.ref }}
+            *Workflow:* ${{ github.workflow }}
+            *Run number:* ${{ github.run_number }}
+            *Run id:* ${{ github.run_id }}
+            *Commit message:* ${{ github.event.head_commit.message }}
+            *Commit url:* ${{ github.event.head_commit.url }}
+            *Commit author:* ${{ github.event.head_commit.author.name }}
+
+      - name: Send mesage to Telegram
+        if: steps.ssh.outcome == 'success'
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: markdown
+          message: |
+
+            *SSH to EC2 success!*
 
             *Branch:* ${{ github.ref }}
             *Workflow:* ${{ github.workflow }}

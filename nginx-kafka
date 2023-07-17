@@ -1,0 +1,4 @@
+server {
+  listen 80;
+  proxy_pass http://localhost:9092;
+}
