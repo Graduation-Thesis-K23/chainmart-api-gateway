@@ -28,6 +28,7 @@ import { ErrorsModule } from "./errors/errors.module";
       validationSchema: configValidationSchema,
       isGlobal: true,
     }),
+
     DatabaseModule,
     UsersModule,
     AuthModule,

@@ -33,9 +33,24 @@ export class ProductsService {
     }
   }
 
-  async findAll() {
+  async findAll(page: number, limit: number) {
     try {
-      const $source = this.productClient.send("products.findall", {}).pipe(timeout(5000));
+      const $source = this.productClient
+        .send("products.findall", {
+          page,
+          limit,
+        })
+        .pipe(timeout(5000));
+      return await lastValueFrom($source);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
+  }
+
+  async staticPaths() {
+    try {
+      const $source = this.productClient.send("products.staticpaths", {}).pipe(timeout(5000));
       return await lastValueFrom($source);
     } catch (error) {
       console.error(error);

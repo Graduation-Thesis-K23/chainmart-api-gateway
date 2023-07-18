@@ -15,6 +15,8 @@ import {
   HttpCode,
   OnModuleInit,
   Inject,
+  Query,
+  ParseIntPipe,
 } from "@nestjs/common";
 import { FilesInterceptor } from "@nestjs/platform-express";
 import { ClientKafka } from "@nestjs/microservices";
@@ -27,6 +29,7 @@ import { RolesGuard } from "../auth-manager/guards/role.guard";
 import { Public } from "../auth/decorators/public.decorator";
 import { Role } from "~/shared";
 import { JwtEmployeeAuthGuard } from "~/auth-manager/guards/jwt-employee.guards";
+import { GetProductsDto } from "./dto/get-products.dto";
 
 @Controller("products")
 export class ProductsController implements OnModuleInit {
@@ -38,7 +41,7 @@ export class ProductsController implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    const topics = ["create", "findall", "findbyids", "findbyid", "findbyslug", "update", "delete"];
+    const topics = ["create", "findall", "findbyids", "findbyid", "findbyslug", "update", "delete", "staticpaths"];
     topics.forEach((topic) => {
       this.productClient.subscribeToResponseOf(`products.${topic}`);
     });
@@ -73,8 +76,13 @@ export class ProductsController implements OnModuleInit {
   }
 
   @Get()
-  async findAll() {
-    return this.productsService.findAll();
+  async findAll(@Query() query: GetProductsDto) {
+    return this.productsService.findAll(query.page, query.limit);
+  }
+
+  @Get("static-paths")
+  staticPaths() {
+    return this.productsService.staticPaths();
   }
 
   @Get(":id")
