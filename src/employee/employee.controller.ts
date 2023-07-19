@@ -11,6 +11,7 @@ import {
   Query,
   ParseEnumPipe,
   Req,
+  BadRequestException,
 } from "@nestjs/common";
 import { Request } from "express";
 
@@ -35,7 +36,7 @@ export class EmployeeController {
       const { phone } = req.user as EmployeePayload;
       return await this.employeeService.createEmployee(phone, createEmployeeDto);
     } catch (error) {
-      await this.errorsService.save(error.response);
+      throw new BadRequestException(error);
     }
   }
 
@@ -47,8 +48,7 @@ export class EmployeeController {
 
       return await this.employeeService.disableEmployee(phone, id, active);
     } catch (error) {
-      console.log(error);
-      await this.errorsService.save(error.response);
+      throw new BadRequestException("error");
     }
   }
 
@@ -60,7 +60,7 @@ export class EmployeeController {
       const { phone } = req.user as EmployeePayload;
       return await this.employeeService.resetPasswordEmployee(phone, id);
     } catch (error) {
-      await this.errorsService.save(error.response);
+      throw new BadRequestException("error");
     }
   }
 
@@ -70,7 +70,7 @@ export class EmployeeController {
     try {
       return await this.employeeService.createManager(createManagerDto);
     } catch (error) {
-      await this.errorsService.save(error.response);
+      throw new BadRequestException(error.message);
     }
   }
 
@@ -81,7 +81,7 @@ export class EmployeeController {
       const { phone } = req.user as EmployeePayload;
       return await this.employeeService.getAllEmployee(phone);
     } catch (error) {
-      await this.errorsService.save(error.response);
+      throw new BadRequestException("error");
     }
   }
 
@@ -91,7 +91,7 @@ export class EmployeeController {
     try {
       return await this.employeeService.getOne(id);
     } catch (error) {
-      await this.errorsService.save(error.response);
+      throw new BadRequestException("error");
     }
   }
 
@@ -101,7 +101,7 @@ export class EmployeeController {
     try {
       return await this.employeeService.getAll(role);
     } catch (error) {
-      await this.errorsService.save(error.response);
+      throw new BadRequestException("error");
     }
   }
 
@@ -114,7 +114,7 @@ export class EmployeeController {
     try {
       return await this.employeeService.update(id, updateEmployeeDto);
     } catch (error) {
-      await this.errorsService.save(error.response);
+      throw new BadRequestException(error.message);
     }
   }
 }

@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { Repository } from "typeorm";
+import { Not, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 
 import { S3Service } from "~/s3/s3.service";
@@ -157,21 +157,12 @@ export class EmployeeService {
   }
 
   async getOne(id: string) {
-    const employee = await this.employeeRepository
-      .createQueryBuilder("employee")
-      .where("employee.id = :id", { id })
-      .select([
-        "employee.id",
-        "employee.name",
-        "employee.phone",
-        "employee.created_at",
-        "employee.isActive",
-        "employee.role",
-        "branch.name",
-        "branch.id",
-      ])
-      .leftJoin("employee.branch_id", "branch")
-      .getOne();
+    const employee = await this.employeeRepository.findOne({
+      where: {
+        id,
+      },
+      relations: ["branch"],
+    });
 
     if (!employee) {
       throw new BadRequestException(`Employee with id ${id} not exist`);
@@ -185,64 +176,40 @@ export class EmployeeService {
       role = ADMIN select all role
     */
     if (role === Role.Admin) {
-      return await this.employeeRepository
-        .createQueryBuilder("employee")
-        .select([
-          "employee.id",
-          "employee.name",
-          "employee.phone",
-          "employee.created_at",
-          "employee.isActive",
-          "employee.role",
-          "branch.name",
-          "branch.id",
-        ])
-        .leftJoin("employee.branch_id", "branch")
-        .take(15)
-        .getMany();
+      return await this.employeeRepository.find({
+        where: {
+          role: Not(Role.Admin),
+        },
+        select: ["id", "name", "phone", "created_at", "isActive", "role", "branch_id"],
+        relations: ["branch"],
+      });
     } else {
-      return await this.employeeRepository
-        .createQueryBuilder("employee")
-        .where("employee.role = :role", { role })
-        .select([
-          "employee.id",
-          "employee.name",
-          "employee.phone",
-          "employee.created_at",
-          "employee.isActive",
-          "employee.role",
-          "branch.name",
-          "branch.id",
-        ])
-        .leftJoin("employee.branch_id", "branch")
-        .take(15)
-        .getMany();
+      return await this.employeeRepository.find({
+        where: {
+          role,
+        },
+        //not select password
+        select: ["id", "name", "phone", "created_at", "isActive", "role", "branch_id"],
+        relations: ["branch"],
+      });
     }
   }
 
   async getAllEmployee(phone: string) {
     const branch = await this.getBranchIdByEmployeePhone(phone);
 
-    return await this.employeeRepository
-      .createQueryBuilder("employee")
-      .where("employee.branch_id = :branch_id", { branch_id: branch.id })
-      .andWhere("employee.role = :role", { role: Role.Employee })
-      .select([
-        "employee.id",
-        "employee.name",
-        "employee.phone",
-        "employee.created_at",
-        "employee.isActive",
-        "employee.role",
-        "branch.name",
-        "branch.id",
-      ])
-      .leftJoin("employee.branch_id", "branch")
-      .take(15)
-      .getMany();
+    return await this.employeeRepository.find({
+      where: {
+        branch_id: branch.id,
+        role: Role.Employee,
+      },
+      relations: ["branch"],
+    });
   }
 
   async update(id: string, updateEmployeeDto: UpdateEmployeeDto) {
+    console.log(updateEmployeeDto);
+    console.log(id);
     const employeeExist = await this.getOne(id);
 
     if (!employeeExist) {
@@ -254,6 +221,8 @@ export class EmployeeService {
       ...updateEmployeeDto,
     };
 
-    return await this.employeeRepository.save(newEmployee);
+    await this.employeeRepository.save(newEmployee);
+
+    return newEmployee;
   }
 }
