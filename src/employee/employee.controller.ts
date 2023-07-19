@@ -81,7 +81,7 @@ export class EmployeeController {
       const { phone } = req.user as EmployeePayload;
       return await this.employeeService.getAllEmployee(phone);
     } catch (error) {
-      throw new BadRequestException("error");
+      throw new BadRequestException(error.message);
     }
   }
 

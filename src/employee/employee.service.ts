@@ -147,7 +147,12 @@ export class EmployeeService {
   }
 
   async getBranchIdByEmployeePhone(phone: string): Promise<Branch> {
-    const employee = await this.employeeRepository.findOneBy({ phone });
+    const employee = await this.employeeRepository.findOne({
+      where: {
+        phone,
+      },
+      relations: ["branch"],
+    });
 
     if (!employee) {
       throw new BadRequestException("Employee not exist");

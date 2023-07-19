@@ -1,3 +1,4 @@
+import { Transform } from "class-transformer";
 import { IsDateString, IsNotEmpty, IsNumber, IsString, IsUUID } from "class-validator";
 
 export class CreateBatchDto {
@@ -5,10 +6,12 @@ export class CreateBatchDto {
   @IsNotEmpty()
   product_id: string;
 
+  @Transform(({ value }) => Number(value))
   @IsNumber()
   @IsNotEmpty()
   import_quantity: number;
 
+  @Transform(({ value }) => Number(value))
   @IsNumber()
   @IsNotEmpty()
   import_cost: number;
