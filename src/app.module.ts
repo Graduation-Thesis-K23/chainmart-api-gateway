@@ -20,6 +20,7 @@ import { BranchModule } from "./branch/branch.module";
 import { OrdersModule } from "./orders/orders.module";
 import { BatchesModule } from "./batches/batches.module";
 import { ErrorsModule } from "./errors/errors.module";
+import { AuthShipperModule } from "./auth-shipper/auth-shipper.module";
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { ErrorsModule } from "./errors/errors.module";
     OrdersModule,
     BatchesModule,
     ErrorsModule,
+    AuthShipperModule,
   ],
   exports: [ConfigModule],
 })
