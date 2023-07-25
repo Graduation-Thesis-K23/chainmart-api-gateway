@@ -152,9 +152,12 @@ export class UsersService {
     try {
       const image = await this.s3Service.uploadImageToS3(img);
       const user = await this.findOneByUsername(username);
+
       user.photo = image;
       await this.save(user);
-      return image;
+      return {
+        image,
+      };
     } catch (err) {
       throw new BadRequestException(err.message);
     }
@@ -200,10 +203,22 @@ export class UsersService {
 
     const user = await this.findOneByUsername(username);
 
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!user.password) {
+      user.password = newPassword;
+
+      await this.save(user);
+
+      return {
+        messageCode: "setting.changePasswordSuccess",
+      };
+    }
+
+    const isMatch = bcrypt.compareSync(currentPassword, user.password);
 
     if (!isMatch) {
-      throw new BadRequestException("current password is not correct");
+      {
+        messageCode: "setting.currentPasswordIncorrect";
+      }
     }
 
     user.password = newPassword;

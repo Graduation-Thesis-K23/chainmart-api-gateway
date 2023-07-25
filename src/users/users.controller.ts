@@ -18,31 +18,26 @@ import {
 import { Request } from "express";
 
 import { JwtAuthGuard } from "../auth/guards/jwt.guard";
-import { Roles } from "../auth-manager/decorators/roles.decorator";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { RolesGuard } from "../auth-manager/guards/role.guard";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { UpdateUserSettingDto } from "./dto/update-user-setting.dto";
 import { ReqUser } from "~/common/req-user.inter";
 import { ChangePasswordDto } from "./dto/change-password.dto";
-import { Role } from "~/shared";
 import { UserGuard } from "~/auth/guards";
 import { User } from "~/auth/decorators";
 
+@UseGuards(JwtAuthGuard, UserGuard)
 @Controller("users")
-// @UseGuards(JwtAuthGuard, RolesGuard, UserGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Roles(Role.Admin)
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
     return await this.usersService.create(createUserDto);
   }
 
-  @Roles(Role.Admin)
   @Get()
   async findAll() {
     return await this.usersService.findAll();
@@ -55,7 +50,6 @@ export class UsersController {
     return await this.usersService.getUserInfoSetting(user.username);
   }
 
-  @Roles(Role.Admin)
   @Get(":id")
   async findOne(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     return await this.usersService.findOne(id);
@@ -74,7 +68,6 @@ export class UsersController {
     return this.usersService.update(id, updateUserDto);
   }
 
-  @Roles(Role.Admin)
   @Delete(":id")
   async remove(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     return await this.usersService.remove(id);
@@ -107,7 +100,7 @@ export class UsersController {
     return await this.usersService.changeAvatar(imgBuffer, user.username);
   }
 
-  @Roles(Role.Employee)
+  @User()
   @Post("change-password")
   async changePassword(@Body() changePasswordDto: ChangePasswordDto, @Req() req: Request) {
     const user = req.user as ReqUser;
