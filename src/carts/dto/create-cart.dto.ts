@@ -1,4 +1,4 @@
-import { Type } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 import {
   ArrayNotEmpty,
   IsArray,
@@ -26,11 +26,12 @@ export class CreateCartDto {
   cart_details: CartDetailParam[];
 }
 
-class CartDetailParam {
+export class CartDetailParam {
   @IsString()
   @IsNotEmpty()
   product_id: string;
 
+  @Transform(({ value }) => Number(value))
   @IsNumber()
   @IsNotEmpty()
   quantity: number;

@@ -8260,6 +8260,11 @@ nopt@^7.0.0, nopt@^7.2.0:
   dependencies:
     abbrev "^2.0.0"
 
+normalize-mongoose@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/normalize-mongoose/-/normalize-mongoose-1.0.0.tgz#9556fe7e0e44a2066abb2b22bf0c2c8c5bdd3830"
+  integrity sha512-06gKa6YoKRpV4QK0qKI+VZPuVicnmrKyz62QdltvuYOxCbPTZK6Hao0e5s9z1v2iYY1jtZUdam8cgUyILWvwZw==
+
 normalize-package-data@^2.5.0:
   version "2.5.0"
   resolved "https://registry.npmjs.org/normalize-package-data/-/normalize-package-data-2.5.0.tgz"

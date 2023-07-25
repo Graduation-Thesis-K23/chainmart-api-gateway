@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
-import { CreateCartDto } from "./dto/create-cart.dto";
+import { CartDetailParam, CreateCartDto } from "./dto/create-cart.dto";
 import { UpdateCartDto } from "./dto/update-cart.dto";
 import { Cart } from "./entities/cart.entity";
 import { User } from "~/users/entities/user.entity";
@@ -17,8 +17,14 @@ export class CartsService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async create(createCartDto: CreateCartDto): Promise<Cart> {
-    try {
+  async create(username, createCartDto: CartDetailParam) {
+    console.log("username", username);
+    console.log("createCartDto", createCartDto);
+    return {
+      status: "success",
+    };
+
+    /* try {
       const user = await this.userRepository.findOneBy({ id: createCartDto.user_id });
       if (!user) {
         throw new BadRequestException("User not found");
@@ -35,11 +41,13 @@ export class CartsService {
     } catch (error) {
       console.error(error);
       throw new BadRequestException("Data is not valid!");
-    }
+    } */
   }
 
-  async findAll(): Promise<Cart[]> {
-    try {
+  async findAll(username: string): Promise<Cart[]> {
+    console.log(username);
+    return [];
+    /* try {
       return await this.cartRepository.find({
         relations: {
           user: true,
@@ -49,7 +57,46 @@ export class CartsService {
     } catch (error) {
       console.error(error);
       throw new BadRequestException("Cannot find carts");
-    }
+    } */
+  }
+
+  async updateCart(username: string, action, product_id: string) {
+    console.log(username);
+    console.log(action);
+    console.log(product_id);
+    return {
+      status: "success",
+    };
+    /* try {
+      return await this.cartRepository.find({
+        relations: {
+          user: true,
+          cart_details: true,
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException("Cannot find carts");
+    } */
+  }
+
+  async removeCart(username: string, product_id: string) {
+    console.log(username);
+    console.log(product_id);
+    return {
+      status: "success",
+    };
+    /* try {
+      return await this.cartRepository.find({
+        relations: {
+          user: true,
+          cart_details: true,
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException("Cannot find carts");
+    } */
   }
 
   async findOne(id: string): Promise<Cart> {

@@ -6,6 +6,7 @@ import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 
 import { S3Service } from "~/s3/s3.service";
+import { SearchAndFilterQueryDto } from "./dto/search-and-filter.dto";
 
 @Injectable()
 export class ProductsService {
@@ -106,5 +107,18 @@ export class ProductsService {
       console.error(error);
       throw new BadRequestException(error);
     }
+  }
+
+  async searchAndFilter(query: SearchAndFilterQueryDto) {
+    console.log(query);
+    return this.findAll(query.page, 12);
+  }
+
+  async search(keyword: string) {
+    console.log({ keyword });
+
+    const result = await this.findAll(1, 5);
+
+    return result.docs;
   }
 }

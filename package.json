@@ -48,6 +48,7 @@
     "moment": "^2.29.4",
     "nest-winston": "^1.9.3",
     "nodemailer": "^6.9.3",
+    "normalize-mongoose": "^1.0.0",
     "passport": "^0.6.0",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth2": "^0.2.0",
