@@ -27,8 +27,8 @@ export class OrdersService {
     private readonly productService: ProductsService,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto): Promise<any> {
-    const user = await this.userRepository.findOneBy({ id: createOrderDto.user_id });
+  async create(username: string, createOrderDto: CreateOrderDto): Promise<any> {
+    const user = await this.userRepository.findOneBy({ username });
     if (!user) {
       throw new BadRequestException("User not found");
     }

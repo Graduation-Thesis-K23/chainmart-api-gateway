@@ -16,7 +16,7 @@ import {
 import { Request } from "express";
 
 import { CartsService } from "./carts.service";
-import { CartDetailParam, CreateCartDto } from "./dto/create-cart.dto";
+import { CartDetailParam } from "./dto/create-cart.dto";
 import { UpdateCartDto } from "./dto/update-cart.dto";
 import { JwtAuthGuard, UserGuard } from "~/auth/guards";
 import { ReqUser } from "~/common/req-user.inter";

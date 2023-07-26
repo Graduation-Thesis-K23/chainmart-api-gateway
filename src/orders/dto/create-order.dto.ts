@@ -5,17 +5,24 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   IsUUID,
   ValidateNested,
 } from "class-validator";
-import { Payment } from "src/shared";
+import { Payment } from "~/shared";
+
+class OrderDetailParam {
+  @IsString()
+  @IsNotEmpty()
+  product_id: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  quantity: number;
+}
 
 export class CreateOrderDto {
-  @IsUUID(4)
-  @IsNotEmpty()
-  user_id: string;
-
   @IsUUID(4)
   @IsNotEmpty()
   address_id: string;
@@ -28,14 +35,8 @@ export class CreateOrderDto {
   @ArrayNotEmpty()
   @Type(() => OrderDetailParam)
   order_details: OrderDetailParam[];
-}
 
-class OrderDetailParam {
   @IsString()
-  @IsNotEmpty()
-  product_id: string;
-
-  @IsNumber()
-  @IsNotEmpty()
-  quantity: number;
+  @IsOptional()
+  note?: string;
 }
