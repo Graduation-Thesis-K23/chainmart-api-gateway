@@ -159,6 +159,7 @@ export class OrdersService {
 
   async update(id: string, updateOrderDto: UpdateOrderDto) {
     try {
+      console.log(updateOrderDto);
       return `This action updates a #${id} order`;
     } catch (error) {
       console.error(error);

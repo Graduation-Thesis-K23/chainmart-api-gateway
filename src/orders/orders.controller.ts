@@ -148,6 +148,7 @@ export class OrdersController {
         city: "TP. HCM",
         ward: "Phường 123",
       },
+      shipping_date: Date.now(),
       shipped_date: Date.now(),
       approved_date: Date.now(),
       status: OrderStatus.Completed,
@@ -431,9 +432,86 @@ export class OrdersController {
     ];
   }
 
-  @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.ordersService.findOne(id);
+  @Get("employee")
+  @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
+  @Roles(Role.Employee)
+  getOrdersByEmployee(@Req() req: Request) {
+    const user = req.user as EmployeePayload;
+
+    console.log(user);
+
+    return this.orders.map((order) => ({
+      ...order,
+      user: {
+        id: Math.random().toString(),
+        name: Math.random().toString(),
+        email: Math.random().toString() + "@gmail.com",
+        phone: "0123456789" + Math.random().toString(),
+        username: Math.random().toString() + "username",
+      },
+      created_at: Date.now().toLocaleString(),
+      total: 100000 + Math.random() * 100000,
+    }));
+  }
+
+  @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
+  @Roles(Role.Employee)
+  @Patch(":id/approve")
+  approve(@Param("id") id: string, @Req() req: Request) {
+    const user = req.user as EmployeePayload;
+    console.log(user);
+    console.log(id);
+
+    const order = this.orders.find((order) => order.id === id);
+
+    if (!order) {
+      throw new BadRequestException("Order not found");
+    }
+
+    order.status = OrderStatus.Approved;
+    order.approved_date = Date.now();
+
+    return order;
+  }
+
+  @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
+  @Roles(Role.Employee)
+  @Patch(":id/reject")
+  reject(@Param("id") id: string, @Req() req: Request) {
+    const user = req.user as EmployeePayload;
+    console.log(user);
+    console.log(id);
+
+    const order = this.orders.find((order) => order.id === id);
+
+    if (!order) {
+      throw new BadRequestException("Order not found");
+    }
+
+    order.status = OrderStatus.Cancelled;
+    order.cancelled_date = Date.now();
+
+    return order;
+  }
+
+  @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
+  @Roles(Role.Employee)
+  @Patch(":id/begin-ship")
+  beginShip(@Param("id") id: string, @Req() req: Request) {
+    const user = req.user as EmployeePayload;
+    console.log(user);
+    console.log(id);
+
+    const order = this.orders.find((order) => order.id === id);
+
+    if (!order) {
+      throw new BadRequestException("Order not found");
+    }
+
+    order.status = OrderStatus.Shipping;
+    order.shipping_date = Date.now();
+
+    return order;
   }
 
   @Patch(":id")
