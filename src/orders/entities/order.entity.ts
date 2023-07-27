@@ -26,18 +26,27 @@ export class Order extends BaseEntity {
   estimated_shipped_date: string;
 
   @Column({ type: "date", nullable: true })
-  shipped_date: string;
-
-  @Column({ type: "date", nullable: true })
   approved_date: string;
 
   @Column({ type: "date", nullable: true })
-  return_date: string;
+  packaged_date: string;
+
+  @Column({ type: "date", nullable: true })
+  started_date: string;
+
+  @Column({ type: "date", nullable: true })
+  completed_date: string;
+
+  @Column({ type: "date", nullable: true })
+  cancelled_date: string;
+
+  @Column({ type: "date", nullable: true })
+  returned_date: string;
 
   @Column({
     type: "enum",
     enum: OrderStatus,
-    default: OrderStatus.Processing,
+    default: OrderStatus.Created,
   })
   status: OrderStatus;
 

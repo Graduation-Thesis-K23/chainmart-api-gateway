@@ -16,6 +16,7 @@ import {
   UseInterceptors,
   UploadedFiles,
   ParseFilePipeBuilder,
+  ParseIntPipe,
 } from "@nestjs/common";
 import { Request } from "express";
 
@@ -31,6 +32,9 @@ import { ReqUser } from "~/common/req-user.inter";
 import { CommentOrderDto } from "./dto/comment-order.dto";
 import { FilesInterceptor } from "@nestjs/platform-express";
 import { JwtEmployeeAuthGuard } from "~/auth-manager/guards/jwt-employee.guards";
+import { ShipperGuard } from "~/auth-shipper/guards/shipper.guard";
+import { Shipper } from "~/auth-shipper/decorators/shipper.decorator";
+import { JwtShipperAuthGuard } from "~/auth-shipper/guards/jwt-shipper.guards";
 
 @Controller("orders")
 export class OrdersController {
@@ -47,7 +51,7 @@ export class OrdersController {
         city: "TP. HCM",
         ward: "Phường 123",
       },
-      status: OrderStatus.Processing,
+      status: OrderStatus.Created,
       payment: Payment.Cash,
       products: [
         {
@@ -115,7 +119,7 @@ export class OrdersController {
         ward: "Phường 123",
       },
       approved_date: Date.now(),
-      status: OrderStatus.Shipping,
+      status: OrderStatus.Created,
       payment: Payment.Cash,
       products: [
         {
@@ -347,7 +351,7 @@ export class OrdersController {
     // clone order
     const newOrder = { ...order };
     newOrder.id = Math.random().toString();
-    newOrder.status = OrderStatus.Processing;
+    newOrder.status = OrderStatus.Created;
     newOrder.create_at = Date.now();
     newOrder.approved_date = null;
     newOrder.shipped_date = null;
@@ -405,7 +409,7 @@ export class OrdersController {
       {
         id: "1",
         created_at: Date.now().toLocaleString(),
-        status: OrderStatus.Processing,
+        status: OrderStatus.Created,
         payment: Payment.Cash,
         name: "Nguyễn Văn A",
         phone: "0123456789",
@@ -414,7 +418,7 @@ export class OrdersController {
       {
         id: "2",
         created_at: Date.now().toLocaleString(),
-        status: OrderStatus.Processing,
+        status: OrderStatus.Created,
         payment: Payment.Cash,
         name: "Nguyễn Văn B",
         phone: "01234567839",
@@ -423,7 +427,7 @@ export class OrdersController {
       {
         id: "3",
         created_at: Date.now().toLocaleString(),
-        status: OrderStatus.Processing,
+        status: OrderStatus.Created,
         payment: Payment.Cash,
         name: "Nguyễn Văn C",
         phone: "01234526789",
@@ -508,10 +512,251 @@ export class OrdersController {
       throw new BadRequestException("Order not found");
     }
 
-    order.status = OrderStatus.Shipping;
+    order.status = OrderStatus.Started;
     order.shipping_date = Date.now();
 
     return order;
+  }
+
+  @UseGuards(JwtShipperAuthGuard, ShipperGuard)
+  @Shipper()
+  @Get("shipper")
+  finishShip(
+    @Query("status") status: OrderStatus,
+    @Query("page", new ParseIntPipe()) page: number,
+    @Req() req: Request,
+  ) {
+    const user = req.user as EmployeePayload;
+    console.log("status", status);
+    console.log("page", page);
+    console.log("user", user);
+
+    // view user host
+    console.log("host", req.headers.host);
+
+    return [
+      {
+        id: "1",
+        address: {
+          id: "1",
+          name: "Nguyễn Văn A",
+          phone: "0123456789",
+          street: "123 Đường ABC",
+          district: "Quận XYZ",
+          city: "TP. HCM",
+          ward: "Phường 123",
+        },
+        packaged_date: Date.now(),
+        approved_date: Date.now() - 1000000,
+        started_date: Date.now() - 1000000,
+        completed_date: Date.now() - 1000000,
+        cancelled_date: Date.now() - 1000000,
+        status,
+        products: [
+          {
+            id: "1",
+            name: "Vỏ gối cotton Thắng Lợi chính hãng ( gối nằm - gối ôm ) [ảnh thất 2]",
+            price: 100000,
+            sale: 0,
+            quantity: 1,
+            image: "2ba48c4c",
+          },
+          {
+            id: "2",
+            name: "Vỏ gối cotton Thắng Lợi chính hãng ( gối nằm - gối ôm ) [ảnh thất 2] 21",
+            price: 1000000,
+            sale: 2,
+            quantity: 2,
+            image: "2ba48c4c",
+          },
+        ],
+      },
+      {
+        id: "2",
+        address: {
+          id: "1",
+          name: "Nguyễn Văn A",
+          phone: "0123456789",
+          street: "123 Đường ABC",
+          district: "Quận XYZ",
+          city: "TP. HCM",
+          ward: "Phường 123",
+        },
+        packaged_date: Date.now(),
+        approved_date: Date.now() - 1000000,
+        started_date: Date.now() - 1000000,
+        completed_date: Date.now() - 1000000,
+        cancelled_date: Date.now() - 1000000,
+        status,
+        payment: Payment.Cash,
+        products: [
+          {
+            id: "1",
+            name: "Áo thun nam",
+            price: 100000,
+            sale: 0,
+            quantity: 1,
+            image: "2ba48c4c",
+          },
+          {
+            id: "2",
+            name: "Áo thun nam 1",
+            price: 1000000,
+            sale: 2,
+            quantity: 2,
+            image: "2ba48c4c",
+          },
+        ],
+      },
+      {
+        id: "3",
+        address: {
+          id: "1",
+          name: "Nguyễn Văn A",
+          phone: "0123456789",
+          street: "123 Đường ABC",
+          district: "Quận XYZ",
+          city: "TP. HCM",
+          ward: "Phường 123",
+        },
+        packaged_date: Date.now(),
+        approved_date: Date.now() - 1000000,
+        started_date: Date.now() - 1000000,
+        completed_date: Date.now() - 1000000,
+        cancelled_date: Date.now() - 1000000,
+        status,
+        payment: Payment.Cash,
+        products: [
+          {
+            id: "1",
+            name: "Áo thun nam",
+            price: 100000,
+            sale: 0,
+            quantity: 1,
+            image: "2ba48c4c",
+          },
+          {
+            id: "2",
+            name: "Áo thun nam 1",
+            price: 1000000,
+            sale: 2,
+            quantity: 2,
+            image: "2ba48c4c",
+          },
+        ],
+      },
+      {
+        id: "4",
+        address: {
+          id: "1",
+          name: "Nguyễn Văn A",
+          phone: "0123456789",
+          street: "123 Đường ABC",
+          district: "Quận XYZ",
+          city: "TP. HCM",
+          ward: "Phường 123",
+        },
+        packaged_date: Date.now(),
+        approved_date: Date.now() - 1000000,
+        started_date: Date.now() - 1000000,
+        completed_date: Date.now() - 1000000,
+        cancelled_date: Date.now() - 1000000,
+        status,
+        payment: Payment.Cash,
+        products: [
+          {
+            id: "1",
+            name: "Áo thun nam",
+            price: 100000,
+            sale: 0,
+            quantity: 1,
+            image: "2ba48c4c",
+          },
+          {
+            id: "2",
+            name: "Áo thun nam 1",
+            price: 1000000,
+            sale: 2,
+            quantity: 2,
+            image: "2ba48c4c",
+          },
+        ],
+      },
+      {
+        id: "5",
+        address: {
+          id: "1",
+          name: "Nguyễn Văn A",
+          phone: "0123456789",
+          street: "123 Đường ABC",
+          district: "Quận XYZ",
+          city: "TP. HCM",
+          ward: "Phường 123",
+        },
+        packaged_date: Date.now(),
+        approved_date: Date.now() - 1000000,
+        started_date: Date.now() - 1000000,
+        completed_date: Date.now() - 1000000,
+        cancelled_date: Date.now() - 1000000,
+        status,
+        payment: Payment.Cash,
+        products: [
+          {
+            id: "1",
+            name: "Áo thun nam",
+            price: 100000,
+            sale: 0,
+            quantity: 1,
+            image: "2ba48c4c",
+          },
+          {
+            id: "2",
+            name: "Áo thun nam 1",
+            price: 1000000,
+            sale: 2,
+            quantity: 2,
+            image: "2ba48c4c",
+          },
+        ],
+      },
+      {
+        id: "6",
+        address: {
+          id: "1",
+          name: "Nguyễn Văn A",
+          phone: "0123456789",
+          street: "123 Đường ABC",
+          district: "Quận XYZ",
+          city: "TP. HCM",
+          ward: "Phường 123",
+        },
+        packaged_date: Date.now(),
+        approved_date: Date.now() - 1000000,
+        started_date: Date.now() - 1000000,
+        completed_date: Date.now() - 1000000,
+        cancelled_date: Date.now() - 1000000,
+        status,
+        payment: Payment.Cash,
+        products: [
+          {
+            id: "1",
+            name: "Áo thun nam",
+            price: 100000,
+            sale: 0,
+            quantity: 1,
+            image: "2ba48c4c",
+          },
+          {
+            id: "2",
+            name: "Áo thun nam 1",
+            price: 1000000,
+            sale: 2,
+            quantity: 2,
+            image: "2ba48c4c",
+          },
+        ],
+      },
+    ];
   }
 
   @Patch(":id")

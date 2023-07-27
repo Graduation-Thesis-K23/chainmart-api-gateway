@@ -20,7 +20,7 @@ async function bootstrap() {
   app.setGlobalPrefix("/api");
 
   app.enableCors({
-    origin: [clientUrl, managerUrl, branchUrl, adminUrl, employeeUrl],
+    origin: [clientUrl, managerUrl, branchUrl, adminUrl, employeeUrl, "*"],
     credentials: true,
   });
   app.use(cookieParser());

@@ -6,7 +6,7 @@ import { ConfigService } from "@nestjs/config";
 import { EmployeePayload } from "../../shared";
 
 @Injectable()
-export class EmployeeJwtStrategy extends PassportStrategy(Strategy, "jwt-sh") {
+export class ShipperJwtStrategy extends PassportStrategy(Strategy, "jwt-shipper") {
   constructor(private readonly configService: ConfigService) {
     super({
       ignoreExpiration: false,

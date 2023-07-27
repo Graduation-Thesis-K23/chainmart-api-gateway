@@ -12,6 +12,8 @@ export class ShipperGuard implements CanActivate {
 
     const { user } = context.switchToHttp().getRequest();
 
+    console.log("user", user);
+
     return isShipper && user.role === "SHIPPER";
   }
 }
