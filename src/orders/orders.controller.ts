@@ -25,7 +25,7 @@ import { UpdateOrderDto } from "./dto/update-order.dto";
 import { JwtAuthGuard, UserGuard } from "~/auth/guards";
 import { RolesGuard } from "~/auth-manager/guards/role.guard";
 import { Roles } from "~/auth-manager/decorators/roles.decorator";
-import { OrderStatus, Payment, Role } from "~/shared";
+import { EmployeePayload, OrderStatus, Payment, Role } from "~/shared";
 import { User } from "~/auth/decorators";
 import { ReqUser } from "~/common/req-user.inter";
 import { CommentOrderDto } from "./dto/comment-order.dto";
@@ -395,8 +395,40 @@ export class OrdersController {
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
   @Roles(Role.Branch)
   @Get("branch")
-  branch(@Param("id", new ParseUUIDPipe({ version: "4" })) userId: string) {
-    return this.ordersService.findAllByUserId(userId);
+  branch(@Req() req: Request) {
+    const user = req.user as EmployeePayload;
+
+    console.log(user);
+
+    return [
+      {
+        id: "1",
+        created_at: Date.now().toLocaleString(),
+        status: OrderStatus.Processing,
+        payment: Payment.Cash,
+        name: "Nguyễn Văn A",
+        phone: "0123456789",
+        total: 100000,
+      },
+      {
+        id: "2",
+        created_at: Date.now().toLocaleString(),
+        status: OrderStatus.Processing,
+        payment: Payment.Cash,
+        name: "Nguyễn Văn B",
+        phone: "01234567839",
+        total: 120000,
+      },
+      {
+        id: "3",
+        created_at: Date.now().toLocaleString(),
+        status: OrderStatus.Processing,
+        payment: Payment.Cash,
+        name: "Nguyễn Văn C",
+        phone: "01234526789",
+        total: 110000,
+      },
+    ];
   }
 
   @Get(":id")

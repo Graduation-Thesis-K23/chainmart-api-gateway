@@ -8,6 +8,10 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Batch } from "./entities/batch.entity";
 import { ProductsService } from "~/products/products.service";
 
+interface CreateBatchDto1 extends CreateBatchDto {
+  employee_create_id: string;
+}
+
 @Injectable()
 export class BatchesService {
   constructor(
@@ -17,7 +21,7 @@ export class BatchesService {
     private readonly productService: ProductsService,
   ) {}
 
-  async create(createBatchDto: CreateBatchDto): Promise<Batch> {
+  async create(createBatchDto: CreateBatchDto1): Promise<Batch> {
     const product = await this.productService.findById(createBatchDto.product_id);
     if (!product) {
       throw new BadRequestException("Product not found");

@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { GetDashboardDataDto } from "./dto/get-dashboard-data.dto";
+import { GetDashboardDataBranchDto } from "./dto/get-dashboard-data-branch.dto";
 
 @Injectable()
 export class DashboardService {
@@ -41,7 +42,7 @@ export class DashboardService {
     ];
   }
 
-  getDashboardDataBranch(getDashboardDataDto: GetDashboardDataDto) {
+  getDashboardDataBranch(getDashboardDataDto: GetDashboardDataBranchDto) {
     console.log(getDashboardDataDto);
     return [
       {

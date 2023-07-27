@@ -16,6 +16,7 @@ export class CreateBatchDto {
   @IsNotEmpty()
   import_cost: number;
 
+  @Transform(({ value }) => Number(value))
   @IsNumber()
   @IsNotEmpty()
   acceptable_expiry_threshold: number;
@@ -23,10 +24,6 @@ export class CreateBatchDto {
   @IsUUID(4)
   @IsNotEmpty()
   branch_id: string;
-
-  @IsUUID(4)
-  @IsNotEmpty()
-  employee_create_id: string;
 
   @IsDateString()
   @IsNotEmpty()

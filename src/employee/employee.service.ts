@@ -73,7 +73,7 @@ export class EmployeeService {
 
     const employee = new Employee({
       ...createManagerDto,
-      role: Role.Manager,
+      role: Role.Branch,
       password: "Chainmart123@@",
     });
 

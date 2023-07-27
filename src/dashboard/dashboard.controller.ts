@@ -6,6 +6,7 @@ import { Roles } from "~/auth-manager/decorators/roles.decorator";
 import { Role } from "~/shared";
 import { JwtEmployeeAuthGuard } from "~/auth-manager/guards/jwt-employee.guards";
 import { RolesGuard } from "~/auth-manager/guards/role.guard";
+import { GetDashboardDataBranchDto } from "./dto/get-dashboard-data-branch.dto";
 
 @Controller("dashboard")
 @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
@@ -20,7 +21,7 @@ export class DashboardController {
 
   @Roles(Role.Branch)
   @Get("/branch")
-  getDashboardDataBranch(@Query() getDashboardDataDto: GetDashboardDataDto) {
-    return this.dashboardService.getDashboardDataAdmin(getDashboardDataDto);
+  getDashboardDataBranch(@Query() getDashboardDataDto: GetDashboardDataBranchDto) {
+    return this.dashboardService.getDashboardDataBranch(getDashboardDataDto);
   }
 }
