@@ -30,6 +30,7 @@ import { User } from "~/auth/decorators";
 import { ReqUser } from "~/common/req-user.inter";
 import { CommentOrderDto } from "./dto/comment-order.dto";
 import { FilesInterceptor } from "@nestjs/platform-express";
+import { JwtEmployeeAuthGuard } from "~/auth-manager/guards/jwt-employee.guards";
 
 @Controller("orders")
 export class OrdersController {
@@ -391,8 +392,10 @@ export class OrdersController {
     };
   }
 
-  @Get("users/:id")
-  findAllByUserId(@Param("id", new ParseUUIDPipe({ version: "4" })) userId: string) {
+  @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
+  @Roles(Role.Branch)
+  @Get("branch")
+  branch(@Param("id", new ParseUUIDPipe({ version: "4" })) userId: string) {
     return this.ordersService.findAllByUserId(userId);
   }
 
