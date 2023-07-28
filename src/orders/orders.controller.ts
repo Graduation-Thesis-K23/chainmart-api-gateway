@@ -325,25 +325,8 @@ export class OrdersController {
   @Post("resell")
   resell(@Body("order_id") order_id: string, @Req() req: Request) {
     const user = req.user as ReqUser;
-    console.log(order_id);
-    console.log(user);
-    console.log("resell order");
 
-    const order = this.orders.find((order) => order.id === order_id);
-
-    // clone order
-    const newOrder = { ...order };
-    newOrder.id = Math.random().toString();
-    newOrder.status = OrderStatus.Created;
-    newOrder.create_at = Date.now();
-    newOrder.approved_date = null;
-    newOrder.shipped_date = null;
-    newOrder.cancelled_date = null;
-    newOrder.return_date = null;
-
-    this.orders.push(newOrder);
-
-    return newOrder;
+    return this.ordersService.resell(user.username, order_id);
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)

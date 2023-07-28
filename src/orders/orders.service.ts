@@ -224,6 +224,62 @@ export class OrdersService {
     return order;
   }
 
+  async resell(username: string, orderId: string) {
+    const user = await this.userRepository.findOneBy({ username });
+
+    if (!user) {
+      throw new BadRequestException("User not found");
+    }
+
+    const order = await this.orderRepository.findOne({
+      where: {
+        id: orderId,
+        user_id: user.id,
+      },
+      relations: {
+        order_details: true,
+        address: true,
+      },
+    });
+
+    if (!order) {
+      throw new BadRequestException("Order not found");
+    }
+
+    if (order.status !== OrderStatus.Completed && order.status !== OrderStatus.Cancelled) {
+      throw new BadRequestException("Cannot resell order");
+    }
+
+    const { order_details, payment, address_id, user_id, address } = order;
+    const newOrder = this.orderRepository.create({
+      order_details,
+      payment,
+      address_id,
+      user_id,
+    });
+
+    const result = await this.orderRepository.save(newOrder);
+
+    const ids = order_details.map((detail) => detail.product_id);
+
+    const products = await this.productService.findByIds(ids);
+
+    const newOrderDetails = order_details.map((detail) => {
+      const product = products.find((product) => product.id === detail.product_id);
+      return {
+        ...detail,
+        image: product.images[0],
+        ...product,
+      };
+    });
+
+    return {
+      ...result,
+      address,
+      order_details: newOrderDetails,
+    };
+  }
+
   async getOrdersByEmployee(phone: string, status: OrderStatus | "all", search: string) {
     console.log(phone);
 
@@ -337,6 +393,10 @@ export class OrdersService {
     const order = await this.orderRepository.findOne({
       where: {
         id: orderId,
+      },
+      relations: {
+        order_details: true,
+        address: true,
       },
     });
 
