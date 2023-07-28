@@ -436,265 +436,55 @@ export class OrdersController {
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
   @Roles(Role.Employee)
   @Patch(":id/begin-ship")
-  beginShip(@Param("id") id: string, @Req() req: Request) {
+  startShipmentByEmployee(@Param("id") id: string, @Req() req: Request) {
     const user = req.user as EmployeePayload;
-    console.log(user);
-    console.log(id);
 
-    const order = this.orders.find((order) => order.id === id);
-
-    if (!order) {
-      throw new BadRequestException("Order not found");
-    }
-
-    order.status = OrderStatus.Started;
-    order.shipping_date = Date.now();
-
-    return order;
+    return this.ordersService.startShipmentByEmployee(user.phone, id);
   }
+
+  // shipper API
 
   @UseGuards(JwtShipperAuthGuard, ShipperGuard)
   @Shipper()
   @Get("shipper")
-  finishShip(
+  getOrdersByShipper(
     @Query("status") status: OrderStatus,
     @Query("page", new ParseIntPipe()) page: number,
     @Req() req: Request,
   ) {
     const user = req.user as EmployeePayload;
-    console.log("status", status);
-    console.log("page", page);
-    console.log("user", user);
 
-    // view user host
-    console.log("host", req.headers.host);
-
-    return [
-      {
-        id: "1",
-        address: {
-          id: "1",
-          name: "Nguyễn Văn A",
-          phone: "0123456789",
-          street: "123 Đường ABC",
-          district: "Quận XYZ",
-          city: "TP. HCM",
-          ward: "Phường 123",
-        },
-        packaged_date: Date.now(),
-        approved_date: Date.now() - 1000000,
-        started_date: Date.now() - 1000000,
-        completed_date: Date.now() - 1000000,
-        cancelled_date: Date.now() - 1000000,
-        status,
-        products: [
-          {
-            id: "1",
-            name: "Vỏ gối cotton Thắng Lợi chính hãng ( gối nằm - gối ôm ) [ảnh thất 2]",
-            price: 100000,
-            sale: 0,
-            quantity: 1,
-            image: "2ba48c4c",
-          },
-          {
-            id: "2",
-            name: "Vỏ gối cotton Thắng Lợi chính hãng ( gối nằm - gối ôm ) [ảnh thất 2] 21",
-            price: 1000000,
-            sale: 2,
-            quantity: 2,
-            image: "2ba48c4c",
-          },
-        ],
-      },
-      {
-        id: "2",
-        address: {
-          id: "1",
-          name: "Nguyễn Văn A",
-          phone: "0123456789",
-          street: "123 Đường ABC",
-          district: "Quận XYZ",
-          city: "TP. HCM",
-          ward: "Phường 123",
-        },
-        packaged_date: Date.now(),
-        approved_date: Date.now() - 1000000,
-        started_date: Date.now() - 1000000,
-        completed_date: Date.now() - 1000000,
-        cancelled_date: Date.now() - 1000000,
-        status,
-        payment: Payment.Cash,
-        products: [
-          {
-            id: "1",
-            name: "Áo thun nam",
-            price: 100000,
-            sale: 0,
-            quantity: 1,
-            image: "2ba48c4c",
-          },
-          {
-            id: "2",
-            name: "Áo thun nam 1",
-            price: 1000000,
-            sale: 2,
-            quantity: 2,
-            image: "2ba48c4c",
-          },
-        ],
-      },
-      {
-        id: "3",
-        address: {
-          id: "1",
-          name: "Nguyễn Văn A",
-          phone: "0123456789",
-          street: "123 Đường ABC",
-          district: "Quận XYZ",
-          city: "TP. HCM",
-          ward: "Phường 123",
-        },
-        packaged_date: Date.now(),
-        approved_date: Date.now() - 1000000,
-        started_date: Date.now() - 1000000,
-        completed_date: Date.now() - 1000000,
-        cancelled_date: Date.now() - 1000000,
-        status,
-        payment: Payment.Cash,
-        products: [
-          {
-            id: "1",
-            name: "Áo thun nam",
-            price: 100000,
-            sale: 0,
-            quantity: 1,
-            image: "2ba48c4c",
-          },
-          {
-            id: "2",
-            name: "Áo thun nam 1",
-            price: 1000000,
-            sale: 2,
-            quantity: 2,
-            image: "2ba48c4c",
-          },
-        ],
-      },
-      {
-        id: "4",
-        address: {
-          id: "1",
-          name: "Nguyễn Văn A",
-          phone: "0123456789",
-          street: "123 Đường ABC",
-          district: "Quận XYZ",
-          city: "TP. HCM",
-          ward: "Phường 123",
-        },
-        packaged_date: Date.now(),
-        approved_date: Date.now() - 1000000,
-        started_date: Date.now() - 1000000,
-        completed_date: Date.now() - 1000000,
-        cancelled_date: Date.now() - 1000000,
-        status,
-        payment: Payment.Cash,
-        products: [
-          {
-            id: "1",
-            name: "Áo thun nam",
-            price: 100000,
-            sale: 0,
-            quantity: 1,
-            image: "2ba48c4c",
-          },
-          {
-            id: "2",
-            name: "Áo thun nam 1",
-            price: 1000000,
-            sale: 2,
-            quantity: 2,
-            image: "2ba48c4c",
-          },
-        ],
-      },
-      {
-        id: "5",
-        address: {
-          id: "1",
-          name: "Nguyễn Văn A",
-          phone: "0123456789",
-          street: "123 Đường ABC",
-          district: "Quận XYZ",
-          city: "TP. HCM",
-          ward: "Phường 123",
-        },
-        packaged_date: Date.now(),
-        approved_date: Date.now() - 1000000,
-        started_date: Date.now() - 1000000,
-        completed_date: Date.now() - 1000000,
-        cancelled_date: Date.now() - 1000000,
-        status,
-        payment: Payment.Cash,
-        products: [
-          {
-            id: "1",
-            name: "Áo thun nam",
-            price: 100000,
-            sale: 0,
-            quantity: 1,
-            image: "2ba48c4c",
-          },
-          {
-            id: "2",
-            name: "Áo thun nam 1",
-            price: 1000000,
-            sale: 2,
-            quantity: 2,
-            image: "2ba48c4c",
-          },
-        ],
-      },
-      {
-        id: "6",
-        address: {
-          id: "1",
-          name: "Nguyễn Văn A",
-          phone: "0123456789",
-          street: "123 Đường ABC",
-          district: "Quận XYZ",
-          city: "TP. HCM",
-          ward: "Phường 123",
-        },
-        packaged_date: Date.now(),
-        approved_date: Date.now() - 1000000,
-        started_date: Date.now() - 1000000,
-        completed_date: Date.now() - 1000000,
-        cancelled_date: Date.now() - 1000000,
-        status,
-        payment: Payment.Cash,
-        products: [
-          {
-            id: "1",
-            name: "Áo thun nam",
-            price: 100000,
-            sale: 0,
-            quantity: 1,
-            image: "2ba48c4c",
-          },
-          {
-            id: "2",
-            name: "Áo thun nam 1",
-            price: 1000000,
-            sale: 2,
-            quantity: 2,
-            image: "2ba48c4c",
-          },
-        ],
-      },
-    ];
+    return this.ordersService.getOrdersByShipper(user.phone, status, page);
   }
 
-  @Patch(":id")
+  @UseGuards(JwtShipperAuthGuard, ShipperGuard)
+  @Shipper()
+  @Patch(":id/shipper/started")
+  startShipmentByShipper(@Param("id") id: string, @Req() req: Request) {
+    const user = req.user as EmployeePayload;
+
+    return this.ordersService.startShipmentByShipper(user.phone, id);
+  }
+
+  @UseGuards(JwtShipperAuthGuard, ShipperGuard)
+  @Shipper()
+  @Patch(":id/shipper/completed")
+  completedOrderByShipper(@Param("id") id: string, @Req() req: Request) {
+    const user = req.user as EmployeePayload;
+
+    return this.ordersService.completedOrderByShipper(user.phone, id);
+  }
+
+  @UseGuards(JwtShipperAuthGuard, ShipperGuard)
+  @Shipper()
+  @Patch(":id/shipper/cancelled")
+  cancelledOrderByShipper(@Param("id") id: string, @Req() req: Request) {
+    const user = req.user as EmployeePayload;
+
+    return this.ordersService.cancelledOrderByShipper(user.phone, id);
+  }
+
+  /* @Patch(":id")
   update(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string, @Body() updateOrderDto: UpdateOrderDto) {
     return this.ordersService.update(id, updateOrderDto);
   }
@@ -703,5 +493,5 @@ export class OrdersController {
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     return this.ordersService.remove(id);
-  }
+  } */
 }

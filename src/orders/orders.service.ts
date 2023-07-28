@@ -408,13 +408,190 @@ export class OrdersService {
       throw new BadRequestException("Cannot start shipment");
     }
 
-    order.status = OrderStatus.Returned;
+    order.status = OrderStatus.Packaged;
+    order.packaged_date = new Date();
+    order.packaged_by = phone;
+
+    await this.orderRepository.save(order);
+
+    return order;
+  }
+
+  // shipper services
+  async getOrdersByShipper(phone: string, status: OrderStatus, page: number) {
+    console.log(phone);
+
+    const orders = await this.orderRepository.find({
+      where: {
+        status,
+      },
+      relations: {
+        order_details: true,
+        address: true,
+        user: true,
+      },
+      order: {
+        created_at: "DESC",
+      },
+      skip: (page - 1) * 6,
+      take: 6,
+    });
+
+    const ids = orders.map((order) => order.order_details.map((detail) => detail.product_id)).flat();
+
+    const products = await this.productService.findByIds(ids);
+
+    const result = orders.map((order) => {
+      const order_details = order.order_details.map((detail) => {
+        const product = products.find((product) => product.id === detail.product_id);
+        return {
+          ...detail,
+          image: product.images[0],
+          ...product,
+        };
+      });
+      return {
+        ...order,
+        order_details,
+      };
+    });
+
+    return result;
+  }
+
+  async startShipmentByShipper(phone: string, orderId: string) {
+    const order = await this.orderRepository.findOne({
+      where: {
+        id: orderId,
+      },
+      relations: {
+        order_details: true,
+        address: true,
+        user: true,
+      },
+    });
+
+    if (!order) {
+      throw new BadRequestException("Order not found");
+    }
+
+    if (order.status !== OrderStatus.Packaged) {
+      throw new BadRequestException("Cannot start shipment");
+    }
+
+    order.status = OrderStatus.Started;
     order.started_date = new Date();
     order.started_by = phone;
 
     await this.orderRepository.save(order);
 
-    return order;
+    const ids = order.order_details.map((detail) => detail.product_id);
+
+    const products = await this.productService.findByIds(ids);
+
+    const result = {
+      ...order,
+      order_details: order.order_details.map((detail) => {
+        const product = products.find((product) => product.id === detail.product_id);
+        return {
+          ...detail,
+          image: product.images[0],
+          ...product,
+        };
+      }),
+    };
+
+    return result;
+  }
+
+  async completedOrderByShipper(phone: string, orderId: string) {
+    const order = await this.orderRepository.findOne({
+      where: {
+        id: orderId,
+      },
+      relations: {
+        order_details: true,
+        address: true,
+        user: true,
+      },
+    });
+
+    if (!order) {
+      throw new BadRequestException("Order not found");
+    }
+
+    if (order.status !== OrderStatus.Started) {
+      throw new BadRequestException("Cannot complete order");
+    }
+
+    order.status = OrderStatus.Completed;
+    order.completed_date = new Date();
+    order.completed_by = phone;
+
+    await this.orderRepository.save(order);
+
+    const ids = order.order_details.map((detail) => detail.product_id);
+
+    const products = await this.productService.findByIds(ids);
+
+    const result = {
+      ...order,
+      order_details: order.order_details.map((detail) => {
+        const product = products.find((product) => product.id === detail.product_id);
+        return {
+          ...detail,
+          image: product.images[0],
+          ...product,
+        };
+      }),
+    };
+
+    return result;
+  }
+
+  async cancelledOrderByShipper(phone: string, orderId: string) {
+    const order = await this.orderRepository.findOne({
+      where: {
+        id: orderId,
+      },
+      relations: {
+        order_details: true,
+        address: true,
+        user: true,
+      },
+    });
+
+    if (!order) {
+      throw new BadRequestException("Order not found");
+    }
+
+    if (order.status !== OrderStatus.Started) {
+      throw new BadRequestException("Cannot cancel order");
+    }
+
+    order.status = OrderStatus.Cancelled;
+    order.cancelled_date = new Date();
+    order.cancelled_by = phone;
+
+    await this.orderRepository.save(order);
+
+    const ids = order.order_details.map((detail) => detail.product_id);
+
+    const products = await this.productService.findByIds(ids);
+
+    const result = {
+      ...order,
+      order_details: order.order_details.map((detail) => {
+        const product = products.find((product) => product.id === detail.product_id);
+        return {
+          ...detail,
+          image: product.images[0],
+          ...product,
+        };
+      }),
+    };
+
+    return result;
   }
 
   async findAllByUserId(userId: string): Promise<Order[]> {
