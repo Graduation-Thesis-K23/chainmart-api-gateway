@@ -34,6 +34,11 @@ export class UsersService {
     }
   }
 
+  async convertUsernameToId(username: string): Promise<string> {
+    const user = await this.findOneByUsername(username);
+    return user.id;
+  }
+
   async createUserFromGoogleLogin(createGoogleUserDto: CreateGoogleUserDto): Promise<User> {
     try {
       return await this.usersRepository.save(createGoogleUserDto);

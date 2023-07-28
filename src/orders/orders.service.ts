@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { DataSource, EntityManager, MoreThanOrEqual, Repository } from "typeorm";
+import { DataSource, EntityManager, In, Like, MoreThanOrEqual, Repository } from "typeorm";
 import * as moment from "moment";
 
 import { CreateOrderDto } from "./dto/create-order.dto";
@@ -9,6 +9,7 @@ import { Order } from "./entities/order.entity";
 import { User } from "~/users/entities/user.entity";
 import { Batch } from "~/batches/entities/batch.entity";
 import { ProductsService } from "~/products/products.service";
+import { OrderStatus } from "~/shared";
 
 @Injectable()
 export class OrdersService {
@@ -22,7 +23,7 @@ export class OrdersService {
     private readonly userRepository: Repository<User>,
 
     @InjectRepository(Batch)
-    private readonly batchRepostiory: Repository<Batch>,
+    private readonly batchRepository: Repository<Batch>,
 
     private readonly productService: ProductsService,
   ) {}
@@ -33,7 +34,21 @@ export class OrdersService {
       throw new BadRequestException("User not found");
     }
 
-    const queryRunner = this.dataSource.createQueryRunner();
+    const order = this.orderRepository.create({
+      ...createOrderDto,
+      user_id: user.id,
+    });
+
+    const result = await this.orderRepository.save(order);
+
+    if (result) {
+      // clear cart
+      this.dataSource.query(`DELETE FROM carts WHERE user_id = '${user.id}'`);
+    }
+
+    return result;
+
+    /* const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -43,11 +58,8 @@ export class OrdersService {
       });
       await Promise.all(batchesUpdateProcesses);
 
-      // Default is the next day
-      const estimated_shipped_date = moment().add(1, "days").format("YYYY-MM-DD");
       const order = queryRunner.manager.create(Order, {
         ...createOrderDto,
-        estimated_shipped_date,
       });
       await queryRunner.manager.save(Order, order);
 
@@ -60,7 +72,7 @@ export class OrdersService {
       throw new BadRequestException(err.message);
     } finally {
       await queryRunner.release();
-    }
+    } */
   }
 
   private async updateBatchesByOrderDetails(transactionManager: EntityManager, product_id: string, quantity: number) {
@@ -104,18 +116,245 @@ export class OrdersService {
     }
   }
 
-  async findAll(): Promise<Order[]> {
-    try {
-      return await this.orderRepository.find({
+  async findAll(username: string, status: OrderStatus | "all") {
+    const user = await this.userRepository.findOneBy({ username });
+
+    if (!user) {
+      throw new BadRequestException("User not found");
+    }
+
+    if (status === "all") {
+      const orders = await this.orderRepository.find({
         relations: {
-          user: true,
           order_details: true,
+          address: true,
+        },
+        where: {
+          user_id: user.id,
+        },
+        order: {
+          created_at: "DESC",
         },
       });
-    } catch (error) {
-      console.error(error);
-      throw new BadRequestException("Cannot find orders");
+
+      const ids = orders.map((order) => order.order_details.map((detail) => detail.product_id)).flat();
+
+      const products = await this.productService.findByIds(ids);
+
+      const result = orders.map((order) => {
+        const order_details = order.order_details.map((detail) => {
+          const product = products.find((product) => product.id === detail.product_id);
+          return {
+            ...detail,
+            image: product.images[0],
+            ...product,
+          };
+        });
+        return {
+          ...order,
+          order_details,
+        };
+      });
+      return result;
+    } else {
+      const orders = await this.orderRepository.find({
+        relations: {
+          order_details: true,
+          address: true,
+        },
+        where: {
+          user_id: user.id,
+          status,
+        },
+        order: {
+          created_at: "DESC",
+        },
+      });
+
+      const ids = orders.map((order) => order.order_details.map((detail) => detail.product_id)).flat();
+
+      const products = await this.productService.findByIds(ids);
+
+      const result = orders.map((order) => {
+        const order_details = order.order_details.map((detail) => {
+          const product = products.find((product) => product.id === detail.product_id);
+          return {
+            ...detail,
+            image: product.images[0],
+            ...product,
+          };
+        });
+        return {
+          ...order,
+          order_details,
+        };
+      });
+      return result;
     }
+  }
+
+  async cancelOrder(username: string, orderId: string) {
+    const user = await this.userRepository.findOneBy({ username });
+
+    if (!user) {
+      throw new BadRequestException("User not found");
+    }
+
+    const order = await this.orderRepository.findOne({
+      where: {
+        id: orderId,
+        user_id: user.id,
+      },
+    });
+
+    if (!order) {
+      throw new BadRequestException("Order not found");
+    }
+
+    if (!(order.status === OrderStatus.Created || order.status === OrderStatus.Approved)) {
+      throw new BadRequestException("Cannot cancel order");
+    }
+
+    order.status = OrderStatus.Cancelled;
+    order.cancelled_date = new Date();
+    order.cancelled_by = user.id;
+
+    await this.orderRepository.save(order);
+
+    return order;
+  }
+
+  async getOrdersByEmployee(phone: string, status: OrderStatus | "all", search: string) {
+    console.log(phone);
+
+    let orders = await this.orderRepository.find({
+      where: {
+        status:
+          status === "all"
+            ? In([
+                OrderStatus.Created,
+                OrderStatus.Approved,
+                OrderStatus.Started,
+                OrderStatus.Packaged,
+                OrderStatus.Completed,
+                OrderStatus.Cancelled,
+                OrderStatus.Returned,
+              ])
+            : status,
+      },
+      relations: {
+        order_details: true,
+        address: true,
+        user: true,
+      },
+      order: {
+        created_at: "DESC",
+      },
+    });
+
+    if (search) {
+      orders = orders.filter((order) => {
+        return (
+          order.address.name.toLowerCase().includes(search.toLowerCase()) ||
+          order.address.phone.toLowerCase().includes(search.toLowerCase()) ||
+          order.address.phone.toLowerCase().includes(search.toLowerCase()) ||
+          order.address.name.toLowerCase().includes(search.toLowerCase())
+        );
+      });
+    }
+
+    const ids = orders.map((order) => order.order_details.map((detail) => detail.product_id)).flat();
+
+    const products = await this.productService.findByIds(ids);
+
+    const result = orders.map((order) => {
+      const order_details = order.order_details.map((detail) => {
+        const product = products.find((product) => product.id === detail.product_id);
+        return {
+          ...detail,
+          image: product.images[0],
+          ...product,
+        };
+      });
+      return {
+        ...order,
+        order_details,
+      };
+    });
+
+    return result;
+  }
+
+  async approveOrderByEmployee(phone: string, orderId: string) {
+    const order = await this.orderRepository.findOne({
+      where: {
+        id: orderId,
+      },
+    });
+
+    if (!order) {
+      throw new BadRequestException("Order not found");
+    }
+
+    if (order.status !== OrderStatus.Created) {
+      throw new BadRequestException("Cannot approve order");
+    }
+
+    order.status = OrderStatus.Approved;
+    order.approved_date = new Date();
+    order.approved_by = phone;
+
+    await this.orderRepository.save(order);
+
+    return order;
+  }
+
+  async rejectOrderByEmployee(phone: string, orderId: string) {
+    const order = await this.orderRepository.findOne({
+      where: {
+        id: orderId,
+      },
+    });
+
+    if (!order) {
+      throw new BadRequestException("Order not found");
+    }
+
+    if (order.status !== OrderStatus.Created && order.status !== OrderStatus.Approved) {
+      throw new BadRequestException("Cannot reject order");
+    }
+
+    order.status = OrderStatus.Cancelled;
+    order.cancelled_date = new Date();
+    order.cancelled_by = phone;
+
+    await this.orderRepository.save(order);
+
+    return order;
+  }
+
+  async startShipmentByEmployee(phone: string, orderId: string) {
+    const order = await this.orderRepository.findOne({
+      where: {
+        id: orderId,
+      },
+    });
+
+    if (!order) {
+      throw new BadRequestException("Order not found");
+    }
+
+    if (order.status !== OrderStatus.Approved) {
+      throw new BadRequestException("Cannot start shipment");
+    }
+
+    order.status = OrderStatus.Returned;
+    order.started_date = new Date();
+    order.started_by = phone;
+
+    await this.orderRepository.save(order);
+
+    return order;
   }
 
   async findAllByUserId(userId: string): Promise<Order[]> {

@@ -255,11 +255,8 @@ export class OrdersController {
   @User()
   create(@Body() createOrderDto: CreateOrderDto, @Req() req: Request) {
     const user = req.user as ReqUser;
-    console.log("createOrderDto", createOrderDto);
-    console.log("user", user);
-    return {
-      status: "success",
-    };
+
+    return this.ordersService.create(user.username, createOrderDto);
   }
 
   @Get()
@@ -268,10 +265,8 @@ export class OrdersController {
   findAll(@Query("status") status: OrderStatus | "all", @Req() req: Request) {
     // status = status of orders that we want to get
     const user = req.user as ReqUser;
-    console.log(status);
-    console.log(user);
-    if (status === "all") return this.orders;
-    else return this.orders.filter((order) => order.status === status);
+
+    return this.ordersService.findAll(user.username, status);
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
@@ -279,20 +274,8 @@ export class OrdersController {
   @Patch(":id/cancel")
   cancel(@Param("id") id: string, @Req() req: Request) {
     const user = req.user as ReqUser;
-    console.log(id);
-    console.log(user);
-    console.log("cancel order");
 
-    const order = this.orders.find((order) => order.id === id);
-
-    if (!order) {
-      throw new BadRequestException("Order not found");
-    }
-
-    order.status = OrderStatus.Cancelled;
-    order.cancelled_date = Date.now();
-
-    return order;
+    return this.ordersService.cancelOrder(user.username, id);
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
@@ -439,23 +422,14 @@ export class OrdersController {
   @Get("employee")
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
   @Roles(Role.Employee)
-  getOrdersByEmployee(@Req() req: Request) {
+  getOrdersByEmployee(
+    @Req() req: Request,
+    @Query("status") status: OrderStatus | "all",
+    @Query("search") search: string,
+  ) {
     const user = req.user as EmployeePayload;
 
-    console.log(user);
-
-    return this.orders.map((order) => ({
-      ...order,
-      user: {
-        id: Math.random().toString(),
-        name: Math.random().toString(),
-        email: Math.random().toString() + "@gmail.com",
-        phone: "0123456789" + Math.random().toString(),
-        username: Math.random().toString() + "username",
-      },
-      created_at: Date.now().toLocaleString(),
-      total: 100000 + Math.random() * 100000,
-    }));
+    return this.ordersService.getOrdersByEmployee(user.phone, status, search);
   }
 
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
@@ -463,19 +437,8 @@ export class OrdersController {
   @Patch(":id/approve")
   approve(@Param("id") id: string, @Req() req: Request) {
     const user = req.user as EmployeePayload;
-    console.log(user);
-    console.log(id);
 
-    const order = this.orders.find((order) => order.id === id);
-
-    if (!order) {
-      throw new BadRequestException("Order not found");
-    }
-
-    order.status = OrderStatus.Approved;
-    order.approved_date = Date.now();
-
-    return order;
+    return this.ordersService.approveOrderByEmployee(user.phone, id);
   }
 
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
@@ -483,19 +446,8 @@ export class OrdersController {
   @Patch(":id/reject")
   reject(@Param("id") id: string, @Req() req: Request) {
     const user = req.user as EmployeePayload;
-    console.log(user);
-    console.log(id);
 
-    const order = this.orders.find((order) => order.id === id);
-
-    if (!order) {
-      throw new BadRequestException("Order not found");
-    }
-
-    order.status = OrderStatus.Cancelled;
-    order.cancelled_date = Date.now();
-
-    return order;
+    return this.ordersService.rejectOrderByEmployee(user.phone, id);
   }
 
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)

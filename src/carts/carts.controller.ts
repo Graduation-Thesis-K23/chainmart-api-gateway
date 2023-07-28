@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
-  Query,
   HttpCode,
   HttpStatus,
   UseGuards,
@@ -17,7 +16,6 @@ import { Request } from "express";
 
 import { CartsService } from "./carts.service";
 import { CartDetailParam } from "./dto/create-cart.dto";
-import { UpdateCartDto } from "./dto/update-cart.dto";
 import { JwtAuthGuard, UserGuard } from "~/auth/guards";
 import { ReqUser } from "~/common/req-user.inter";
 import { User } from "~/auth/decorators";
@@ -50,26 +48,26 @@ export class CartsController {
 
   @User()
   @Delete(":id")
-  removeCart(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string, @Req() req: Request) {
+  removeCart(@Param("id") id: string, @Req() req: Request) {
     const user = req.user as ReqUser;
     return this.cartsService.removeCart(user.username, id);
   }
 
-  @Get("user/:id")
+  /*  @Get("user/:id")
   findOneByUserId(@Query("user") userId: string) {
     return this.cartsService.findOneByUserId(userId);
-  }
+  } */
 
-  @Get(":id")
+  /*  @Get(":id")
   findOne(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     return this.cartsService.findOne(id);
-  }
+  } */
 
-  @Patch(":id")
+  /*  @Patch(":id")
   update(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string, @Body() updateCartDto: UpdateCartDto) {
     return this.cartsService.update(id, updateCartDto);
   }
-
+ */
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {

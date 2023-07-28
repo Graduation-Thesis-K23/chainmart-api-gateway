@@ -22,26 +22,41 @@ export class Order extends BaseEntity {
   @JoinColumn({ name: "address_id" })
   address: Address;
 
-  @Column({ type: "date" })
-  estimated_shipped_date: string;
+  @Column({ type: "timestamptz", nullable: true })
+  approved_date: Date;
 
-  @Column({ type: "date", nullable: true })
-  approved_date: string;
+  @Column({ nullable: true })
+  approved_by: string;
 
-  @Column({ type: "date", nullable: true })
-  packaged_date: string;
+  @Column({ type: "timestamptz", nullable: true })
+  packaged_date: Date;
 
-  @Column({ type: "date", nullable: true })
-  started_date: string;
+  @Column({ nullable: true })
+  packaged_by: string;
 
-  @Column({ type: "date", nullable: true })
-  completed_date: string;
+  @Column({ type: "timestamptz", nullable: true })
+  started_date: Date;
 
-  @Column({ type: "date", nullable: true })
-  cancelled_date: string;
+  @Column({ nullable: true })
+  started_by: string;
 
-  @Column({ type: "date", nullable: true })
-  returned_date: string;
+  @Column({ type: "timestamptz", nullable: true })
+  completed_date: Date;
+
+  @Column({ nullable: true })
+  completed_by: string;
+
+  @Column({ type: "timestamptz", nullable: true })
+  cancelled_date: Date;
+
+  @Column({ nullable: true })
+  cancelled_by: string;
+
+  @Column({ type: "timestamptz", nullable: true })
+  returned_date: Date;
+
+  @Column({ nullable: true })
+  returned_by: string;
 
   @Column({
     type: "enum",
