@@ -5,28 +5,23 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   UseGuards,
-  ParseUUIDPipe,
-  HttpCode,
-  HttpStatus,
   Query,
   Req,
   BadRequestException,
   UseInterceptors,
   UploadedFiles,
-  ParseFilePipeBuilder,
   ParseIntPipe,
+  ParseFilePipe,
 } from "@nestjs/common";
 import { Request } from "express";
 
 import { OrdersService } from "./orders.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
-import { UpdateOrderDto } from "./dto/update-order.dto";
 import { JwtAuthGuard, UserGuard } from "~/auth/guards";
 import { RolesGuard } from "~/auth-manager/guards/role.guard";
 import { Roles } from "~/auth-manager/decorators/roles.decorator";
-import { EmployeePayload, OrderStatus, Payment, Role } from "~/shared";
+import { EmployeePayload, OrderStatus, Role } from "~/shared";
 import { User } from "~/auth/decorators";
 import { ReqUser } from "~/common/req-user.inter";
 import { CommentOrderDto } from "./dto/comment-order.dto";
@@ -38,216 +33,6 @@ import { JwtShipperAuthGuard } from "~/auth-shipper/guards/jwt-shipper.guards";
 
 @Controller("orders")
 export class OrdersController {
-  orders = [
-    {
-      id: "1",
-      create_at: Date.now(),
-      address: {
-        id: "1",
-        name: "Nguyễn Văn A",
-        phone: "0123456789",
-        street: "123 Đường ABC",
-        district: "Quận XYZ",
-        city: "TP. HCM",
-        ward: "Phường 123",
-      },
-      status: OrderStatus.Created,
-      payment: Payment.Cash,
-      products: [
-        {
-          id: "1",
-          name: "Vỏ gối cotton Thắng Lợi chính hãng ( gối nằm - gối ôm ) [ảnh thất 2]",
-          price: 100000,
-          sale: 0,
-          quantity: 1,
-          image: "2ba48c4c",
-        },
-        {
-          id: "2",
-          name: "Vỏ gối cotton Thắng Lợi chính hãng ( gối nằm - gối ôm ) [ảnh thất 2] 21",
-          price: 1000000,
-          sale: 2,
-          quantity: 2,
-          image: "2ba48c4c",
-        },
-      ],
-    },
-    {
-      id: "2",
-      create_at: Date.now(),
-      address: {
-        id: "1",
-        name: "Nguyễn Văn A",
-        phone: "0123456789",
-        street: "123 Đường ABC",
-        district: "Quận XYZ",
-        city: "TP. HCM",
-        ward: "Phường 123",
-      },
-      approved_date: Date.now(),
-      status: OrderStatus.Approved,
-      payment: Payment.Cash,
-      products: [
-        {
-          id: "1",
-          name: "Áo thun nam",
-          price: 100000,
-          sale: 0,
-          quantity: 1,
-          image: "2ba48c4c",
-        },
-        {
-          id: "2",
-          name: "Áo thun nam 1",
-          price: 1000000,
-          sale: 2,
-          quantity: 2,
-          image: "2ba48c4c",
-        },
-      ],
-    },
-    {
-      id: "3",
-      create_at: Date.now(),
-      address: {
-        id: "1",
-        name: "Nguyễn Văn A",
-        phone: "0123456789",
-        street: "123 Đường ABC",
-        district: "Quận XYZ",
-        city: "TP. HCM",
-        ward: "Phường 123",
-      },
-      approved_date: Date.now(),
-      status: OrderStatus.Created,
-      payment: Payment.Cash,
-      products: [
-        {
-          id: "1",
-          name: "Áo thun nam",
-          price: 100000,
-          sale: 0,
-          quantity: 1,
-          image: "2ba48c4c",
-        },
-        {
-          id: "2",
-          name: "Áo thun nam 1",
-          price: 1000000,
-          sale: 2,
-          quantity: 2,
-          image: "2ba48c4c",
-        },
-      ],
-    },
-    {
-      id: "4",
-      create_at: Date.now(),
-      address: {
-        id: "1",
-        name: "Nguyễn Văn A",
-        phone: "0123456789",
-        street: "123 Đường ABC",
-        district: "Quận XYZ",
-        city: "TP. HCM",
-        ward: "Phường 123",
-      },
-      shipping_date: Date.now(),
-      shipped_date: Date.now(),
-      approved_date: Date.now(),
-      status: OrderStatus.Completed,
-      payment: Payment.Cash,
-      products: [
-        {
-          id: "1",
-          name: "Áo thun nam",
-          price: 100000,
-          sale: 0,
-          quantity: 1,
-          image: "2ba48c4c",
-        },
-        {
-          id: "2",
-          name: "Áo thun nam 1",
-          price: 1000000,
-          sale: 2,
-          quantity: 2,
-          image: "2ba48c4c",
-        },
-      ],
-    },
-    {
-      id: "5",
-      create_at: Date.now(),
-      address: {
-        id: "1",
-        name: "Nguyễn Văn A",
-        phone: "0123456789",
-        street: "123 Đường ABC",
-        district: "Quận XYZ",
-        city: "TP. HCM",
-        ward: "Phường 123",
-      },
-      cancelled_date: Date.now(),
-      status: OrderStatus.Cancelled,
-      payment: Payment.Cash,
-      products: [
-        {
-          id: "1",
-          name: "Áo thun nam",
-          price: 100000,
-          sale: 0,
-          quantity: 1,
-          image: "2ba48c4c",
-        },
-        {
-          id: "2",
-          name: "Áo thun nam 1",
-          price: 1000000,
-          sale: 2,
-          quantity: 2,
-          image: "2ba48c4c",
-        },
-      ],
-    },
-    {
-      id: "6",
-      create_at: Date.now(),
-      address: {
-        id: "1",
-        name: "Nguyễn Văn A",
-        phone: "0123456789",
-        street: "123 Đường ABC",
-        district: "Quận XYZ",
-        city: "TP. HCM",
-        ward: "Phường 123",
-      },
-      shipped_date: Date.now(),
-      approved_date: Date.now(),
-      return_date: Date.now(),
-      status: OrderStatus.Returned,
-      payment: Payment.Cash,
-      products: [
-        {
-          id: "1",
-          name: "Áo thun nam",
-          price: 100000,
-          sale: 0,
-          quantity: 1,
-          image: "2ba48c4c",
-        },
-        {
-          id: "2",
-          name: "Áo thun nam 1",
-          price: 1000000,
-          sale: 2,
-          quantity: 2,
-          image: "2ba48c4c",
-        },
-      ],
-    },
-  ];
-
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
@@ -283,20 +68,8 @@ export class OrdersController {
   @Patch(":id/received")
   received(@Param("id") id: string, @Req() req: Request) {
     const user = req.user as ReqUser;
-    console.log(id);
-    console.log(user);
-    console.log("received order");
 
-    const order = this.orders.find((order) => order.id === id);
-
-    if (!order) {
-      throw new BadRequestException("Order not found");
-    }
-
-    order.status = OrderStatus.Completed;
-    order.shipped_date = Date.now();
-
-    return order;
+    return this.ordersService.received(user.username, id);
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
@@ -304,20 +77,8 @@ export class OrdersController {
   @Patch(":id/return")
   return(@Param("id") id: string, @Req() req: Request) {
     const user = req.user as ReqUser;
-    console.log(id);
-    console.log(user);
-    console.log("return order");
 
-    const order = this.orders.find((order) => order.id === id);
-
-    if (!order) {
-      throw new BadRequestException("Order not found");
-    }
-
-    order.status = OrderStatus.Returned;
-    order.return_date = Date.now();
-
-    return order;
+    return this.ordersService.return(user.username, id);
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
@@ -346,21 +107,27 @@ export class OrdersController {
   comment(
     @Body() commentOrderDto: CommentOrderDto,
     @Req() req: Request,
-    @UploadedFiles(new ParseFilePipeBuilder().build())
+    @UploadedFiles(
+      new ParseFilePipe({
+        fileIsRequired: false,
+      }),
+    )
     images: Express.Multer.File[],
   ) {
-    const user = req.user as ReqUser;
-    console.log("CommentOrderDto", JSON.parse(commentOrderDto.comments));
-    console.log("CommentOrderDto", commentOrderDto.order_id);
-    console.log(user);
-    console.log(images);
+    try {
+      const user = req.user as ReqUser;
 
-    // const arrBuffer = images.map((image) => image.buffer);
-    // save to s3
+      if (images.length > 0) {
+        const arrBuffer = images.map((image) => image.buffer);
 
-    return {
-      status: "success",
-    };
+        return this.ordersService.comment(user.username, commentOrderDto, arrBuffer);
+      }
+
+      return this.ordersService.comment(user.username, commentOrderDto, []);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error.message);
+    }
   }
 
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
@@ -371,35 +138,7 @@ export class OrdersController {
 
     console.log(user);
 
-    return [
-      {
-        id: "1",
-        created_at: Date.now().toLocaleString(),
-        status: OrderStatus.Created,
-        payment: Payment.Cash,
-        name: "Nguyễn Văn A",
-        phone: "0123456789",
-        total: 100000,
-      },
-      {
-        id: "2",
-        created_at: Date.now().toLocaleString(),
-        status: OrderStatus.Created,
-        payment: Payment.Cash,
-        name: "Nguyễn Văn B",
-        phone: "01234567839",
-        total: 120000,
-      },
-      {
-        id: "3",
-        created_at: Date.now().toLocaleString(),
-        status: OrderStatus.Created,
-        payment: Payment.Cash,
-        name: "Nguyễn Văn C",
-        phone: "01234526789",
-        total: 110000,
-      },
-    ];
+    return [];
   }
 
   @Get("employee")

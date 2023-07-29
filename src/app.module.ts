@@ -23,6 +23,7 @@ import { ErrorsModule } from "./errors/errors.module";
 import { AuthShipperModule } from "./auth-shipper/auth-shipper.module";
 import { SearchModule } from "./search/search.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
+import { CommentsModule } from "./comments/comments.module";
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { DashboardModule } from "./dashboard/dashboard.module";
     AuthShipperModule,
     SearchModule,
     DashboardModule,
+    CommentsModule,
   ],
   exports: [ConfigModule],
 })

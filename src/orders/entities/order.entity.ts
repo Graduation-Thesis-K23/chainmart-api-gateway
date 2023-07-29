@@ -41,6 +41,9 @@ export class Order extends BaseEntity {
   started_by: string;
 
   @Column({ type: "timestamptz", nullable: true })
+  received_date: Date;
+
+  @Column({ type: "timestamptz", nullable: true })
   completed_date: Date;
 
   @Column({ nullable: true })
@@ -57,6 +60,9 @@ export class Order extends BaseEntity {
 
   @Column({ nullable: true })
   returned_by: string;
+
+  @Column({ type: "timestamptz", nullable: true })
+  rating_date: Date;
 
   @Column({
     type: "enum",

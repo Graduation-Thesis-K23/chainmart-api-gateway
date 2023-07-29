@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { DataSource, EntityManager, In, Like, MoreThanOrEqual, Repository } from "typeorm";
+import { DataSource, EntityManager, In, MoreThanOrEqual, Repository } from "typeorm";
 import * as moment from "moment";
 
 import { CreateOrderDto } from "./dto/create-order.dto";
@@ -10,6 +10,9 @@ import { User } from "~/users/entities/user.entity";
 import { Batch } from "~/batches/entities/batch.entity";
 import { ProductsService } from "~/products/products.service";
 import { OrderStatus } from "~/shared";
+import { CommentOrderDto } from "./dto/comment-order.dto";
+import { S3Service } from "~/s3/s3.service";
+import { CommentsService } from "~/comments/comments.service";
 
 @Injectable()
 export class OrdersService {
@@ -24,6 +27,10 @@ export class OrdersService {
 
     @InjectRepository(Batch)
     private readonly batchRepository: Repository<Batch>,
+
+    private readonly commentsService: CommentsService,
+
+    private readonly s3Service: S3Service,
 
     private readonly productService: ProductsService,
   ) {}
@@ -193,6 +200,51 @@ export class OrdersService {
     }
   }
 
+  async comment(username: string, commentOrderDto: CommentOrderDto, arrBuffer: Buffer[]) {
+    const user = await this.userRepository.findOneBy({ username });
+
+    if (!user) {
+      throw new BadRequestException("User not found");
+    }
+
+    let images: string[] = [];
+
+    if (arrBuffer.length !== 0) {
+      images = await this.s3Service.uploadImagesToS3(arrBuffer);
+    }
+
+    const order = await this.orderRepository.findOne({
+      where: {
+        id: commentOrderDto.order_id,
+        user_id: user.id,
+      },
+    });
+
+    if (!order) {
+      throw new BadRequestException("Order not found");
+    }
+
+    if (order.status !== OrderStatus.Completed) {
+      throw new BadRequestException("Cannot comment order");
+    }
+
+    order.rating_date = new Date();
+
+    await this.orderRepository.save(order);
+
+    const comment = await this.commentsService.create({
+      ...commentOrderDto,
+      user_id: user.id,
+      images,
+    });
+
+    await this.commentsService.create(comment);
+
+    return {
+      status: "success",
+    };
+  }
+
   async cancelOrder(username: string, orderId: string) {
     const user = await this.userRepository.findOneBy({ username });
 
@@ -218,6 +270,37 @@ export class OrdersService {
     order.status = OrderStatus.Cancelled;
     order.cancelled_date = new Date();
     order.cancelled_by = user.id;
+
+    await this.orderRepository.save(order);
+
+    return order;
+  }
+
+  async return(username: string, orderId: string) {
+    const user = await this.userRepository.findOneBy({ username });
+
+    if (!user) {
+      throw new BadRequestException("User not found");
+    }
+
+    const order = await this.orderRepository.findOne({
+      where: {
+        id: orderId,
+        user_id: user.id,
+      },
+    });
+
+    if (!order) {
+      throw new BadRequestException("Order not found");
+    }
+
+    if (order.status !== OrderStatus.Completed) {
+      throw new BadRequestException("Cannot return order");
+    }
+
+    order.status = OrderStatus.Returned;
+    order.returned_date = new Date();
+    order.returned_by = user.id;
 
     await this.orderRepository.save(order);
 
@@ -276,6 +359,56 @@ export class OrdersService {
     return {
       ...result,
       address,
+      order_details: newOrderDetails,
+    };
+  }
+
+  async received(username: string, orderId: string) {
+    const user = await this.userRepository.findOneBy({ username });
+
+    if (!user) {
+      throw new BadRequestException("User not found");
+    }
+
+    const order = await this.orderRepository.findOne({
+      where: {
+        id: orderId,
+        user_id: user.id,
+      },
+      relations: {
+        order_details: true,
+        address: true,
+      },
+    });
+
+    if (!order) {
+      throw new BadRequestException("Order not found");
+    }
+
+    if (order.status !== OrderStatus.Started) {
+      throw new BadRequestException("Cannot completed order");
+    }
+
+    order.status = OrderStatus.Completed;
+    order.completed_date = new Date();
+
+    await this.orderRepository.save(order);
+
+    const ids = order.order_details.map((detail) => detail.product_id);
+
+    const products = await this.productService.findByIds(ids);
+
+    const newOrderDetails = order.order_details.map((detail) => {
+      const product = products.find((product) => product.id === detail.product_id);
+      return {
+        ...detail,
+        image: product.images[0],
+        ...product,
+      };
+    });
+
+    return {
+      ...order,
       order_details: newOrderDetails,
     };
   }
@@ -424,6 +557,9 @@ export class OrdersService {
     const orders = await this.orderRepository.find({
       where: {
         status,
+        ...(status !== OrderStatus.Packaged && {
+          packaged_by: phone,
+        }),
       },
       relations: {
         order_details: true,
@@ -524,8 +660,7 @@ export class OrdersService {
       throw new BadRequestException("Cannot complete order");
     }
 
-    order.status = OrderStatus.Completed;
-    order.completed_date = new Date();
+    order.received_date = new Date();
     order.completed_by = phone;
 
     await this.orderRepository.save(order);
