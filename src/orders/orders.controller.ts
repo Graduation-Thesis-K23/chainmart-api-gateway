@@ -11,7 +11,10 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  OnModuleInit,
+  Inject,
 } from "@nestjs/common";
+import { ClientKafka } from "@nestjs/microservices";
 
 import { OrdersService } from "./orders.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
@@ -23,8 +26,21 @@ import { Role } from "~/shared";
 
 @Controller("orders")
 // @UseGuards(JwtAuthGuard, RolesGuard)
-export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+export class OrdersController implements OnModuleInit {
+  constructor(
+    private readonly ordersService: OrdersService,
+
+    @Inject("ORDER_SERVICE")
+    private readonly orderClient: ClientKafka,
+  ) {}
+
+  async onModuleInit() {
+    const topics = ["create", "findall", "findallbyuserid", "findbyid", "update", "delete"];
+    topics.forEach((topic) => {
+      this.orderClient.subscribeToResponseOf(`orders.${topic}`);
+    });
+    await this.orderClient.connect();
+  }
 
   @Post()
   create(@Body() createOrderDto: CreateOrderDto) {
@@ -43,7 +59,7 @@ export class OrdersController {
 
   @Get(":id")
   findOne(@Param("id") id: string) {
-    return this.ordersService.findOne(id);
+    return this.ordersService.findById(id);
   }
 
   @Patch(":id")
@@ -54,6 +70,6 @@ export class OrdersController {
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
-    return this.ordersService.remove(id);
+    return this.ordersService.delete(id);
   }
 }

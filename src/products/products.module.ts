@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common";
 import { ClientsModule, Transport } from "@nestjs/microservices";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 import { ProductsService } from "./products.service";
 import { ProductsController } from "./products.controller";
 import { ErrorsModule } from "~/errors/errors.module";
 import { S3Module } from "~/s3/s3.module";
-import { ConfigModule, ConfigService } from "@nestjs/config";
 
 @Module({
   imports: [
