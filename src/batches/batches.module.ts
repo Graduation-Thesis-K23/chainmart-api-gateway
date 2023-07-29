@@ -1,13 +1,34 @@
 import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
+import { ClientsModule, Transport } from "@nestjs/microservices";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 import { BatchesService } from "./batches.service";
 import { BatchesController } from "./batches.controller";
-import { Batch } from "./entities/batch.entity";
-import { ProductsModule } from "~/products/products.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Batch]), ProductsModule],
+  imports: [
+    ClientsModule.registerAsync([
+      {
+        name: "BATCH_SERVICE",
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: async (configService) => {
+          return {
+            transport: Transport.KAFKA,
+            options: {
+              client: {
+                clientId: "batch",
+                brokers: configService.get("KAFKA_BROKERS").split(","),
+              },
+              consumer: {
+                groupId: "batch-consumer",
+              },
+            },
+          };
+        },
+      },
+    ]),
+  ],
   controllers: [BatchesController],
   providers: [BatchesService],
 })

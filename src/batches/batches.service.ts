@@ -1,109 +1,69 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
-import { Repository } from "typeorm";
-import * as moment from "moment";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
+import { ClientKafka } from "@nestjs/microservices";
+import { firstValueFrom, lastValueFrom, timeout } from "rxjs";
 
 import { CreateBatchDto } from "./dto/create-batch.dto";
 import { UpdateBatchDto } from "./dto/update-batch.dto";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Batch } from "./entities/batch.entity";
-import { ProductsService } from "~/products/products.service";
 
 @Injectable()
 export class BatchesService {
   constructor(
-    @InjectRepository(Batch)
-    private readonly batchRepository: Repository<Batch>,
-
-    private readonly productService: ProductsService,
+    @Inject("BATCH_SERVICE")
+    private readonly batchClient: ClientKafka,
   ) {}
 
-  async create(createBatchDto: CreateBatchDto): Promise<Batch> {
-    const product = await this.productService.findById(createBatchDto.product_id);
-    if (!product) {
-      throw new BadRequestException("Product not found");
-    }
-
-    const { product_code } = product;
-    const batch_code = product_code + "-" + moment().format("YYYY_MM_DD") + "-" + Date.now();
-
+  async create(createBatchDto: CreateBatchDto) {
     try {
-      const batch = this.batchRepository.create({ ...createBatchDto, batch_code });
-      return this.batchRepository.save(batch);
+      const $source = this.batchClient.send("batches.create", { ...createBatchDto }).pipe(timeout(5000));
+
+      return await firstValueFrom($source);
     } catch (error) {
       console.error(error);
-      throw new BadRequestException("Cannot create batch");
+      throw new BadRequestException(error);
     }
   }
 
-  async findAll(): Promise<Batch[]> {
+  async findAll() {
     try {
-      return this.batchRepository.find({
-        relations: {
-          branch: true,
-          employee_create: true,
-        },
-      });
+      const $source = this.batchClient.send("batches.findall", {}).pipe(timeout(5000));
+      return await lastValueFrom($source);
     } catch (error) {
       console.error(error);
-      throw new BadRequestException("Cannot find batches");
+      throw new BadRequestException(error);
     }
   }
 
-  async findAllByProductId(productId: string): Promise<Batch[]> {
-    const product = await this.productService.findById(productId);
-    if (!product) {
-      throw new BadRequestException("Product not found");
-    }
-
+  async findAllByProductId(productId: string) {
     try {
-      return this.batchRepository.find({
-        relations: {
-          branch: true,
-          employee_create: true,
-        },
-        where: {
-          product_id: productId,
-        },
-      });
+      const $source = this.batchClient.send("batches.findallbyproductid", productId).pipe(timeout(5000));
+      return await lastValueFrom($source);
     } catch (error) {
       console.error(error);
       throw new BadRequestException("Cannot find batches by product_id");
     }
   }
 
-  async findOne(id: string): Promise<Batch> {
+  async findById(id: string) {
     try {
-      return this.batchRepository.findOne({
-        relations: {
-          branch: true,
-          employee_create: true,
-        },
-        where: {
-          id,
-        },
-      });
+      const $source = this.batchClient.send("batches.findbyid", id).pipe(timeout(5000));
+      return await lastValueFrom($source);
     } catch (error) {
       console.error(error);
       throw new BadRequestException(`Cannot find batch with id(${id})`);
     }
   }
 
-  async update(id: string, updateBatchDto: UpdateBatchDto): Promise<any> {
+  async update(id: string, updateBatchDto: UpdateBatchDto) {
     return `This action updates a #${id} batch`;
   }
 
-  async remove(id: string): Promise<string> {
+  async delete(id: string) {
     try {
-      const result = await this.batchRepository.softDelete(id);
-
-      if (result.affected === 0) {
-        throw new BadRequestException(`Batch with id(${id}) not found`);
-      }
-
-      return `Batch with id(${id}) have been deleted`;
+      const $source = this.batchClient.send("batches.delete", id).pipe(timeout(5000));
+      return await lastValueFrom($source);
     } catch (error) {
       console.error(error);
-      throw new BadRequestException(`Cannot delete batch with id(${id})`);
+      throw new BadRequestException(error);
     }
   }
 }

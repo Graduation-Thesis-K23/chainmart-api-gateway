@@ -30,14 +30,14 @@ export class AuthManagerController {
 
   @Post("check-token")
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Branch, Role.Employee, Role.Manager, Role.Shipper)
+  @Roles(Role.Admin, Role.Branch, Role.Employee, Role.Shipper)
   async checkToken(@Req() req: Request) {
     return req.user;
   }
 
   @Post("change-password")
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
-  @Roles(Role.Branch, Role.Employee, Role.Manager, Role.Shipper)
+  @Roles(Role.Branch, Role.Employee, Role.Shipper)
   async changePassword(@Req() req: Request, @Body() changePasswordDto: ChangePasswordDto) {
     const { phone } = req.user as EmployeePayload;
 
@@ -46,7 +46,7 @@ export class AuthManagerController {
 
   @Get("logout")
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
-  @Roles(Role.Admin, Role.Branch, Role.Employee, Role.Manager, Role.Shipper)
+  @Roles(Role.Admin, Role.Branch, Role.Employee, Role.Shipper)
   async logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie("access_token_manager").send();
   }

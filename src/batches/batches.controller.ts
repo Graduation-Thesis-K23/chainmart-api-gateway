@@ -1,4 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, HttpCode, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseUUIDPipe,
+  HttpCode,
+  HttpStatus,
+  OnModuleInit,
+  Inject,
+} from "@nestjs/common";
+import { ClientKafka } from "@nestjs/microservices";
 
 import { BatchesService } from "./batches.service";
 import { CreateBatchDto } from "./dto/create-batch.dto";
@@ -7,8 +21,21 @@ import { Roles } from "~/auth-manager/decorators/roles.decorator";
 import { Role } from "~/shared";
 
 @Controller("batches")
-export class BatchesController {
-  constructor(private readonly batchesService: BatchesService) {}
+export class BatchesController implements OnModuleInit {
+  constructor(
+    private readonly batchesService: BatchesService,
+
+    @Inject("BATCH_SERVICE")
+    private readonly batchClient: ClientKafka,
+  ) {}
+
+  async onModuleInit() {
+    const topics = ["create", "findall", "findallbyproductid", "findbyid", "update", "delete"];
+    topics.forEach((topic) => {
+      this.batchClient.subscribeToResponseOf(`batches.${topic}`);
+    });
+    await this.batchClient.connect();
+  }
 
   @Post()
   @Roles(Role.Employee)
@@ -31,7 +58,7 @@ export class BatchesController {
   @Get(":id")
   @Roles(Role.Employee)
   findOne(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
-    return this.batchesService.findOne(id);
+    return this.batchesService.findById(id);
   }
 
   @Patch(":id")
@@ -44,6 +71,6 @@ export class BatchesController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(Role.Employee)
   remove(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
-    return this.batchesService.remove(id);
+    return this.batchesService.delete(id);
   }
 }
