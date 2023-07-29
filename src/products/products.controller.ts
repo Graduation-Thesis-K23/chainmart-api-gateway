@@ -79,6 +79,11 @@ export class ProductsController implements OnModuleInit {
     return this.productsService.findAll(query.page, query.limit);
   }
 
+  @Get("index")
+  async getProductByMain() {
+    return this.productsService.getProductByMain();
+  }
+
   @Get("search-and-filter")
   searchAndFilter(@Query() query: SearchAndFilterQueryDto) {
     return this.productsService.searchAndFilter(query);

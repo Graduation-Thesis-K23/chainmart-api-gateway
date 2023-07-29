@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { CommentsService } from "./comments.service";
@@ -8,7 +8,7 @@ import { UsersModule } from "~/users/users.module";
 import { ProductsModule } from "~/products/products.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Comment]), UsersModule, ProductsModule],
+  imports: [TypeOrmModule.forFeature([Comment]), UsersModule, forwardRef(() => ProductsModule)],
   controllers: [CommentsController],
   providers: [CommentsService],
   exports: [CommentsService],

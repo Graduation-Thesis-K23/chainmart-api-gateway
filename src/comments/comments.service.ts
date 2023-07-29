@@ -1,6 +1,6 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, forwardRef, Inject } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { DeepPartial, Repository } from "typeorm";
+import { DeepPartial, In, Repository } from "typeorm";
 import { Comment } from "./entities/comment.entity";
 import { UsersService } from "~/users/users.service";
 import { ProductsService } from "~/products/products.service";
@@ -13,6 +13,7 @@ export class CommentsService {
 
     private readonly usersService: UsersService,
 
+    @Inject(forwardRef(() => ProductsService))
     private readonly productService: ProductsService,
   ) {}
 
@@ -128,5 +129,54 @@ export class CommentsService {
         image: product.images[0],
       };
     });
+  }
+
+  async getAverageStarByProducts(ids: string[]) {
+    const comments = await this.commentRepository.find({
+      where: {
+        product_id: In(ids),
+      },
+      select: ["product_id", "star"],
+    });
+
+    const averageStarByProducts = comments.reduce((acc, comment) => {
+      if (acc[comment.product_id]) {
+        acc[comment.product_id].push(comment.star);
+      } else {
+        acc[comment.product_id] = [comment.star];
+      }
+
+      return acc;
+    }, {});
+
+    const result = ids.reduce((acc, id) => {
+      if (!averageStarByProducts[id]) {
+        return acc;
+      }
+
+      const averageStar =
+        averageStarByProducts[id].reduce((acc, star) => acc + star, 0) / averageStarByProducts[id].length;
+
+      acc[id] = averageStar;
+
+      return acc;
+    }, {});
+
+    return result;
+  }
+
+  async getAverageStarByProduct(id: string) {
+    const comments = await this.commentRepository.find({
+      where: {
+        product_id: id,
+      },
+      select: ["star"],
+    });
+
+    return (
+      comments.reduce((acc, comment) => {
+        return acc + comment.star;
+      }, 0) / comments.length
+    );
   }
 }

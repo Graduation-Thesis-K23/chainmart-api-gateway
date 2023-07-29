@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { ClientsModule, Transport } from "@nestjs/microservices";
 
 import { ProductsService } from "./products.service";
@@ -6,6 +6,8 @@ import { ProductsController } from "./products.controller";
 import { ErrorsModule } from "~/errors/errors.module";
 import { S3Module } from "~/s3/s3.module";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import { CommentsModule } from "~/comments/comments.module";
+import { OrdersModule } from "~/orders/orders.module";
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
     ]),
     ErrorsModule,
     S3Module,
+    forwardRef(() => CommentsModule),
+    OrdersModule,
   ],
   controllers: [ProductsController],
   providers: [ProductsService],
