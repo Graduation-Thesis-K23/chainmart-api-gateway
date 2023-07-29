@@ -1,5 +1,6 @@
-import { Column, Entity } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { BaseEntity } from "~/common/base.entity";
+import { User } from "~/users/entities/user.entity";
 
 @Entity("comments")
 export class Comment extends BaseEntity {
@@ -8,6 +9,10 @@ export class Comment extends BaseEntity {
 
   @Column()
   user_id: string;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: "user_id" })
+  user: User;
 
   @Column()
   product_id: string;

@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Req, UseGuards } from "@nestjs/common";
 import { CommentsService } from "./comments.service";
 import { JwtAuthGuard, UserGuard } from "~/auth/guards";
-import { User } from "~/auth/decorators";
+import { Public, User } from "~/auth/decorators";
 import { Request } from "express";
 import { ReqUser } from "~/common/req-user.inter";
 
@@ -18,8 +18,7 @@ export class CommentsController {
     return this.commentsService.getCommentsByUser(user.username);
   }
 
-  @UseGuards(JwtAuthGuard, UserGuard)
-  @User()
+  @Public()
   @Get(":id/product")
   getCommentsByProduct(@Param("id") id: string) {
     return this.commentsService.getCommentsByProduct(id);

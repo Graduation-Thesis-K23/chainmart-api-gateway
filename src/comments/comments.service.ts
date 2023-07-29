@@ -55,15 +55,47 @@ export class CommentsService {
     });
   }
 
-  async getCommentsByProduct(orderId: string) {
-    return await this.commentRepository.find({
+  /* averageStar: number;
+  numberOfComment: number;
+  numberOfOneStar: number;
+  numberOfTwoStar: number;
+  numberOfThreeStar: number;
+  numberOfFourStar: number;
+  numberOfFiveStar: number; */
+
+  async getCommentsByProduct(product_id: string) {
+    const comments = await this.commentRepository.find({
       where: {
-        order_id: orderId,
+        product_id,
+      },
+      relations: {
+        user: true,
       },
       order: {
         created_at: "DESC",
       },
     });
+
+    const numberOfComment = comments.length;
+
+    const averageStar = comments.reduce((acc, comment) => acc + comment.star, 0) / numberOfComment;
+
+    const numberOfOneStar = comments.filter((comment) => comment.star === 1).length;
+    const numberOfTwoStar = comments.filter((comment) => comment.star === 2).length;
+    const numberOfThreeStar = comments.filter((comment) => comment.star === 3).length;
+    const numberOfFourStar = comments.filter((comment) => comment.star === 4).length;
+    const numberOfFiveStar = comments.filter((comment) => comment.star === 5).length;
+
+    return {
+      averageStar,
+      numberOfComment,
+      numberOfOneStar,
+      numberOfTwoStar,
+      numberOfThreeStar,
+      numberOfFourStar,
+      numberOfFiveStar,
+      comments,
+    };
   }
 
   async getCommentsByOrder(username: string, orderId: string) {
