@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 
 import { BatchesService } from "./batches.service";
 import { BatchesController } from "./batches.controller";
+import { EmployeeModule } from "~/employee/employee.module";
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { BatchesController } from "./batches.controller";
         },
       },
     ]),
+    EmployeeModule,
   ],
   controllers: [BatchesController],
   providers: [BatchesService],

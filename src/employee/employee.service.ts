@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { Not, Repository } from "typeorm";
+import { In, Not, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 
 import { S3Service } from "~/s3/s3.service";
@@ -29,6 +29,9 @@ export class EmployeeService {
   }
 
   async createEmployee(phone: string, createEmployeeDto: CreateEmployeeDto) {
+    if (createEmployeeDto.role === Role.Admin || createEmployeeDto.role === Role.Branch) {
+      throw new BadRequestException("You cannot create admin");
+    }
     // check employee exist
     const employeeExist = await this.findOneByPhone(createEmployeeDto.phone);
 
@@ -41,7 +44,6 @@ export class EmployeeService {
     const employee = new Employee({
       ...createEmployeeDto,
       password: "Chainmart123@@",
-      role: Role.Employee,
       branch,
     });
 
@@ -59,6 +61,16 @@ export class EmployeeService {
       },
       isActive,
     };
+  }
+
+  async findBranchByPhone(employee_create_phone: string) {
+    const employee = await this.employeeRepository.findOne({
+      where: {
+        phone: employee_create_phone,
+      },
+      relations: ["branch"],
+    });
+    return employee.branch;
   }
 
   async createManager(createManagerDto: CreateManagerDto) {
@@ -109,6 +121,7 @@ export class EmployeeService {
     const newEmployee = new Employee({
       ...employee,
       isActive: active,
+      role: employee.role,
     });
 
     await this.employeeRepository.save(newEmployee);
@@ -119,6 +132,7 @@ export class EmployeeService {
       phone: newEmployee.phone,
       created_at: newEmployee.created_at,
       isActive: newEmployee.isActive,
+      role: newEmployee.role,
     };
   }
 
@@ -143,6 +157,7 @@ export class EmployeeService {
       id: newPassword.id,
       name: newPassword.name,
       phone: newPassword.phone,
+      role: newPassword.role,
     };
   }
 
@@ -206,7 +221,7 @@ export class EmployeeService {
     return await this.employeeRepository.find({
       where: {
         branch_id: branch.id,
-        role: Role.Employee,
+        role: In([Role.Employee, Role.Shipper]),
       },
       relations: ["branch"],
     });

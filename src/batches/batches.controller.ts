@@ -11,15 +11,21 @@ import {
   HttpStatus,
   OnModuleInit,
   Inject,
+  UseGuards,
+  Req,
 } from "@nestjs/common";
 import { ClientKafka } from "@nestjs/microservices";
+import { Request } from "express";
 
 import { BatchesService } from "./batches.service";
 import { CreateBatchDto } from "./dto/create-batch.dto";
 import { UpdateBatchDto } from "./dto/update-batch.dto";
 import { Roles } from "~/auth-manager/decorators/roles.decorator";
-import { Role } from "~/shared";
+import { EmployeePayload, Role } from "~/shared";
+import { JwtEmployeeAuthGuard } from "~/auth-manager/guards/jwt-employee.guards";
+import { RolesGuard } from "~/auth-manager/guards/role.guard";
 
+@UseGuards(JwtEmployeeAuthGuard, RolesGuard)
 @Controller("batches")
 export class BatchesController implements OnModuleInit {
   constructor(
@@ -38,15 +44,19 @@ export class BatchesController implements OnModuleInit {
   }
 
   @Post()
-  @Roles(Role.Employee)
-  create(@Body() createBatchDto: CreateBatchDto) {
-    return this.batchesService.create(createBatchDto);
+  @Roles(Role.Branch)
+  create(@Body() createBatchDto: CreateBatchDto, @Req() req: Request) {
+    const { phone } = req.user as EmployeePayload;
+
+    return this.batchesService.create(phone, createBatchDto);
   }
 
   @Get()
-  @Roles(Role.Employee)
-  findAll() {
-    return this.batchesService.findAll();
+  @Roles(Role.Branch)
+  findAll(@Req() req: Request) {
+    const { phone } = req.user as EmployeePayload;
+
+    return this.batchesService.findAll(phone);
   }
 
   @Get("products/:id")

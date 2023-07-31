@@ -30,7 +30,7 @@ export class EmployeeController {
   constructor(private readonly employeeService: EmployeeService, private readonly errorsService: ErrorsService) {}
 
   @Post("create-employee")
-  @Roles(Role.Admin)
+  @Roles(Role.Branch)
   async createEmployee(@Body() createEmployeeDto: CreateEmployeeDto, @Req() req: Request) {
     try {
       const { phone } = req.user as EmployeePayload;
@@ -41,7 +41,7 @@ export class EmployeeController {
   }
 
   @Get("active-employee/:id")
-  @Roles(Role.Admin)
+  @Roles(Role.Branch)
   async disableEmployee(@Req() req: Request, @Param("id") id: string, @Query("active") active: boolean) {
     try {
       const { phone } = req.user as EmployeePayload;
@@ -54,7 +54,7 @@ export class EmployeeController {
 
   // reset password employee use by manager
   @Get("reset-password-manager/:id")
-  @Roles(Role.Admin)
+  @Roles(Role.Branch)
   async resetPasswordEmployee(@Req() req: Request, @Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     try {
       const { phone } = req.user as EmployeePayload;
@@ -75,7 +75,7 @@ export class EmployeeController {
   }
 
   @Get("manager")
-  @Roles(Role.Admin)
+  @Roles(Role.Branch)
   async getAllEmployee(@Req() req: Request) {
     try {
       const { phone } = req.user as EmployeePayload;
