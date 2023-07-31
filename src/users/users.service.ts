@@ -214,4 +214,27 @@ export class UsersService {
       messageCode: "setting.changePasswordSuccess",
     };
   }
+
+  // Dashboard
+  async getNewUserByDate(startDate: string, endDate: string) {
+    /* 
+    SELECT COUNT(id) as value, to_char(created_at, 'yyyy-mm-dd') as label
+    FROM public.users
+    WHERE created_at >= '2023-01-01 00:00:00' AND created_at <= '2023-03-31 23:59:59'
+    GROUP BY label
+    ORDER BY label ASC;
+    */
+
+    const query = this.usersRepository
+      .createQueryBuilder("users")
+      .select("COUNT(id)", "value")
+      .addSelect("to_char(created_at, 'yyyy-mm-dd')", "label")
+      .where("created_at >= :startDate AND created_at <= :endDate", { startDate, endDate })
+      .groupBy("label")
+      .orderBy("label", "ASC")
+      .limit(30)
+      .getRawMany();
+
+    return query;
+  }
 }

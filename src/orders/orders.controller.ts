@@ -35,7 +35,19 @@ export class OrdersController implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    const topics = ["create", "findall", "findallbyuserid", "findbyid", "update", "delete"];
+    const topics = [
+      "create",
+      "findall",
+      "findallbyuserid",
+      "findbyid",
+      "update",
+      "delete",
+      "packaged",
+      "cancelled",
+      "getnumberordersperday",
+      "gethotsellingproduct",
+      "getrevenueperday",
+    ];
     topics.forEach((topic) => {
       this.orderClient.subscribeToResponseOf(`orders.${topic}`);
     });

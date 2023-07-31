@@ -71,4 +71,41 @@ export class OrdersService {
       throw new BadRequestException(error);
     }
   }
+
+  // dashboard
+  async getHotSellingProduct(startDate: string, endDate: string, branch: string) {
+    try {
+      const $source = this.orderClient
+        .send("orders.gethotsellingproduct", { startDate, endDate, branch })
+        .pipe(timeout(5000));
+      return await lastValueFrom($source);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
+  }
+
+  async getNumberOrdersPerDay(startDate: string, endDate: string, branch: string) {
+    try {
+      const $source = this.orderClient
+        .send("orders.getnumberordersperday", { startDate, endDate, branch })
+        .pipe(timeout(5000));
+      return await lastValueFrom($source);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
+  }
+
+  async getRevenuePerDay(startDate: string, endDate: string, branch: string) {
+    try {
+      const $source = this.orderClient
+        .send("orders.getrevenueperday", { startDate, endDate, branch })
+        .pipe(timeout(5000));
+      return await lastValueFrom($source);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
+  }
 }
