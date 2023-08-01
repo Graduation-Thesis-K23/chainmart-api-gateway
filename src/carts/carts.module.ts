@@ -1,14 +1,34 @@
 import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { CartsService } from "./carts.service";
 import { CartsController } from "./carts.controller";
-import { Cart } from "./entities/cart.entity";
-import { CartDetail } from "./entities/cart-detail.entity";
-import { User } from "~/users/entities/user.entity";
+import { ClientsModule, Transport } from "@nestjs/microservices";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Cart, CartDetail, User])],
+  imports: [
+    ClientsModule.registerAsync([
+      {
+        name: "CARTS_SERVICE",
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: async (configService) => {
+          return {
+            transport: Transport.KAFKA,
+            options: {
+              client: {
+                clientId: "cart",
+                brokers: configService.get("KAFKA_BROKERS").split(","),
+              },
+              consumer: {
+                groupId: "carts-consumer",
+              },
+            },
+          };
+        },
+      },
+    ]),
+  ],
   controllers: [CartsController],
   providers: [CartsService],
 })
