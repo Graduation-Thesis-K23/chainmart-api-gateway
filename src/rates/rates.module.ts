@@ -1,17 +1,11 @@
 import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
-
-import { UsersService } from "./users.service";
-import { UsersController } from "./users.controller";
-import { User } from "./entities/user.entity";
-import { S3Module } from "../s3/s3.module";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { RatesService } from "./rates.service";
+import { RatesController } from "./rates.controller";
 import { ClientsModule, Transport } from "@nestjs/microservices";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
-    S3Module,
     ClientsModule.registerAsync([
       {
         name: "RATE_SERVICE",
@@ -34,8 +28,7 @@ import { ClientsModule, Transport } from "@nestjs/microservices";
       },
     ]),
   ],
-  controllers: [UsersController],
-  providers: [UsersService],
-  exports: [UsersService],
+  controllers: [RatesController],
+  providers: [RatesService],
 })
-export class UsersModule {}
+export class RatesModule {}
