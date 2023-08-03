@@ -1,58 +1,18 @@
-import { Injectable, forwardRef, Inject } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { DeepPartial, In, Repository } from "typeorm";
-import { Comment } from "./entities/comment.entity";
-import { UsersService } from "~/users/users.service";
-import { ProductsService } from "~/products/products.service";
+import { Injectable, Inject } from "@nestjs/common";
+import { ClientKafka } from "@nestjs/microservices";
+import { lastValueFrom, timeout } from "rxjs";
 
 @Injectable()
 export class CommentsService {
   constructor(
-    @InjectRepository(Comment)
-    private commentRepository: Repository<Comment>,
-
-    private readonly usersService: UsersService,
-
-    @Inject(forwardRef(() => ProductsService))
-    private readonly productService: ProductsService,
+    @Inject("RATE_SERVICE")
+    private readonly rateClient: ClientKafka,
   ) {}
 
-  async create(createCommentDto: DeepPartial<Comment>) {
-    const newComment = this.commentRepository.create(createCommentDto);
-    return await this.commentRepository.save(newComment);
-  }
-
   async getCommentsByUser(username: string) {
-    const user = await this.usersService.findOneByUsername(username);
+    const $source = this.rateClient.send("rates.getratesbyusername", username).pipe(timeout(5000));
 
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    const comments = await this.commentRepository.find({
-      where: {
-        user_id: user.id,
-      },
-      order: {
-        created_at: "DESC",
-      },
-    });
-
-    const ids = comments.map((comment) => comment.product_id);
-
-    const products = await this.productService.findByIds(ids);
-
-    return comments.map((comment) => {
-      const product = products.find((product) => product.id === comment.product_id);
-
-      return {
-        ...comment,
-        product: {
-          ...product,
-          image: product.images[0],
-        },
-      };
-    });
+    return await lastValueFrom($source);
   }
 
   /* averageStar: number;
@@ -64,19 +24,11 @@ export class CommentsService {
   numberOfFiveStar: number; */
 
   async getCommentsByProduct(product_id: string) {
-    const comments = await this.commentRepository.find({
-      where: {
-        product_id,
-      },
-      relations: {
-        user: true,
-      },
-      order: {
-        created_at: "DESC",
-      },
-    });
+    const $source = this.rateClient.send("rates.getratesbyproductid", product_id).pipe(timeout(5000));
 
-    const numberOfComment = comments.length;
+    return await lastValueFrom($source);
+
+    /*  const numberOfComment = comments.length;
 
     const averageStar = comments.reduce((acc, comment) => acc + comment.star, 0) / numberOfComment;
 
@@ -95,10 +47,10 @@ export class CommentsService {
       numberOfFourStar,
       numberOfFiveStar,
       comments,
-    };
+    }; */
   }
 
-  async getCommentsByOrder(username: string, orderId: string) {
+  /*  async getCommentsByOrder(username: string, orderId: string) {
     const user = await this.usersService.findOneByUsername(username);
 
     if (!user) {
@@ -129,8 +81,8 @@ export class CommentsService {
       };
     });
   }
-
-  async getAverageStarByProducts(ids: string[]) {
+ */
+  /*  async getAverageStarByProducts(ids: string[]) {
     const comments = await this.commentRepository.find({
       where: {
         product_id: In(ids),
@@ -162,9 +114,9 @@ export class CommentsService {
     }, {});
 
     return result;
-  }
+  } */
 
-  async getAverageStarByProduct(id: string) {
+  /*  async getAverageStarByProduct(id: string) {
     const comments = await this.commentRepository.find({
       where: {
         product_id: id,
@@ -177,5 +129,5 @@ export class CommentsService {
         return acc + comment.star;
       }, 0) / comments.length
     );
-  }
+  } */
 }

@@ -26,7 +26,6 @@ import { Request } from "express";
 
 import { OrdersService } from "./orders.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
-import { UpdateOrderDto } from "./dto/update-order.dto";
 import { JwtAuthGuard, UserGuard } from "~/auth/guards";
 import { RolesGuard } from "~/auth-manager/guards/role.guard";
 import { Roles } from "~/auth-manager/decorators/roles.decorator";
@@ -46,9 +45,6 @@ export class OrdersController implements OnModuleInit {
 
     @Inject("ORDER_SERVICE")
     private readonly orderClient: ClientKafka,
-
-    @Inject("PRODUCT_SERVICE")
-    private readonly productClient: ClientKafka,
   ) {}
 
   async onModuleInit() {
@@ -70,23 +66,19 @@ export class OrdersController implements OnModuleInit {
       "getordersbyshipper",
       "startshipmentbyshipper",
       "completeorderbyshipper",
-      "cancelorderbyshipper",
+      "cancellorderbyshipper",
       "packaged",
       "cancelled",
       "getnumberordersperday",
       "gethotsellingproduct",
       "getrevenueperday",
+      "commented",
     ];
     orderTopics.forEach((topic) => {
       this.orderClient.subscribeToResponseOf(`orders.${topic}`);
     });
 
-    const productTopics = ["findbyids"];
-    productTopics.forEach((topic) => {
-      this.productClient.subscribeToResponseOf(`products.${topic}`);
-    });
-
-    await Promise.all([this.orderClient.connect(), this.productClient.connect()]);
+    this.orderClient.connect();
   }
 
   @Post()
@@ -272,10 +264,11 @@ export class OrdersController implements OnModuleInit {
     return this.ordersService.findById(id);
   }
 
-  @Patch(":id")
+  /*   @Patch(":id")
   update(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string, @Body() updateOrderDto: UpdateOrderDto) {
     return this.ordersService.update(id, updateOrderDto);
   }
+ */
 
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
