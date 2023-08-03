@@ -71,6 +71,11 @@ export class OrdersController implements OnModuleInit {
       "startshipmentbyshipper",
       "completeorderbyshipper",
       "cancelorderbyshipper",
+      "packaged",
+      "cancelled",
+      "getnumberordersperday",
+      "gethotsellingproduct",
+      "getrevenueperday",
     ];
     orderTopics.forEach((topic) => {
       this.orderClient.subscribeToResponseOf(`orders.${topic}`);

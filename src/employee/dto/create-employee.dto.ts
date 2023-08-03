@@ -1,9 +1,5 @@
-import { IsEnum, IsNotEmpty, IsString } from "class-validator";
-
-enum Role {
-  Employee = "EMPLOYEE",
-  Shipper = "SHIPPER",
-}
+import { IsNotEmpty, IsString } from "class-validator";
+import { Role } from "~/shared";
 
 export class CreateEmployeeDto {
   @IsString()
@@ -11,7 +7,7 @@ export class CreateEmployeeDto {
   @IsNotEmpty()
   phone: string;
 
-  @IsEnum(Role)
+  @IsString()
   @IsNotEmpty()
   role: Role;
 }

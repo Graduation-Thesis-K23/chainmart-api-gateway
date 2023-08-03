@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { isUUID } from "class-validator";
 import { isQueryFailedError } from "../utils/is-query-failed";
@@ -12,6 +12,7 @@ import { S3Service } from "../s3/s3.service";
 import { UpdateUserSettingDto } from "./dto/update-user-setting.dto";
 import { CreateGoogleUserDto } from "./dto/create-google-user.dto";
 import { CreateFacebookUserDto } from "./dto/create-facebook-user.dto";
+import { ClientKafka } from "@nestjs/microservices";
 
 @Injectable()
 export class UsersService {
@@ -19,11 +20,18 @@ export class UsersService {
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
     private readonly s3Service: S3Service,
+
+    @Inject("RATE_SERVICE")
+    private readonly rateClient: ClientKafka,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
       const newUser = this.usersRepository.create(createUserDto);
+      this.rateClient.emit("rates.signin", {
+        username: newUser.username,
+        name: newUser.name,
+      });
       return await this.usersRepository.save(newUser);
     } catch (error) {
       if (isQueryFailedError(error)) {
@@ -41,7 +49,15 @@ export class UsersService {
 
   async createUserFromGoogleLogin(createGoogleUserDto: CreateGoogleUserDto): Promise<User> {
     try {
-      return await this.usersRepository.save(createGoogleUserDto);
+      const newUser = this.usersRepository.create(createGoogleUserDto);
+
+      this.rateClient.emit("rates.signin", {
+        username: newUser.username,
+        name: newUser.name,
+        photo: newUser.photo,
+      });
+
+      return await this.usersRepository.save(newUser);
     } catch (error) {
       if (isQueryFailedError(error)) {
         if (error.code === "23505") {
@@ -58,7 +74,14 @@ export class UsersService {
 
   async createUserFromFacebookLogin(createFacebookUserDto: CreateFacebookUserDto): Promise<User> {
     try {
-      return await this.usersRepository.save(createFacebookUserDto);
+      const newUser = this.usersRepository.create(createFacebookUserDto);
+
+      this.rateClient.emit("rates.signin", {
+        username: newUser.username,
+        name: newUser.name,
+      });
+
+      return await this.usersRepository.save(newUser);
     } catch (error) {
       if (isQueryFailedError(error)) {
         if (error.code === "23505") {
@@ -233,5 +256,28 @@ export class UsersService {
     return {
       messageCode: "setting.changePasswordSuccess",
     };
+  }
+
+  // Dashboard
+  async getNewUserByDate(startDate: string, endDate: string) {
+    /* 
+    SELECT COUNT(id) as value, to_char(created_at, 'yyyy-mm-dd') as label
+    FROM public.users
+    WHERE created_at >= '2023-01-01 00:00:00' AND created_at <= '2023-03-31 23:59:59'
+    GROUP BY label
+    ORDER BY label ASC;
+    */
+
+    const query = this.usersRepository
+      .createQueryBuilder("users")
+      .select("COUNT(id)", "value")
+      .addSelect("to_char(created_at, 'yyyy-mm-dd')", "label")
+      .where("created_at >= :startDate AND created_at <= :endDate", { startDate, endDate })
+      .groupBy("label")
+      .orderBy("label", "ASC")
+      .limit(30)
+      .getRawMany();
+
+    return query;
   }
 }

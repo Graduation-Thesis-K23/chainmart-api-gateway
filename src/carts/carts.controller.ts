@@ -1,73 +1,57 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  ParseUUIDPipe,
-  Query,
-  HttpCode,
-  HttpStatus,
-  UseGuards,
-  Req,
-} from "@nestjs/common";
+import { Controller, Get, Body, Patch, Delete, Inject, UseGuards, Req, BadRequestException } from "@nestjs/common";
 import { Request } from "express";
 
 import { CartsService } from "./carts.service";
-import { CreateCartDto } from "./dto/create-cart.dto";
-import { UpdateCartDto } from "./dto/update-cart.dto";
-import { CartDetailParam } from "./dto/create-cart.dto";
+import { ClientKafka } from "@nestjs/microservices";
 import { JwtAuthGuard, UserGuard } from "~/auth/guards";
 import { User } from "~/auth/decorators";
 import { ReqUser } from "~/common/req-user.inter";
 
+@UseGuards(JwtAuthGuard, UserGuard)
 @Controller("carts")
 @UseGuards(JwtAuthGuard, UserGuard)
 export class CartsController {
-  constructor(private readonly cartsService: CartsService) {}
+  constructor(
+    private readonly cartsService: CartsService,
 
-  @User()
-  @Post()
-  create(@Body() createCartDto: CreateCartDto) {
-    return this.cartsService.create(createCartDto);
-  }
+    @Inject("CARTS_SERVICE")
+    private readonly cartsClient: ClientKafka,
+  ) {}
 
-  @User()
-  @Get("user/:id")
-  findOneByUserId(@Query("user") userId: string) {
-    return this.cartsService.findOneByUserId(userId);
+  async onModuleInit() {
+    const topics = ["update", "remove", "get"];
+    topics.forEach((topic) => {
+      this.cartsClient.subscribeToResponseOf(`carts.${topic}`);
+    });
+    await this.cartsClient.connect();
   }
 
   @User()
   @Get()
-  findAllByUser(@Req() req: Request) {
-    const user = req.user as ReqUser;
-    return this.cartsService.findAllByUser(user.username);
-  }
-
-  @Get("all")
-  findAll() {
-    return this.cartsService.findAll();
-  }
-
   @User()
-  @Get(":id")
-  findOne(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
-    return this.cartsService.findOne(id);
+  get(@Req() req: Request) {
+    const { username } = req.user as ReqUser;
+    return this.cartsService.get(username);
   }
 
+  @Patch()
   @User()
-  @Patch(":id")
-  update(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string, @Body() updateCartDto: UpdateCartDto) {
-    return this.cartsService.update(id, updateCartDto);
+  update(@Body("carts") carts: string, @Req() req: Request) {
+    const { username } = req.user as ReqUser;
+
+    try {
+      return this.cartsService.update(username, carts);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error.message);
+    }
   }
 
+  @Delete()
   @User()
-  @Delete(":id")
-  @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
-    return this.cartsService.remove(id);
+  remove(@Req() req: Request) {
+    const { username } = req.user as ReqUser;
+
+    return this.cartsService.remove(username);
   }
 }

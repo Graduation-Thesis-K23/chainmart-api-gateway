@@ -1,12 +1,13 @@
-import { Controller, Get, Query, UseGuards } from "@nestjs/common";
-import { DashboardService } from "./dashboard.service";
+import { BadRequestException, Controller, Get, Query, Req, UseGuards } from "@nestjs/common";
+import { Request } from "express";
 
-import { GetDashboardDataDto } from "./dto/get-dashboard-data.dto";
+import { DashboardService } from "./dashboard.service";
 import { Roles } from "~/auth-manager/decorators/roles.decorator";
-import { Role } from "~/shared";
+import { EmployeePayload, Role } from "~/shared";
 import { JwtEmployeeAuthGuard } from "~/auth-manager/guards/jwt-employee.guards";
 import { RolesGuard } from "~/auth-manager/guards/role.guard";
-import { GetDashboardDataBranchDto } from "./dto/get-dashboard-data-branch.dto";
+import { AdminGetDataDto } from "./dto/admin-get-data";
+import { BranchGetDataDto } from "./dto/branch-get-data";
 
 @Controller("dashboard")
 @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
@@ -15,13 +16,25 @@ export class DashboardController {
 
   @Roles(Role.Admin)
   @Get()
-  getDashboardDataAdmin(@Query() getDashboardDataDto: GetDashboardDataDto) {
-    return this.dashboardService.getDashboardDataAdmin(getDashboardDataDto);
+  getDashboardDataAdmin(@Query() adminGetDataDto: AdminGetDataDto) {
+    try {
+      return this.dashboardService.getDashboardDataAdmin(adminGetDataDto);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @Roles(Role.Branch)
   @Get("/branch")
-  getDashboardDataBranch(@Query() getDashboardDataDto: GetDashboardDataBranchDto) {
-    return this.dashboardService.getDashboardDataBranch(getDashboardDataDto);
+  getDashboardDataBranch(@Query() branchGetDataDto: BranchGetDataDto, @Req() req: Request) {
+    try {
+      const user = req.user as EmployeePayload;
+
+      return this.dashboardService.getDashboardDataBranch(user.phone, branchGetDataDto);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
   }
 }

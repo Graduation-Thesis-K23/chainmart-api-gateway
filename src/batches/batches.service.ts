@@ -4,6 +4,7 @@ import { firstValueFrom, lastValueFrom, timeout } from "rxjs";
 
 import { CreateBatchDto } from "./dto/create-batch.dto";
 import { UpdateBatchDto } from "./dto/update-batch.dto";
+import { EmployeeService } from "~/employee/employee.service";
 
 interface CreateBatchHasEmployeeDto extends CreateBatchDto {
   employee_create_id: string;
@@ -14,11 +15,19 @@ export class BatchesService {
   constructor(
     @Inject("BATCH_SERVICE")
     private readonly batchClient: ClientKafka,
+
+    private readonly employeeService: EmployeeService,
   ) {}
 
-  async create(createBatchDto: CreateBatchHasEmployeeDto) {
+  async create(employee_create_phone: string, createBatchDto: CreateBatchDto) {
+    const { id: branch_id } = await this.employeeService.findBranchByPhone(employee_create_phone);
+
     try {
-      const $source = this.batchClient.send("batches.create", { ...createBatchDto }).pipe(timeout(5000));
+      const payload = { ...createBatchDto, employee_create_phone, branch_id };
+
+      console.log("payload", payload);
+
+      const $source = this.batchClient.send("batches.create", payload).pipe(timeout(5000));
 
       return await firstValueFrom($source);
     } catch (error) {
@@ -27,9 +36,11 @@ export class BatchesService {
     }
   }
 
-  async findAll() {
+  async findAll(phone: string) {
+    const { id: branch_id } = await this.employeeService.findBranchByPhone(phone);
+
     try {
-      const $source = this.batchClient.send("batches.findall", {}).pipe(timeout(5000));
+      const $source = this.batchClient.send("batches.findall", branch_id).pipe(timeout(5000));
       return await lastValueFrom($source);
     } catch (error) {
       console.error(error);

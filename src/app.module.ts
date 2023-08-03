@@ -22,8 +22,10 @@ import { BatchesModule } from "./batches/batches.module";
 import { ErrorsModule } from "./errors/errors.module";
 import { AuthShipperModule } from "./auth-shipper/auth-shipper.module";
 import { SearchModule } from "./search/search.module";
-import { CommentsModule } from './comments/comments.module';
-import { DashboardModule } from './dashboard/dashboard.module';
+import { CommentsModule } from "./comments/comments.module";
+import { DashboardModule } from "./dashboard/dashboard.module";
+import { SubscribersModule } from "./subscribers/subscribers.module";
+import { RatesModule } from "./rates/rates.module";
 
 @Module({
   imports: [
@@ -53,6 +55,8 @@ import { DashboardModule } from './dashboard/dashboard.module';
     SearchModule,
     CommentsModule,
     DashboardModule,
+    SubscribersModule,
+    RatesModule,
   ],
   exports: [ConfigModule],
 })

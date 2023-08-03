@@ -21,10 +21,6 @@ export class CreateBatchDto {
   @IsNotEmpty()
   acceptable_expiry_threshold: number;
 
-  @IsUUID(4)
-  @IsNotEmpty()
-  branch_id: string;
-
   @IsDateString()
   @IsNotEmpty()
   expiry_date: string;
