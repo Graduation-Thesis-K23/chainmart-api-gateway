@@ -1,4 +1,4 @@
-import { ValidationPipe } from "@nestjs/common";
+import { Logger, ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import * as cookieParser from "cookie-parser";
@@ -7,6 +7,8 @@ import * as session from "express-session";
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
+  const logger = new Logger("HTTP");
+
   const app = await NestFactory.create(AppModule, { logger: ["log", "error", "warn", "debug", "verbose"] });
 
   const configService = app.get<ConfigService>(ConfigService);
@@ -20,7 +22,7 @@ async function bootstrap() {
   app.setGlobalPrefix("/api");
 
   app.enableCors({
-    origin: [clientUrl, managerUrl, branchUrl, adminUrl, employeeUrl],
+    origin: [clientUrl, managerUrl, branchUrl, adminUrl, employeeUrl, "*"],
     credentials: true,
   });
   app.use(cookieParser());
@@ -40,7 +42,7 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(port, () => console.log(`App running at port: ${port}`));
+  await app.listen(port, () => logger.log(`App running at port: ${port}`));
 }
 
 bootstrap();

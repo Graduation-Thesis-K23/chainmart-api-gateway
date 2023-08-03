@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { ClientsModule, Transport } from "@nestjs/microservices";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 
@@ -6,6 +6,7 @@ import { ProductsService } from "./products.service";
 import { ProductsController } from "./products.controller";
 import { ErrorsModule } from "~/errors/errors.module";
 import { S3Module } from "~/s3/s3.module";
+import { CommentsModule } from "~/comments/comments.module";
 
 @Module({
   imports: [
@@ -15,7 +16,6 @@ import { S3Module } from "~/s3/s3.module";
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: async (configService) => {
-          console.log(configService.get("KAFKA_BROKERS").split(","));
           return {
             transport: Transport.KAFKA,
             options: {
@@ -33,6 +33,7 @@ import { S3Module } from "~/s3/s3.module";
     ]),
     ErrorsModule,
     S3Module,
+    forwardRef(() => CommentsModule),
   ],
   controllers: [ProductsController],
   providers: [ProductsService],

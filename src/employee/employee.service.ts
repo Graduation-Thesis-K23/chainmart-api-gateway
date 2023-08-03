@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { Not, Repository } from "typeorm";
+import { In, Not, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 
 import { S3Service } from "~/s3/s3.service";
@@ -41,7 +41,6 @@ export class EmployeeService {
     const employee = new Employee({
       ...createEmployeeDto,
       password: "Chainmart123@@",
-      role: Role.Employee,
       branch,
     });
 
@@ -73,7 +72,7 @@ export class EmployeeService {
 
     const employee = new Employee({
       ...createManagerDto,
-      role: Role.Admin,
+      role: Role.Branch,
       password: "Chainmart123@@",
     });
 
@@ -206,7 +205,7 @@ export class EmployeeService {
     return await this.employeeRepository.find({
       where: {
         branch_id: branch.id,
-        role: Role.Employee,
+        role: In([Role.Employee, Role.Shipper]), // select employee and shipper
       },
       relations: ["branch"],
     });

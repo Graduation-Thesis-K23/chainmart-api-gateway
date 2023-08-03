@@ -21,6 +21,15 @@ export class AddressService {
     return await this.addressRepository.save(newAddress);
   }
 
+  async findById(id: string) {
+    try {
+      return this.addressRepository.findOneBy({ id });
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(`Cannot found address with id(${id})`);
+    }
+  }
+
   async getAll(user: string) {
     return await this.addressRepository.createQueryBuilder().where({ user }).getMany();
   }

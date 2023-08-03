@@ -38,7 +38,29 @@ export class CartsService {
     }
   }
 
-  async findAll(): Promise<Cart[]> {
+  async findAllByUser(username: string) {
+    const user = await this.userRepository.findOneBy({ username });
+    if (!user) {
+      throw new BadRequestException("User not found");
+    }
+
+    try {
+      return await this.cartRepository.find({
+        where: {
+          user_id: user.id,
+        },
+        relations: {
+          user: true,
+          cart_details: true,
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException("Cannot find carts");
+    }
+  }
+
+  async findAll() {
     try {
       return await this.cartRepository.find({
         relations: {

@@ -5,6 +5,10 @@ import { firstValueFrom, lastValueFrom, timeout } from "rxjs";
 import { CreateBatchDto } from "./dto/create-batch.dto";
 import { UpdateBatchDto } from "./dto/update-batch.dto";
 
+interface CreateBatchHasEmployeeDto extends CreateBatchDto {
+  employee_create_id: string;
+}
+
 @Injectable()
 export class BatchesService {
   constructor(
@@ -12,7 +16,7 @@ export class BatchesService {
     private readonly batchClient: ClientKafka,
   ) {}
 
-  async create(createBatchDto: CreateBatchDto) {
+  async create(createBatchDto: CreateBatchHasEmployeeDto) {
     try {
       const $source = this.batchClient.send("batches.create", { ...createBatchDto }).pipe(timeout(5000));
 
