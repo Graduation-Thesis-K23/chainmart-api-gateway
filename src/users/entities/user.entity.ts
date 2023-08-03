@@ -54,10 +54,14 @@ export class User extends BaseEntity {
 
   @BeforeInsert()
   async hashPassword(): Promise<void> {
-    const saltOrRounds = 10;
-    const password = this.password;
-    const hashed = await bcrypt.hash(password, saltOrRounds);
-    this.password = hashed;
+    try {
+      const saltOrRounds = 10;
+      const password = this.password || "";
+      const hashed = await bcrypt.hash(password, saltOrRounds);
+      this.password = hashed;
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   @AfterLoad()
