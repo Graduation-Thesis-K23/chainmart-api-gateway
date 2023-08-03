@@ -6,6 +6,10 @@ import { CreateBatchDto } from "./dto/create-batch.dto";
 import { UpdateBatchDto } from "./dto/update-batch.dto";
 import { EmployeeService } from "~/employee/employee.service";
 
+interface CreateBatchHasEmployeeDto extends CreateBatchDto {
+  employee_create_id: string;
+}
+
 @Injectable()
 export class BatchesService {
   constructor(

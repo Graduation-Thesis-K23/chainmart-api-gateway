@@ -21,6 +21,8 @@ import { OrdersModule } from "./orders/orders.module";
 import { BatchesModule } from "./batches/batches.module";
 import { ErrorsModule } from "./errors/errors.module";
 import { AuthShipperModule } from "./auth-shipper/auth-shipper.module";
+import { SearchModule } from "./search/search.module";
+import { CommentsModule } from "./comments/comments.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { SubscribersModule } from "./subscribers/subscribers.module";
 import { RatesModule } from "./rates/rates.module";
@@ -32,7 +34,6 @@ import { RatesModule } from "./rates/rates.module";
       validationSchema: configValidationSchema,
       isGlobal: true,
     }),
-
     DatabaseModule,
     UsersModule,
     AuthModule,
@@ -51,6 +52,8 @@ import { RatesModule } from "./rates/rates.module";
     BatchesModule,
     ErrorsModule,
     AuthShipperModule,
+    SearchModule,
+    CommentsModule,
     DashboardModule,
     SubscribersModule,
     RatesModule,

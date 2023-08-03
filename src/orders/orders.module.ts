@@ -1,12 +1,18 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { ClientsModule, Transport } from "@nestjs/microservices";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 
 import { OrdersService } from "./orders.service";
 import { OrdersController } from "./orders.controller";
+import { S3Module } from "~/s3/s3.module";
+import { CommentsModule } from "~/comments/comments.module";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { User } from "~/users/entities/user.entity";
+import { AddressModule } from "~/address/address.module";
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([User]),
     ClientsModule.registerAsync([
       {
         name: "ORDER_SERVICE",
@@ -27,7 +33,29 @@ import { OrdersController } from "./orders.controller";
           };
         },
       },
+      {
+        name: "PRODUCT_SERVICE",
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: async (configService) => {
+          return {
+            transport: Transport.KAFKA,
+            options: {
+              client: {
+                clientId: "product",
+                brokers: configService.get("KAFKA_BROKERS").split(","),
+              },
+              consumer: {
+                groupId: "product-consumer-be-orders",
+              },
+            },
+          };
+        },
+      },
     ]),
+    S3Module,
+    AddressModule,
+    forwardRef(() => CommentsModule),
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

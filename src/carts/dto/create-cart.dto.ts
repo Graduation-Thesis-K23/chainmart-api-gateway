@@ -26,7 +26,7 @@ export class CreateCartDto {
   cart_details: CartDetailParam[];
 }
 
-class CartDetailParam {
+export class CartDetailParam {
   @IsString()
   @IsNotEmpty()
   product_id: string;

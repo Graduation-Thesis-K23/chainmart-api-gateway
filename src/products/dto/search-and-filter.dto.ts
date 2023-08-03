@@ -23,6 +23,11 @@ export class SearchAndFilterQueryDto {
   @IsOptional()
   minPrice?: number;
 
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  @IsOptional()
+  page?: number;
+
   @IsEnum(SortBy)
   @IsOptional()
   orderBy?: SortBy;

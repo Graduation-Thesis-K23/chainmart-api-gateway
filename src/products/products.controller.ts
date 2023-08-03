@@ -16,7 +16,6 @@ import {
   OnModuleInit,
   Inject,
   Query,
-  ParseIntPipe,
 } from "@nestjs/common";
 import { FilesInterceptor } from "@nestjs/platform-express";
 import { ClientKafka } from "@nestjs/microservices";
@@ -26,10 +25,10 @@ import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { Roles } from "../auth-manager/decorators/roles.decorator";
 import { RolesGuard } from "../auth-manager/guards/role.guard";
-import { Public } from "../auth/decorators/public.decorator";
 import { Role } from "~/shared";
 import { JwtEmployeeAuthGuard } from "~/auth-manager/guards/jwt-employee.guards";
 import { GetProductsDto } from "./dto/get-products.dto";
+import { SearchAndFilterQueryDto } from "./dto/search-and-filter.dto";
 
 @Controller("products")
 export class ProductsController implements OnModuleInit {
@@ -78,6 +77,21 @@ export class ProductsController implements OnModuleInit {
   @Get()
   async findAll(@Query() query: GetProductsDto) {
     return this.productsService.findAll(query.page, query.limit);
+  }
+
+  @Get("index")
+  async getProductByMain() {
+    return this.productsService.getProductByMain();
+  }
+
+  @Get("search-and-filter")
+  searchAndFilter(@Query() query: SearchAndFilterQueryDto) {
+    return this.productsService.searchAndFilter(query);
+  }
+
+  @Get("search/:keyword")
+  search(@Param("keyword") keyword: string) {
+    return this.productsService.search(keyword);
   }
 
   @Get("static-paths")

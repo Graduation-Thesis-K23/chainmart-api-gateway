@@ -9,6 +9,7 @@ import { ReqUser } from "~/common/req-user.inter";
 
 @UseGuards(JwtAuthGuard, UserGuard)
 @Controller("carts")
+@UseGuards(JwtAuthGuard, UserGuard)
 export class CartsController {
   constructor(
     private readonly cartsService: CartsService,
@@ -25,6 +26,7 @@ export class CartsController {
     await this.cartsClient.connect();
   }
 
+  @User()
   @Get()
   @User()
   get(@Req() req: Request) {

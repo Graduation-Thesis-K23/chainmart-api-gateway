@@ -27,6 +27,7 @@ import { RolesGuard } from "~/auth-manager/guards/role.guard";
 
 @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
 @Controller("batches")
+@UseGuards(JwtEmployeeAuthGuard, RolesGuard)
 export class BatchesController implements OnModuleInit {
   constructor(
     private readonly batchesService: BatchesService,
@@ -60,26 +61,26 @@ export class BatchesController implements OnModuleInit {
   }
 
   @Get("products/:id")
-  @Roles(Role.Employee)
+  @Roles(Role.Branch)
   findAllByProductId(@Param("id") productId: string) {
     return this.batchesService.findAllByProductId(productId);
   }
 
   @Get(":id")
-  @Roles(Role.Employee)
+  @Roles(Role.Branch)
   findOne(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     return this.batchesService.findById(id);
   }
 
   @Patch(":id")
-  @Roles(Role.Employee)
+  @Roles(Role.Branch)
   update(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string, @Body() updateBatchDto: UpdateBatchDto) {
     return this.batchesService.update(id, updateBatchDto);
   }
 
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Roles(Role.Employee)
+  @Roles(Role.Branch)
   remove(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     return this.batchesService.delete(id);
   }

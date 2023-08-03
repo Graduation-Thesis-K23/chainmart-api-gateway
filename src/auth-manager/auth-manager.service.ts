@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
@@ -44,12 +44,12 @@ export class AuthManagerService {
     const employee = await this.employeeService.findOneByPhone(phone);
 
     if (!employee) {
-      throw new UnauthorizedException("Account not exist");
+      throw new BadRequestException("Account not exist");
     }
 
     const isMatch = await bcrypt.compare(changePasswordDto.password, employee.password);
     if (!isMatch) {
-      throw new UnauthorizedException("Old password not correct");
+      throw new BadRequestException("Old password not correct");
     }
 
     employee.password = changePasswordDto.newPassword;
