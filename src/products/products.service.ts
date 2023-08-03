@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, forwardRef } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { ClientKafka } from "@nestjs/microservices";
 import { firstValueFrom, lastValueFrom, timeout } from "rxjs";
 
@@ -6,7 +6,6 @@ import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 
 import { S3Service } from "~/s3/s3.service";
-import { CommentsService } from "~/comments/comments.service";
 import { SearchAndFilterQueryDto } from "./dto/search-and-filter.dto";
 
 @Injectable()
@@ -16,9 +15,6 @@ export class ProductsService {
     private readonly productClient: ClientKafka,
 
     private readonly s3Service: S3Service,
-
-    @Inject(forwardRef(() => CommentsService))
-    private readonly commentsService: CommentsService,
   ) {}
 
   async create(createProductDto: CreateProductDto, arrBuffer: Buffer[]) {
@@ -63,25 +59,7 @@ export class ProductsService {
         })
         .pipe(timeout(5000));
 
-      const { docs: products, ...metadata } = await lastValueFrom($source);
-
-      const ids = products.map((product) => product.id);
-
-      console.log("ids", ids);
-
-      const avgStarByIds = await this.commentsService.getAverageStarByProducts(ids);
-
-      const result = products.map((product) => {
-        return {
-          ...product,
-          star: avgStarByIds[product.id] ? avgStarByIds[product.id] : -1,
-        };
-      });
-
-      return {
-        docs: result,
-        ...metadata,
-      };
+      return await lastValueFrom($source);
     } catch (error) {
       console.error(error);
       throw new BadRequestException(error);

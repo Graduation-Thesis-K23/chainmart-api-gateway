@@ -6,13 +6,10 @@ import { instanceToPlain } from "class-transformer";
 import { Repository } from "typeorm";
 
 import { CreateOrderDto } from "./dto/create-order.dto";
-import { UpdateOrderDto } from "./dto/update-order.dto";
 import { CommentOrderDto } from "./dto/comment-order.dto";
 import { OrderStatus } from "~/shared";
 import { User } from "~/users/entities/user.entity";
 import { S3Service } from "~/s3/s3.service";
-import { CommentsService } from "~/comments/comments.service";
-import { AddressService } from "~/address/address.service";
 
 @Injectable()
 export class OrdersService {
@@ -20,15 +17,10 @@ export class OrdersService {
     @Inject("ORDER_SERVICE")
     private readonly orderClient: ClientKafka,
 
-    @Inject("PRODUCT_SERVICE")
-    private readonly productClient: ClientKafka,
-
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
 
     private readonly s3Service: S3Service,
-    private readonly commentsService: CommentsService,
-    private readonly addressService: AddressService,
   ) {}
 
   async create(username: string, createOrderDto: CreateOrderDto) {
@@ -44,6 +36,7 @@ export class OrdersService {
           instanceToPlain({
             user_id: user.id,
             ...createOrderDto,
+            username,
           }),
         )
         .pipe(timeout(5000));
@@ -67,8 +60,8 @@ export class OrdersService {
           status,
         })
         .pipe(timeout(5000));
-      const orders = await lastValueFrom($orderSource);
-
+      return await lastValueFrom($orderSource);
+      /* 
       const ids = orders.map((order) => order.order_details.map((detail) => detail.product_id)).flat();
 
       const $productSource = this.productClient.send("products.findbyids", ids).pipe(timeout(5000));
@@ -89,7 +82,7 @@ export class OrdersService {
         };
       });
 
-      return result;
+      return result; */
     } catch (error) {
       console.error(error);
       throw new BadRequestException(error);
@@ -116,14 +109,14 @@ export class OrdersService {
     }
   }
 
-  async update(id: string, updateOrderDto: UpdateOrderDto) {
+  /* async update(id: string, updateOrderDto: UpdateOrderDto) {
     try {
       return `This action updates a #${id} order`;
     } catch (error) {
       console.error(error);
       throw new BadRequestException(`Cannot update order with id(${id})`);
     }
-  }
+  } */
 
   async delete(id: string) {
     try {
@@ -136,33 +129,33 @@ export class OrdersService {
   }
 
   async comment(username: string, commentOrderDto: CommentOrderDto, arrBuffer: Buffer[]) {
-    const user = await this.userRepository.findOneBy({ username });
-    if (!user) {
-      throw new BadRequestException("User not found");
+    try {
+      const user = await this.userRepository.findOneBy({ username });
+      if (!user) {
+        throw new BadRequestException("User not found");
+      }
+
+      let images = [];
+      if (arrBuffer.length !== 0) {
+        images = await this.s3Service.uploadImagesToS3(arrBuffer);
+      }
+
+      return await lastValueFrom(
+        this.orderClient
+          .send(
+            "orders.commented",
+            instanceToPlain({
+              ...commentOrderDto,
+              username,
+              images,
+            }),
+          )
+          .pipe(timeout(5000)),
+      );
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException("Failed to comment order");
     }
-
-    let images = [];
-    if (arrBuffer.length !== 0) {
-      images = await this.s3Service.uploadImagesToS3(arrBuffer);
-    }
-
-    this.orderClient.send(
-      "orders.commented",
-      instanceToPlain({
-        user_id: user.id,
-        ...commentOrderDto,
-      }),
-    );
-
-    await this.commentsService.create({
-      ...commentOrderDto,
-      user_id: user.id,
-      images,
-    });
-
-    return {
-      status: "success",
-    };
   }
 
   async cancelOrder(username: string, orderId: string) {
@@ -242,26 +235,7 @@ export class OrdersService {
           order_id: orderId,
         })
         .pipe(timeout(5000));
-      const order = await lastValueFrom($orderSource);
-
-      const ids = order.order_details.map((detail) => detail.product_id);
-
-      const $productSource = this.productClient.send("products.findbyids", ids).pipe(timeout(5000));
-      const products = await lastValueFrom($productSource);
-
-      const newOrderDetails = order.order_details.map((detail) => {
-        const product = products.find((product) => product.id === detail.product_id);
-        return {
-          ...detail,
-          image: product?.images[0] ?? [],
-          ...product,
-        };
-      });
-
-      return {
-        ...order,
-        order_details: newOrderDetails,
-      };
+      return await lastValueFrom($orderSource);
     } catch (error) {
       console.error(error);
       throw new BadRequestException("Failed to mark as receive order");
@@ -279,13 +253,13 @@ export class OrdersService {
       let orders = await lastValueFrom($orderSource);
 
       if (search) {
-        orders = await Promise.all(
+        /* orders = await Promise.all(
           orders.map(async (order) => ({
             ...order,
             address: await this.addressService.findById(order.address_id),
           })),
         );
-
+ */
         orders = orders.filter((order) => {
           return (
             order.address.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -294,7 +268,9 @@ export class OrdersService {
         });
       }
 
-      const ids = orders.map((order) => order.order_details.map((detail) => detail.product_id)).flat();
+      return orders;
+
+      /* const ids = orders.map((order) => order.order_details.map((detail) => detail.product_id)).flat();
 
       const $productSource = this.productClient.send("products.findbyids", ids).pipe(timeout(5000));
       const products = await lastValueFrom($productSource);
@@ -314,7 +290,7 @@ export class OrdersService {
         };
       });
 
-      return result;
+      return result; */
     } catch (error) {
       console.error(error);
       throw new BadRequestException("Failed to find all order by employee");
@@ -322,9 +298,10 @@ export class OrdersService {
   }
 
   async approveOrderByEmployee(phone: string, orderId: string) {
+    console.log(phone, orderId);
     try {
       const $source = this.orderClient
-        .send("orders.approveOrderByEmployee", {
+        .send("orders.approveorderbyemployee", {
           phone,
           order_id: orderId,
         })
@@ -375,9 +352,9 @@ export class OrdersService {
           page,
         })
         .pipe(timeout(5000));
-      const orders = await lastValueFrom($orderSource);
+      return await lastValueFrom($orderSource);
 
-      const ids = orders.map((order) => order.order_details.map((detail) => detail.product_id)).flat();
+      /*  const ids = orders.map((order) => order.order_details.map((detail) => detail.product_id)).flat();
 
       const $productSource = this.productClient.send("products.findbyids", ids).pipe(timeout(5000));
       const products = await lastValueFrom($productSource);
@@ -397,7 +374,7 @@ export class OrdersService {
         };
       });
 
-      return result;
+      return result; */
     } catch (error) {
       console.error(error);
       throw new BadRequestException("Failed to get order by shipper");
@@ -412,9 +389,9 @@ export class OrdersService {
           order_id: orderId,
         })
         .pipe(timeout(5000));
-      const order = await lastValueFrom($orderSource);
+      return await lastValueFrom($orderSource);
 
-      const ids = order.order_details.map((detail) => detail.product_id);
+      /*  const ids = order.order_details.map((detail) => detail.product_id);
 
       const $productSource = this.productClient.send("products.findbyids", ids).pipe(timeout(5000));
       const products = await lastValueFrom($productSource);
@@ -431,7 +408,7 @@ export class OrdersService {
         }),
       };
 
-      return result;
+      return result; */
     } catch (error) {
       console.error(error);
       throw new BadRequestException("Failed to start shipment by shipper");
@@ -441,14 +418,14 @@ export class OrdersService {
   async completeOrderByShipper(phone: string, orderId: string) {
     try {
       const $orderSource = this.orderClient
-        .send("orders.completeOrderByShipper", {
+        .send("orders.completeorderbyshipper", {
           phone,
           order_id: orderId,
         })
         .pipe(timeout(5000));
-      const order = await lastValueFrom($orderSource);
+      return await lastValueFrom($orderSource);
 
-      const ids = order.order_details.map((detail) => detail.product_id);
+      /*  const ids = order.order_details.map((detail) => detail.product_id);
 
       const $productSource = this.productClient.send("products.findbyids", ids).pipe(timeout(5000));
       const products = await lastValueFrom($productSource);
@@ -465,7 +442,7 @@ export class OrdersService {
         }),
       };
 
-      return result;
+      return result; */
     } catch (error) {
       console.error(error);
       throw new BadRequestException("Failed to complete order by shipper");
@@ -480,26 +457,7 @@ export class OrdersService {
           order_id: orderId,
         })
         .pipe(timeout(5000));
-      const order = await lastValueFrom($orderSource);
-
-      const ids = order.order_details.map((detail) => detail.product_id);
-
-      const $productSource = this.productClient.send("products.findbyids", ids).pipe(timeout(5000));
-      const products = await lastValueFrom($productSource);
-
-      const result = {
-        ...order,
-        order_details: order.order_details.map((detail) => {
-          const product = products.find((product) => product.id === detail.product_id);
-          return {
-            ...detail,
-            image: product?.images[0] ?? [],
-            ...product,
-          };
-        }),
-      };
-
-      return result;
+      return await lastValueFrom($orderSource);
     } catch (error) {
       console.error(error);
       throw new BadRequestException("Failed to cancell order by shipper");

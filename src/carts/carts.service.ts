@@ -11,8 +11,11 @@ export class CartsService {
   ) {}
 
   async get(username: string) {
+    console.log("username", username);
     try {
       const $source = this.cartsClient.send("carts.get", username).pipe(timeout(5000));
+
+      console.log("source", $source);
 
       return await firstValueFrom($source);
     } catch (error) {
@@ -22,6 +25,8 @@ export class CartsService {
   }
 
   async update(username: string, carts: string) {
+    console.log("username", username);
+    console.log("carts", carts);
     try {
       const $source = this.cartsClient
         .send("carts.update", {
