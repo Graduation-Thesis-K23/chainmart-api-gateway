@@ -44,6 +44,7 @@ export class OrdersService {
           instanceToPlain({
             user_id: user.id,
             ...createOrderDto,
+            username,
           }),
         )
         .pipe(timeout(5000));

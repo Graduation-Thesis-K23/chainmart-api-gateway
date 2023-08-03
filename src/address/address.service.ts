@@ -1,15 +1,19 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { Address } from "./entities/address.entity";
 import { CreateAddressDto } from "./dto/create-address.dto";
+import { ClientKafka } from "@nestjs/microservices";
 
 @Injectable()
 export class AddressService {
   constructor(
     @InjectRepository(Address)
     private readonly addressRepository: Repository<Address>,
+
+    @Inject("ORDER_SERVICE")
+    private readonly orderClient: ClientKafka,
   ) {}
 
   async create(username: string, createAddressDto: CreateAddressDto) {
@@ -18,7 +22,21 @@ export class AddressService {
       user: username,
     };
 
-    return await this.addressRepository.save(newAddress);
+    const result = await this.addressRepository.save(newAddress);
+
+    const { id, phone, name, district, city, ward, street } = result;
+
+    this.orderClient.emit("orders.address.created", {
+      id,
+      phone,
+      name,
+      district,
+      city,
+      ward,
+      street,
+    });
+
+    return result;
   }
 
   async findById(id: string) {
