@@ -23,7 +23,7 @@ import { AddressModule } from "~/address/address.module";
             transport: Transport.KAFKA,
             options: {
               client: {
-                clientId: "order",
+                clientId: "orders-api",
                 brokers: configService.get("KAFKA_BROKERS").split(","),
               },
               consumer: {
