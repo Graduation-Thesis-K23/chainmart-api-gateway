@@ -37,7 +37,7 @@ export class BatchesController implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    const topics = ["create", "findall", "findallbyproductid", "findbyid", "update", "delete"];
+    const topics = ["create", "findall", "findallbyproductid", "findbyid", "update", "delete", "getavailablequantity"];
     topics.forEach((topic) => {
       this.batchClient.subscribeToResponseOf(`batches.${topic}`);
     });
@@ -72,10 +72,18 @@ export class BatchesController implements OnModuleInit {
     return this.batchesService.findById(id);
   }
 
-  @Patch(":id")
+  /*   @Patch(":id")
   @Roles(Role.Branch)
   update(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string, @Body() updateBatchDto: UpdateBatchDto) {
     return this.batchesService.update(id, updateBatchDto);
+  }
+ */
+  @Get("available")
+  @Roles(Role.Employee)
+  getAvailable(@Req() req: Request, @Body() getAvailable: string[]) {
+    console.log("req.user", req.user);
+    const { phone } = req.user as EmployeePayload;
+    return this.batchesService.getAvailable(phone, getAvailable);
   }
 
   @Delete(":id")
