@@ -8,6 +8,7 @@ import { S3Module } from "~/s3/s3.module";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "~/users/entities/user.entity";
 import { AddressModule } from "~/address/address.module";
+import { EmployeeModule } from "~/employee/employee.module";
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AddressModule } from "~/address/address.module";
       },
     ]),
     S3Module,
+    EmployeeModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

@@ -1,3 +1,4 @@
+import { EmployeeService } from "../employee/employee.service";
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { ClientKafka } from "@nestjs/microservices";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -19,6 +20,8 @@ export class OrdersService {
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    private readonly employeeService: EmployeeService,
 
     private readonly s3Service: S3Service,
   ) {}
@@ -298,12 +301,15 @@ export class OrdersService {
   }
 
   async approveOrderByEmployee(phone: string, orderId: string) {
+    const { id: branch_id } = await this.employeeService.findBranchByPhone(phone);
+
     console.log(phone, orderId);
     try {
       const $source = this.orderClient
         .send("orders.approveorderbyemployee", {
           phone,
           order_id: orderId,
+          branch_id,
         })
         .pipe(timeout(5000));
       return await lastValueFrom($source);
