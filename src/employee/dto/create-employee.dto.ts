@@ -3,9 +3,12 @@ import { Role } from "~/shared";
 
 export class CreateEmployeeDto {
   @IsString()
-  @IsString()
   @IsNotEmpty()
   phone: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 
   @IsString()
   @IsNotEmpty()
