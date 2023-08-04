@@ -13,6 +13,7 @@ import {
   Inject,
   UseGuards,
   Req,
+  Query,
 } from "@nestjs/common";
 import { ClientKafka } from "@nestjs/microservices";
 import { Request } from "express";
@@ -66,6 +67,14 @@ export class BatchesController implements OnModuleInit {
     return this.batchesService.findAllByProductId(productId);
   }
 
+  @Get("available")
+  @Roles(Role.Employee)
+  getAvailable(@Req() req: Request, @Query("ids") ids: string) {
+    console.log("req.user", req.user);
+    const { phone } = req.user as EmployeePayload;
+    return this.batchesService.getAvailable(phone, ids.split(","));
+  }
+
   @Get(":id")
   @Roles(Role.Branch)
   findOne(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
@@ -78,13 +87,6 @@ export class BatchesController implements OnModuleInit {
     return this.batchesService.update(id, updateBatchDto);
   }
  */
-  @Get("available")
-  @Roles(Role.Employee)
-  getAvailable(@Req() req: Request, @Body() getAvailable: string[]) {
-    console.log("req.user", req.user);
-    const { phone } = req.user as EmployeePayload;
-    return this.batchesService.getAvailable(phone, getAvailable);
-  }
 
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
