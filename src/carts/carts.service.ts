@@ -15,8 +15,6 @@ export class CartsService {
     try {
       const $source = this.cartsClient.send("carts.get", username).pipe(timeout(5000));
 
-      console.log("source", $source);
-
       return await firstValueFrom($source);
     } catch (error) {
       console.error(error);

@@ -17,7 +17,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
             transport: Transport.KAFKA,
             options: {
               client: {
-                clientId: "cart",
+                clientId: "carts-api",
                 brokers: configService.get("KAFKA_BROKERS").split(","),
               },
               consumer: {

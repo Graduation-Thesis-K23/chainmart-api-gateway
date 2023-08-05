@@ -10,25 +10,19 @@ export class CommentsService {
   ) {}
 
   async getCommentsByUser(username: string) {
+    console.log("username", username);
     const $source = this.rateClient.send("rates.getratesbyusername", username).pipe(timeout(5000));
 
     return await lastValueFrom($source);
   }
 
-  /* averageStar: number;
-  numberOfComment: number;
-  numberOfOneStar: number;
-  numberOfTwoStar: number;
-  numberOfThreeStar: number;
-  numberOfFourStar: number;
-  numberOfFiveStar: number; */
-
   async getCommentsByProduct(product_id: string) {
+    console.log("product_id", product_id);
     const $source = this.rateClient.send("rates.getratesbyproductid", product_id).pipe(timeout(5000));
 
-    return await lastValueFrom($source);
+    const comments = await lastValueFrom($source);
 
-    /*  const numberOfComment = comments.length;
+    const numberOfComment = comments.length;
 
     const averageStar = comments.reduce((acc, comment) => acc + comment.star, 0) / numberOfComment;
 
@@ -47,7 +41,7 @@ export class CommentsService {
       numberOfFourStar,
       numberOfFiveStar,
       comments,
-    }; */
+    };
   }
 
   /*  async getCommentsByOrder(username: string, orderId: string) {

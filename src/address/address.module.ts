@@ -20,11 +20,11 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
             transport: Transport.KAFKA,
             options: {
               client: {
-                clientId: "order",
+                clientId: "orders-address",
                 brokers: configService.get("KAFKA_BROKERS").split(","),
               },
               consumer: {
-                groupId: "order-consumer",
+                groupId: "orders-consumer",
               },
             },
           };

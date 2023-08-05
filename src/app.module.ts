@@ -25,7 +25,6 @@ import { SearchModule } from "./search/search.module";
 import { CommentsModule } from "./comments/comments.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { SubscribersModule } from "./subscribers/subscribers.module";
-import { RatesModule } from "./rates/rates.module";
 
 @Module({
   imports: [
@@ -56,7 +55,6 @@ import { RatesModule } from "./rates/rates.module";
     CommentsModule,
     DashboardModule,
     SubscribersModule,
-    RatesModule,
   ],
   exports: [ConfigModule],
 })

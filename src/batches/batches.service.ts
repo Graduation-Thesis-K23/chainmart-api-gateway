@@ -3,13 +3,12 @@ import { ClientKafka } from "@nestjs/microservices";
 import { firstValueFrom, lastValueFrom, timeout } from "rxjs";
 
 import { CreateBatchDto } from "./dto/create-batch.dto";
-import { UpdateBatchDto } from "./dto/update-batch.dto";
 import { EmployeeService } from "~/employee/employee.service";
 
-interface CreateBatchHasEmployeeDto extends CreateBatchDto {
+/* interface CreateBatchHasEmployeeDto extends CreateBatchDto {
   employee_create_id: string;
 }
-
+ */
 @Injectable()
 export class BatchesService {
   constructor(
@@ -48,6 +47,22 @@ export class BatchesService {
     }
   }
 
+  async getAvailable(phone: string, getAvailableDto: string[]) {
+    const { id: branch_id } = await this.employeeService.findBranchByPhone(phone);
+
+    const rawData = getAvailableDto.map((product_id) => ({ product_id, branch_id }));
+
+    console.log("getAvailable", rawData);
+
+    try {
+      const $source = this.batchClient.send("batches.getavailablequantity", rawData).pipe(timeout(5000));
+      return await lastValueFrom($source);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
+  }
+
   async findAllByProductId(productId: string) {
     try {
       const $source = this.batchClient.send("batches.findallbyproductid", productId).pipe(timeout(5000));
@@ -68,9 +83,9 @@ export class BatchesService {
     }
   }
 
-  async update(id: string, updateBatchDto: UpdateBatchDto) {
+  /*   async update(id: string, updateBatchDto: UpdateBatchDto) {
     return `This action updates a #${id} batch`;
-  }
+  } */
 
   async delete(id: string) {
     try {
