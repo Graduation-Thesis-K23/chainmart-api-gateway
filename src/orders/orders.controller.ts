@@ -171,7 +171,6 @@ export class OrdersController implements OnModuleInit {
   }
 
   // EMPLOYEE
-
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
   @Roles(Role.Branch)
   @Get("branch")

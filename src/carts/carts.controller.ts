@@ -19,7 +19,7 @@ export class CartsController {
   ) {}
 
   async onModuleInit() {
-    const topics = ["update", "remove", "get"];
+    const topics = ["update", "get"];
     topics.forEach((topic) => {
       console.log(`Subscribe to carts.${topic}`);
       this.cartsClient.subscribeToResponseOf(`carts.${topic}`);
