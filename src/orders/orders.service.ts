@@ -356,6 +356,7 @@ export class OrdersService {
   }
 
   async getOrdersByShipper(phone: string, status: OrderStatus, page: number) {
+    console.log(phone, status, page);
     const { id: branch_id } = await this.employeeService.findBranchByPhone(phone);
 
     try {

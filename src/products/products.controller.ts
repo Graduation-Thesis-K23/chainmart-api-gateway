@@ -40,7 +40,17 @@ export class ProductsController implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    const topics = ["create", "findall", "findbyids", "findbyid", "findbyslug", "update", "delete", "staticpaths"];
+    const topics = [
+      "create",
+      "findall",
+      "findbyids",
+      "findbyid",
+      "findbyslug",
+      "update",
+      "delete",
+      "staticpaths",
+      "search-and-filter",
+    ];
     topics.forEach((topic) => {
       this.productClient.subscribeToResponseOf(`products.${topic}`);
     });

@@ -17,7 +17,6 @@ export class CommentsController {
   async onModuleInit() {
     const orderTopics = ["getratesbyusername", "getratesbyproductid"];
     orderTopics.forEach((topic) => {
-      console.log(`rates.${topic}`);
       this.rateClient.subscribeToResponseOf(`rates.${topic}`);
     });
 
