@@ -69,6 +69,7 @@ export class OrdersController implements OnModuleInit {
       "cancellorderbyshipper",
       "packaged",
       "cancelled",
+      "findbankingorderbyuserid",
       "getnumberordersperday",
       "gethotsellingproduct",
       "getrevenueperday",
@@ -77,8 +78,7 @@ export class OrdersController implements OnModuleInit {
     orderTopics.forEach((topic) => {
       this.orderClient.subscribeToResponseOf(`orders.${topic}`);
     });
-
-    this.orderClient.connect();
+    await this.orderClient.connect();
   }
 
   @Post()
@@ -257,6 +257,26 @@ export class OrdersController implements OnModuleInit {
   @Get("users/:id")
   findAllByUserId(@Param("id", new ParseUUIDPipe({ version: "4" })) userId: string) {
     return this.ordersService.findAllByUserId(userId);
+  }
+
+  @Get("banking")
+  @UseGuards(JwtAuthGuard, UserGuard)
+  @User()
+  findBankingOrder(@Req() req: Request) {
+    const user = req.user as ReqUser;
+    return this.ordersService.findBankingOrderByUser(user.username);
+  }
+
+  @Post("banking/cancel")
+  @UseGuards(JwtAuthGuard, UserGuard)
+  cancelBankingOrder(@Body() order_id: string) {
+    return this.ordersService.cancelBankingOrderById(order_id);
+  }
+
+  @Post("payment")
+  makePayment(@Body() paymentDto: { user_id: string }) {
+    console.log("PaymentDto", paymentDto);
+    return this.ordersService.makePayment(paymentDto.user_id);
   }
 
   @Get(":id")

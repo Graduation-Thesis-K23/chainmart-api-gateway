@@ -470,6 +470,43 @@ export class OrdersService {
     }
   }
 
+  async findBankingOrderByUser(username: string) {
+    const user = await this.userRepository.findOneBy({ username });
+    if (!user) {
+      throw new BadRequestException("User not found");
+    }
+
+    try {
+      const $orderSource = this.orderClient.send("orders.findbankingorderbyuserid", user.id).pipe(timeout(5000));
+      return await lastValueFrom($orderSource);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException("Failed to find banking order by user id");
+    }
+  }
+
+  async cancelBankingOrderById(id: string) {
+    try {
+      this.orderClient.emit("orders.cancelbankingorderbyid", id).pipe(timeout(5000));
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException("Failed to find banking order by user id");
+    }
+  }
+
+  async makePayment(user_id: string) {
+    if (!user_id) {
+      throw new BadRequestException("Missing user_id");
+    }
+
+    try {
+      this.orderClient.emit("orders.makepayment", user_id).pipe(timeout(5000));
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException("Failed to make payment");
+    }
+  }
+
   // dashboard
   async getHotSellingProduct(startDate: string, endDate: string, branch: string) {
     try {
