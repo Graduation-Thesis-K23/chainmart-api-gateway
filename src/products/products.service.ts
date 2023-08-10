@@ -128,7 +128,13 @@ export class ProductsService {
 
   async searchAndFilter(query: SearchAndFilterQueryDto) {
     console.log(query);
-    return this.findAll(query.page, 12);
+    try {
+      const $source = this.productClient.send("products.search-and-filter", { ...query }).pipe(timeout(5000));
+      return await lastValueFrom($source);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
   }
 
   async search(keyword: string) {

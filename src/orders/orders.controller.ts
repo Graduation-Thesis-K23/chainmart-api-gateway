@@ -171,7 +171,6 @@ export class OrdersController implements OnModuleInit {
   }
 
   // EMPLOYEE
-
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
   @Roles(Role.Branch)
   @Get("branch")
@@ -217,7 +216,6 @@ export class OrdersController implements OnModuleInit {
   }
 
   // SHIPPER
-
   @UseGuards(JwtShipperAuthGuard, ShipperGuard)
   @Shipper()
   @Get("shipper")
@@ -254,6 +252,8 @@ export class OrdersController implements OnModuleInit {
     return this.ordersService.cancelOrderByShipper(user.phone, id);
   }
 
+  @UseGuards(JwtAuthGuard, UseGuards)
+  @User()
   @Get("users/:id")
   findAllByUserId(@Param("id", new ParseUUIDPipe({ version: "4" })) userId: string) {
     return this.ordersService.findAllByUserId(userId);
@@ -279,6 +279,8 @@ export class OrdersController implements OnModuleInit {
     return this.ordersService.makePayment(paymentDto.user_id);
   }
 
+  @UseGuards(JwtShipperAuthGuard, ShipperGuard)
+  @Shipper()
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.ordersService.findById(id);
@@ -290,9 +292,9 @@ export class OrdersController implements OnModuleInit {
   }
  */
 
-  @Delete(":id")
+  /* @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     return this.ordersService.delete(id);
-  }
+  } */
 }

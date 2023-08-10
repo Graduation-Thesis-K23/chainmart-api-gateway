@@ -246,11 +246,14 @@ export class OrdersService {
   }
 
   async findAllByEmployee(phone: string, status: OrderStatus | "all", search: string) {
+    const { id: branch_id } = await this.employeeService.findBranchByPhone(phone);
+
     try {
       const $orderSource = this.orderClient
         .send("orders.findallbyemployee", {
           phone,
           status,
+          branch_id,
         })
         .pipe(timeout(5000));
       let orders = await lastValueFrom($orderSource);
@@ -320,11 +323,14 @@ export class OrdersService {
   }
 
   async rejectOrderByEmployee(phone: string, orderId: string) {
+    const { id: branch_id } = await this.employeeService.findBranchByPhone(phone);
+
     try {
       const $source = this.orderClient
         .send("orders.rejectorderbyemployee", {
           phone,
           order_id: orderId,
+          branch_id,
         })
         .pipe(timeout(5000));
       return await lastValueFrom($source);
@@ -350,12 +356,16 @@ export class OrdersService {
   }
 
   async getOrdersByShipper(phone: string, status: OrderStatus, page: number) {
+    console.log(phone, status, page);
+    const { id: branch_id } = await this.employeeService.findBranchByPhone(phone);
+
     try {
       const $orderSource = this.orderClient
-        .send("orders.getorderbyshipper", {
+        .send("orders.getordersbyshipper", {
           phone,
           status,
           page,
+          branch_id,
         })
         .pipe(timeout(5000));
       return await lastValueFrom($orderSource);
