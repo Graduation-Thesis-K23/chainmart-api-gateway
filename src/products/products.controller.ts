@@ -50,6 +50,7 @@ export class ProductsController implements OnModuleInit {
       "delete",
       "staticpaths",
       "search-and-filter",
+      "search",
     ];
     topics.forEach((topic) => {
       this.productClient.subscribeToResponseOf(`products.${topic}`);

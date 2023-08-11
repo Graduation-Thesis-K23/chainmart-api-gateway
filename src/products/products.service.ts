@@ -138,10 +138,12 @@ export class ProductsService {
   }
 
   async search(keyword: string) {
-    console.log({ keyword });
-
-    const result = await this.findAll(1, 5);
-
-    return result.docs;
+    try {
+      const $source = this.productClient.send("products.search", keyword).pipe(timeout(5000));
+      return await lastValueFrom($source);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
   }
 }
