@@ -553,4 +553,14 @@ export class OrdersService {
       throw new BadRequestException(error);
     }
   }
+
+  async getOrdersByPhone(phone: string) {
+    try {
+      const $source = this.orderClient.send("orders.getordersbyphone", phone).pipe(timeout(5000));
+      return await lastValueFrom($source);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
+  }
 }
