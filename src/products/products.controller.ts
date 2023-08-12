@@ -37,12 +37,6 @@ export class ProductsController implements OnModuleInit {
 
     @Inject("PRODUCT_SERVICE")
     private readonly productClient: ClientKafka,
-
-    @Inject("RATE_SERVICE")
-    private readonly rateClient: ClientKafka,
-
-    @Inject("BATCH_SERVICE")
-    private readonly batchClient: ClientKafka,
   ) {}
 
   async onModuleInit() {
@@ -63,15 +57,7 @@ export class ProductsController implements OnModuleInit {
       this.productClient.subscribeToResponseOf(`products.${topic}`);
     });
 
-    this.batchClient.subscribeToResponseOf("batches.get-sold-by-ids");
-
-    this.rateClient.subscribeToResponseOf("rates.get-star-by-ids");
-
-    Promise.all([
-      await this.productClient.connect(),
-      await this.batchClient.connect(),
-      await this.rateClient.connect(),
-    ]);
+    await this.productClient.connect();
   }
 
   @Post()

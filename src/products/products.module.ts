@@ -6,6 +6,8 @@ import { ProductsService } from "./products.service";
 import { ProductsController } from "./products.controller";
 import { ErrorsModule } from "~/errors/errors.module";
 import { S3Module } from "~/s3/s3.module";
+import { CommentsModule } from "~/comments/comments.module";
+import { BatchesModule } from "~/batches/batches.module";
 
 @Module({
   imports: [
@@ -56,11 +58,11 @@ import { S3Module } from "~/s3/s3.module";
           transport: Transport.KAFKA,
           options: {
             client: {
-              clientId: "comment-rate-service-1",
+              clientId: "product-rate",
               brokers: configService.get("KAFKA_BROKERS").split(","),
             },
             consumer: {
-              groupId: "rate-consumer",
+              groupId: "rates-consumer",
             },
           },
         }),
@@ -68,6 +70,8 @@ import { S3Module } from "~/s3/s3.module";
     ]),
     ErrorsModule,
     S3Module,
+    CommentsModule,
+    BatchesModule,
   ],
   controllers: [ProductsController],
   providers: [ProductsService],

@@ -45,6 +45,7 @@ export class BatchesController implements OnModuleInit {
       "delete",
       "getavailablequantity",
       "get_remaining_quantity",
+      "get-sold-by-ids",
     ];
     topics.forEach((topic) => {
       this.batchClient.subscribeToResponseOf(`batches.${topic}`);

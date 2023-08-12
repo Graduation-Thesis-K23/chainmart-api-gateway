@@ -20,11 +20,11 @@ import { UsersModule } from "~/users/users.module";
           transport: Transport.KAFKA,
           options: {
             client: {
-              clientId: "comment-rate-service",
+              clientId: "rates-service",
               brokers: configService.get("KAFKA_BROKERS").split(","),
             },
             consumer: {
-              groupId: "rate-consumer",
+              groupId: "rates-consumer-1",
             },
           },
         }),

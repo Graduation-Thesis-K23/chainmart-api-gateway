@@ -1,3 +1,4 @@
+import { BatchesService } from "./../batches/batches.service";
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { ClientKafka } from "@nestjs/microservices";
 import { firstValueFrom, lastValueFrom, timeout } from "rxjs";
@@ -7,6 +8,7 @@ import { UpdateProductDto } from "./dto/update-product.dto";
 
 import { S3Service } from "~/s3/s3.service";
 import { SearchAndFilterQueryDto } from "./dto/search-and-filter.dto";
+import { CommentsService } from "~/comments/comments.service";
 
 @Injectable()
 export class ProductsService {
@@ -14,13 +16,11 @@ export class ProductsService {
     @Inject("PRODUCT_SERVICE")
     private readonly productClient: ClientKafka,
 
-    @Inject("RATE_SERVICE")
-    private readonly rateClient: ClientKafka,
-
-    @Inject("BATCH_SERVICE")
-    private readonly batchClient: ClientKafka,
+    private readonly batchesService: BatchesService,
 
     private readonly s3Service: S3Service,
+
+    private readonly commentsService: CommentsService,
   ) {}
 
   async create(createProductDto: CreateProductDto, arrBuffer: Buffer[]) {
@@ -62,12 +62,9 @@ export class ProductsService {
       const products = await lastValueFrom($source);
 
       const ids = products.map((product) => product._id);
-      console.log(ids);
 
-      const $star = this.rateClient.send("rates.get-star-by-ids", { ids }).pipe(timeout(5000));
-      const $sold = this.batchClient.send("batches.get-sold-by-ids", { ids }).pipe(timeout(5000));
-
-      const [stars, solds] = await Promise.all([lastValueFrom($star), lastValueFrom($sold)]);
+      const stars = await this.commentsService.getStarByIds(ids);
+      const solds = await this.batchesService.getSoldByIds(ids);
 
       console.log(stars, solds);
 
