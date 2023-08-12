@@ -37,6 +37,12 @@ export class ProductsController implements OnModuleInit {
 
     @Inject("PRODUCT_SERVICE")
     private readonly productClient: ClientKafka,
+
+    @Inject("RATE_SERVICE")
+    private readonly rateClient: ClientKafka,
+
+    @Inject("BATCH_SERVICE")
+    private readonly batchClient: ClientKafka,
   ) {}
 
   async onModuleInit() {
@@ -51,11 +57,21 @@ export class ProductsController implements OnModuleInit {
       "staticpaths",
       "search-and-filter",
       "search",
+      "get-products-by-main",
     ];
     topics.forEach((topic) => {
       this.productClient.subscribeToResponseOf(`products.${topic}`);
     });
-    await this.productClient.connect();
+
+    this.batchClient.subscribeToResponseOf("batches.get-sold-by-ids");
+
+    this.rateClient.subscribeToResponseOf("rates.get-star-by-ids");
+
+    Promise.all([
+      await this.productClient.connect(),
+      await this.batchClient.connect(),
+      await this.rateClient.connect(),
+    ]);
   }
 
   @Post()
@@ -90,9 +106,9 @@ export class ProductsController implements OnModuleInit {
     return this.productsService.findAll(query.page, query.limit);
   }
 
-  @Get("index")
-  async getProductByMain() {
-    return this.productsService.getProductByMain();
+  @Get("main")
+  getProductsByMain() {
+    return this.productsService.getProductsByMain();
   }
 
   @Get("search-and-filter")

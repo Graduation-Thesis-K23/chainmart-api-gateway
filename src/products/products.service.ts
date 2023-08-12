@@ -14,6 +14,12 @@ export class ProductsService {
     @Inject("PRODUCT_SERVICE")
     private readonly productClient: ClientKafka,
 
+    @Inject("RATE_SERVICE")
+    private readonly rateClient: ClientKafka,
+
+    @Inject("BATCH_SERVICE")
+    private readonly batchClient: ClientKafka,
+
     private readonly s3Service: S3Service,
   ) {}
 
@@ -50,16 +56,35 @@ export class ProductsService {
     }
   }
 
-  async getProductByMain() {
+  async getProductsByMain() {
     try {
-      const $source = this.productClient
-        .send("products.findall", {
-          page: 1,
-          limit: 20,
-        })
-        .pipe(timeout(5000));
+      const $source = this.productClient.send("products.get-products-by-main", {}).pipe(timeout(5000));
+      const products = await lastValueFrom($source);
 
-      return await lastValueFrom($source);
+      const ids = products.map((product) => product._id);
+      console.log(ids);
+
+      const $star = this.rateClient.send("rates.get-star-by-ids", { ids }).pipe(timeout(5000));
+      const $sold = this.batchClient.send("batches.get-sold-by-ids", { ids }).pipe(timeout(5000));
+
+      const [stars, solds] = await Promise.all([lastValueFrom($star), lastValueFrom($sold)]);
+
+      console.log(stars, solds);
+
+      const result = products.map((product) => {
+        const star = stars.find((star) => star.productId === product._id);
+        const sold = solds.find((sold) => sold.productId === product._id);
+
+        return {
+          ...product,
+          star: star?.star || 0,
+          sold: sold?.sold || 0,
+        };
+      });
+
+      console.log(result);
+
+      return result;
     } catch (error) {
       console.error(error);
       throw new BadRequestException(error);

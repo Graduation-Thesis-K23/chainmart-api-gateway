@@ -29,6 +29,42 @@ import { S3Module } from "~/s3/s3.module";
           };
         },
       },
+      {
+        name: "BATCH_SERVICE",
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: async (configService) => {
+          return {
+            transport: Transport.KAFKA,
+            options: {
+              client: {
+                clientId: "batch-1",
+                brokers: configService.get("KAFKA_BROKERS").split(","),
+              },
+              consumer: {
+                groupId: "batch-consumer",
+              },
+            },
+          };
+        },
+      },
+      {
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        name: "RATE_SERVICE",
+        useFactory: async (configService: ConfigService) => ({
+          transport: Transport.KAFKA,
+          options: {
+            client: {
+              clientId: "comment-rate-service-1",
+              brokers: configService.get("KAFKA_BROKERS").split(","),
+            },
+            consumer: {
+              groupId: "rate-consumer",
+            },
+          },
+        }),
+      },
     ]),
     ErrorsModule,
     S3Module,
