@@ -75,6 +75,7 @@ export class OrdersController implements OnModuleInit {
       "getrevenueperday",
       "commented",
       "getordersbyphone",
+      "findallbyids",
     ];
     orderTopics.forEach((topic) => {
       this.orderClient.subscribeToResponseOf(`orders.${topic}`);

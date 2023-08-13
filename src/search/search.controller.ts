@@ -18,11 +18,17 @@ export class SearchController {
     topics.forEach((topic) => {
       this.searchClient.subscribeToResponseOf(`search.${topic}`);
     });
+    this.searchClient.subscribeToResponseOf("search.orders");
     await this.searchClient.connect();
   }
 
   @Get("products")
   findAll(@Query() query: ProductQueryDto) {
     return this.searchService.searchProduct(query.keyword);
+  }
+
+  @Get("orders")
+  findAllOrders(@Query() query: ProductQueryDto) {
+    return this.searchService.findAllOrders(query.keyword);
   }
 }

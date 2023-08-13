@@ -4,6 +4,7 @@ import { ClientsModule, Transport } from "@nestjs/microservices";
 import { SearchService } from "./search.service";
 import { SearchController } from "./search.controller";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import { OrdersModule } from "~/orders/orders.module";
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
         inject: [ConfigService],
       },
     ]),
+    OrdersModule,
   ],
   controllers: [SearchController],
   providers: [SearchService],

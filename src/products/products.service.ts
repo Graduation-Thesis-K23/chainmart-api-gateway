@@ -63,8 +63,14 @@ export class ProductsService {
 
       const ids = products.map((product) => product._id);
 
-      const stars = await this.commentsService.getStarByIds(ids);
-      const solds = await this.batchesService.getSoldByIds(ids);
+      let stars = [],
+        solds = [];
+      try {
+        stars = await this.commentsService.getStarByIds(ids);
+        solds = await this.batchesService.getSoldByIds(ids);
+      } catch (error) {
+        console.log(error);
+      }
 
       console.log(stars, solds);
 
