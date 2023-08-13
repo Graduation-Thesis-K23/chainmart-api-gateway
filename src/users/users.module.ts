@@ -32,6 +32,25 @@ import { ClientsModule, Transport } from "@nestjs/microservices";
           };
         },
       },
+      {
+        name: "NOTIFICATION_SERVICE",
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: async (configService) => {
+          return {
+            transport: Transport.KAFKA,
+            options: {
+              client: {
+                clientId: "notification-be",
+                brokers: configService.get("KAFKA_BROKERS").split(","),
+              },
+              consumer: {
+                groupId: "notification-consumer-be",
+              },
+            },
+          };
+        },
+      },
     ]),
   ],
   controllers: [UsersController],

@@ -19,8 +19,8 @@ export class AuthController {
 
     res.cookie("access_token", access_token, {
       httpOnly: true,
-      sameSite: "lax",
-      // secure: true,
+      sameSite: "none",
+      secure: true,
     });
 
     res.send(payload);
@@ -32,8 +32,8 @@ export class AuthController {
 
     res.cookie("access_token", access_token, {
       httpOnly: true,
-      sameSite: "lax",
-      // secure: true,
+      sameSite: "none",
+      secure: true,
     });
 
     res.send(payload);
@@ -79,8 +79,8 @@ export class AuthController {
     const [access_token, payload] = await this.authService.handleGoogleLogin(user);
     res.cookie("access_token", access_token, {
       httpOnly: true,
-      sameSite: "lax",
-      // secure: true,
+      sameSite: "none",
+      secure: true,
     });
     res.cookie("user", JSON.stringify(payload), {
       sameSite: "lax",
@@ -103,7 +103,7 @@ export class AuthController {
     const [access_token, payload] = await this.authService.handleFacebookLogin(user);
     res.cookie("access_token", access_token, {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: "none",
       // secure: true,
     });
     res.cookie("user", JSON.stringify(payload), {

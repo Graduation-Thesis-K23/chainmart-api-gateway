@@ -13,6 +13,7 @@ import { UpdateUserSettingDto } from "./dto/update-user-setting.dto";
 import { CreateGoogleUserDto } from "./dto/create-google-user.dto";
 import { CreateFacebookUserDto } from "./dto/create-facebook-user.dto";
 import { ClientKafka } from "@nestjs/microservices";
+import { instanceToPlain } from "class-transformer";
 
 @Injectable()
 export class UsersService {
@@ -23,16 +24,32 @@ export class UsersService {
 
     @Inject("RATE_SERVICE")
     private readonly rateClient: ClientKafka,
+
+    @Inject("NOTIFICATION_SERVICE")
+    private readonly notificationClient: ClientKafka,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
-      const newUser = this.usersRepository.create(createUserDto);
+      const user = this.usersRepository.create(createUserDto);
+      const newUser = await this.usersRepository.save(user);
+
       this.rateClient.emit("rates.signin", {
         username: newUser.username,
         name: newUser.name,
       });
-      return await this.usersRepository.save(newUser);
+      this.notificationClient.emit(
+        "notification.users.created",
+        instanceToPlain({
+          sync_id: newUser.id,
+          name: newUser.name,
+          username: newUser.username,
+          phone: newUser.phone,
+          email: newUser.email,
+        }),
+      );
+
+      return newUser;
     } catch (error) {
       if (isQueryFailedError(error)) {
         if (error.code === "23505") {
@@ -49,7 +66,8 @@ export class UsersService {
 
   async createUserFromGoogleLogin(createGoogleUserDto: CreateGoogleUserDto): Promise<User> {
     try {
-      const newUser = this.usersRepository.create(createGoogleUserDto);
+      const user = this.usersRepository.create(createGoogleUserDto);
+      const newUser = await this.usersRepository.save(user);
 
       this.rateClient.emit("rates.signin", {
         username: newUser.username,
@@ -57,7 +75,18 @@ export class UsersService {
         photo: newUser.photo,
       });
 
-      return await this.usersRepository.save(newUser);
+      this.notificationClient.emit(
+        "notification.users.created",
+        instanceToPlain({
+          sync_id: newUser.id,
+          name: newUser.name,
+          username: newUser.username,
+          phone: newUser.phone,
+          email: newUser.email,
+        }),
+      );
+
+      return newUser;
     } catch (error) {
       if (isQueryFailedError(error)) {
         if (error.code === "23505") {
@@ -74,14 +103,25 @@ export class UsersService {
 
   async createUserFromFacebookLogin(createFacebookUserDto: CreateFacebookUserDto): Promise<User> {
     try {
-      const newUser = this.usersRepository.create(createFacebookUserDto);
+      const user = this.usersRepository.create(createFacebookUserDto);
+      const newUser = await this.usersRepository.save(user);
 
       this.rateClient.emit("rates.signin", {
         username: newUser.username,
         name: newUser.name,
       });
+      this.notificationClient.emit(
+        "notification.users.created",
+        instanceToPlain({
+          sync_id: newUser.id,
+          name: newUser.name,
+          username: newUser.username,
+          phone: newUser.phone,
+          email: newUser.email,
+        }),
+      );
 
-      return await this.usersRepository.save(newUser);
+      return newUser;
     } catch (error) {
       if (isQueryFailedError(error)) {
         if (error.code === "23505") {
