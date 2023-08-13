@@ -96,4 +96,26 @@ export class BatchesService {
       throw new BadRequestException(error);
     }
   }
+
+  async getRemainingQuantity(id: string) {
+    console.log("getRemainingQuantity", id);
+    try {
+      const $source = this.batchClient.send("batches.get_remaining_quantity", id).pipe(timeout(5000));
+      return await lastValueFrom($source);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
+  }
+
+  async getSoldByIds(ids: string[]) {
+    try {
+      const $sold = this.batchClient.send("batches.get-sold-by-ids", { ids }).pipe(timeout(5000));
+
+      return await lastValueFrom($sold);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
+  }
 }

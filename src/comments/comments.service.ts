@@ -1,4 +1,4 @@
-import { Injectable, Inject } from "@nestjs/common";
+import { Injectable, Inject, BadRequestException } from "@nestjs/common";
 import { ClientKafka } from "@nestjs/microservices";
 import { lastValueFrom, timeout } from "rxjs";
 
@@ -42,6 +42,16 @@ export class CommentsService {
       numberOfFiveStar,
       comments,
     };
+  }
+
+  async getStarByIds(ids: string[]) {
+    try {
+      const $star = this.rateClient.send("rates.get-star-by-ids", { ids }).pipe(timeout(5000));
+      return await lastValueFrom($star);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
   }
 
   /*  async getCommentsByOrder(username: string, orderId: string) {

@@ -131,6 +131,16 @@ export class OrdersService {
     }
   }
 
+  async findAllByIds(ids: string[]) {
+    try {
+      const $source = this.orderClient.send("orders.findallbyids", ids).pipe(timeout(5000));
+      return await lastValueFrom($source);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException("Cannot find orders by ids");
+    }
+  }
+
   async comment(username: string, commentOrderDto: CommentOrderDto, arrBuffer: Buffer[]) {
     try {
       const user = await this.userRepository.findOneBy({ username });
@@ -547,6 +557,16 @@ export class OrdersService {
       const $source = this.orderClient
         .send("orders.getrevenueperday", { startDate, endDate, branch })
         .pipe(timeout(5000));
+      return await lastValueFrom($source);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
+  }
+
+  async getOrdersByPhone(phone: string) {
+    try {
+      const $source = this.orderClient.send("orders.getordersbyphone", phone).pipe(timeout(5000));
       return await lastValueFrom($source);
     } catch (error) {
       console.error(error);

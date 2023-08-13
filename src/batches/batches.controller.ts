@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   ParseUUIDPipe,
@@ -20,13 +19,12 @@ import { Request } from "express";
 
 import { BatchesService } from "./batches.service";
 import { CreateBatchDto } from "./dto/create-batch.dto";
-import { UpdateBatchDto } from "./dto/update-batch.dto";
 import { Roles } from "~/auth-manager/decorators/roles.decorator";
 import { EmployeePayload, Role } from "~/shared";
 import { JwtEmployeeAuthGuard } from "~/auth-manager/guards/jwt-employee.guards";
 import { RolesGuard } from "~/auth-manager/guards/role.guard";
+import { Public } from "~/auth-manager/decorators/public.decorator";
 
-@UseGuards(JwtEmployeeAuthGuard, RolesGuard)
 @Controller("batches")
 @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
 export class BatchesController implements OnModuleInit {
@@ -38,7 +36,17 @@ export class BatchesController implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    const topics = ["create", "findall", "findallbyproductid", "findbyid", "update", "delete", "getavailablequantity"];
+    const topics = [
+      "create",
+      "findall",
+      "findallbyproductid",
+      "findbyid",
+      "update",
+      "delete",
+      "getavailablequantity",
+      "get_remaining_quantity",
+      "get-sold-by-ids",
+    ];
     topics.forEach((topic) => {
       this.batchClient.subscribeToResponseOf(`batches.${topic}`);
     });
@@ -93,5 +101,11 @@ export class BatchesController implements OnModuleInit {
   @Roles(Role.Branch)
   remove(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
     return this.batchesService.delete(id);
+  }
+
+  @Public()
+  @Get("remaining-quantity/:id")
+  getRemainingQuantity(@Param("id") id: string) {
+    return this.batchesService.getRemainingQuantity(id);
   }
 }

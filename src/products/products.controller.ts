@@ -51,10 +51,12 @@ export class ProductsController implements OnModuleInit {
       "staticpaths",
       "search-and-filter",
       "search",
+      "get-products-by-main",
     ];
     topics.forEach((topic) => {
       this.productClient.subscribeToResponseOf(`products.${topic}`);
     });
+
     await this.productClient.connect();
   }
 
@@ -90,9 +92,9 @@ export class ProductsController implements OnModuleInit {
     return this.productsService.findAll(query.page, query.limit);
   }
 
-  @Get("index")
-  async getProductByMain() {
-    return this.productsService.getProductByMain();
+  @Get("main")
+  getProductsByMain() {
+    return this.productsService.getProductsByMain();
   }
 
   @Get("search-and-filter")

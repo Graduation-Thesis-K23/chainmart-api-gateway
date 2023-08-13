@@ -33,5 +33,6 @@ import { EmployeeModule } from "~/employee/employee.module";
   ],
   controllers: [BatchesController],
   providers: [BatchesService],
+  exports: [BatchesService],
 })
 export class BatchesModule {}

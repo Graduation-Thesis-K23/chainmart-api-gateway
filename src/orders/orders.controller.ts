@@ -74,6 +74,8 @@ export class OrdersController implements OnModuleInit {
       "gethotsellingproduct",
       "getrevenueperday",
       "commented",
+      "getordersbyphone",
+      "findallbyids",
     ];
     orderTopics.forEach((topic) => {
       this.orderClient.subscribeToResponseOf(`orders.${topic}`);
@@ -284,6 +286,11 @@ export class OrdersController implements OnModuleInit {
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.ordersService.findById(id);
+  }
+
+  @Get("search/:phone")
+  getOrdersByPhone(@Param("phone") phone: string) {
+    return this.ordersService.getOrdersByPhone(phone);
   }
 
   /*   @Patch(":id")

@@ -1,3 +1,4 @@
+import { BatchesService } from "./../batches/batches.service";
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { ClientKafka } from "@nestjs/microservices";
 import { firstValueFrom, lastValueFrom, timeout } from "rxjs";
@@ -7,6 +8,7 @@ import { UpdateProductDto } from "./dto/update-product.dto";
 
 import { S3Service } from "~/s3/s3.service";
 import { SearchAndFilterQueryDto } from "./dto/search-and-filter.dto";
+import { CommentsService } from "~/comments/comments.service";
 
 @Injectable()
 export class ProductsService {
@@ -14,7 +16,11 @@ export class ProductsService {
     @Inject("PRODUCT_SERVICE")
     private readonly productClient: ClientKafka,
 
+    private readonly batchesService: BatchesService,
+
     private readonly s3Service: S3Service,
+
+    private readonly commentsService: CommentsService,
   ) {}
 
   async create(createProductDto: CreateProductDto, arrBuffer: Buffer[]) {
@@ -50,16 +56,38 @@ export class ProductsService {
     }
   }
 
-  async getProductByMain() {
+  async getProductsByMain() {
     try {
-      const $source = this.productClient
-        .send("products.findall", {
-          page: 1,
-          limit: 20,
-        })
-        .pipe(timeout(5000));
+      const $source = this.productClient.send("products.get-products-by-main", {}).pipe(timeout(5000));
+      const products = await lastValueFrom($source);
 
-      return await lastValueFrom($source);
+      const ids = products.map((product) => product._id);
+
+      let stars = [],
+        solds = [];
+      try {
+        stars = await this.commentsService.getStarByIds(ids);
+        solds = await this.batchesService.getSoldByIds(ids);
+      } catch (error) {
+        console.log(error);
+      }
+
+      console.log(stars, solds);
+
+      const result = products.map((product) => {
+        const star = stars.find((star) => star.productId === product._id);
+        const sold = solds.find((sold) => sold.productId === product._id);
+
+        return {
+          ...product,
+          star: star?.star || 0,
+          sold: sold?.sold || 0,
+        };
+      });
+
+      console.log(result);
+
+      return result;
     } catch (error) {
       console.error(error);
       throw new BadRequestException(error);
