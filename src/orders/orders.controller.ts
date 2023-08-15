@@ -69,7 +69,7 @@ export class OrdersController implements OnModuleInit {
       "cancellorderbyshipper",
       "packaged",
       "cancelled",
-      "findbankingorderbyuserid",
+      "findbankingorderbyid",
       "getnumberordersperday",
       "gethotsellingproduct",
       "getrevenueperday",
@@ -264,21 +264,22 @@ export class OrdersController implements OnModuleInit {
   @Get("banking")
   @UseGuards(JwtAuthGuard, UserGuard)
   @User()
-  findBankingOrder(@Req() req: Request) {
-    const user = req.user as ReqUser;
-    return this.ordersService.findBankingOrderByUser(user.username);
+  findBankingOrderById(@Query("order_id") order_id: string) {
+    return this.ordersService.findBankingOrderById(order_id);
   }
 
   @Post("banking/cancel")
   @UseGuards(JwtAuthGuard, UserGuard)
-  cancelBankingOrder(@Body() order_id: string) {
-    return this.ordersService.cancelBankingOrderById(order_id);
+  @User()
+  cancelBankingOrder(@Body() cancelDto: { order_id: string }) {
+    console.log("cancelBankingOrderDto", cancelDto);
+    return this.ordersService.cancelBankingOrderById(cancelDto.order_id);
   }
 
   @Post("payment")
-  makePayment(@Body() paymentDto: { user_id: string }) {
+  makePayment(@Body() paymentDto: { order_id: string }) {
     console.log("PaymentDto", paymentDto);
-    return this.ordersService.makePayment(paymentDto.user_id);
+    return this.ordersService.makePayment(paymentDto.order_id);
   }
 
   @UseGuards(JwtShipperAuthGuard, ShipperGuard)

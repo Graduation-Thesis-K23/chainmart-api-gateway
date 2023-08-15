@@ -490,18 +490,13 @@ export class OrdersService {
     }
   }
 
-  async findBankingOrderByUser(username: string) {
-    const user = await this.userRepository.findOneBy({ username });
-    if (!user) {
-      throw new BadRequestException("User not found");
-    }
-
+  async findBankingOrderById(id: string) {
     try {
-      const $orderSource = this.orderClient.send("orders.findbankingorderbyuserid", user.id).pipe(timeout(5000));
+      const $orderSource = this.orderClient.send("orders.findbankingorderbyid", id).pipe(timeout(5000));
       return await lastValueFrom($orderSource);
     } catch (error) {
       console.error(error);
-      throw new BadRequestException("Failed to find banking order by user id");
+      throw new BadRequestException("Failed to find banking order by id");
     }
   }
 
@@ -514,13 +509,13 @@ export class OrdersService {
     }
   }
 
-  async makePayment(user_id: string) {
-    if (!user_id) {
-      throw new BadRequestException("Missing user_id");
+  async makePayment(order_id: string) {
+    if (!order_id) {
+      throw new BadRequestException("Missing order_id");
     }
 
     try {
-      this.orderClient.emit("orders.makepayment", user_id).pipe(timeout(5000));
+      this.orderClient.emit("orders.makepayment", order_id).pipe(timeout(5000));
     } catch (error) {
       console.error(error);
       throw new BadRequestException("Failed to make payment");
