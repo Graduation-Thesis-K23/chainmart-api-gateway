@@ -13,6 +13,7 @@ import {
   UseGuards,
   Req,
   Query,
+  BadRequestException,
 } from "@nestjs/common";
 import { ClientKafka } from "@nestjs/microservices";
 import { Request } from "express";
@@ -56,37 +57,61 @@ export class BatchesController implements OnModuleInit {
   @Post()
   @Roles(Role.Branch)
   create(@Body() createBatchDto: CreateBatchDto, @Req() req: Request) {
-    const { phone } = req.user as EmployeePayload;
-
-    return this.batchesService.create(phone, createBatchDto);
+    try {
+      const { phone } = req.user as EmployeePayload;
+      return this.batchesService.create(phone, createBatchDto);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @Get()
   @Roles(Role.Branch)
   findAll(@Req() req: Request) {
-    const { phone } = req.user as EmployeePayload;
+    try {
+      const { phone } = req.user as EmployeePayload;
 
-    return this.batchesService.findAll(phone);
+      return this.batchesService.findAll(phone);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @Get("products/:id")
   @Roles(Role.Branch)
   findAllByProductId(@Param("id") productId: string) {
-    return this.batchesService.findAllByProductId(productId);
+    try {
+      return this.batchesService.findAllByProductId(productId);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @Get("available")
-  @Roles(Role.Employee)
+  @Roles(Role.Employee, Role.Branch)
   getAvailable(@Req() req: Request, @Query("ids") ids: string) {
-    console.log("req.user", req.user);
-    const { phone } = req.user as EmployeePayload;
-    return this.batchesService.getAvailable(phone, ids.split(","));
+    try {
+      console.log("req.user", req.user);
+      const { phone } = req.user as EmployeePayload;
+      return this.batchesService.getAvailable(phone, ids.split(","));
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @Get(":id")
   @Roles(Role.Branch)
   findOne(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
-    return this.batchesService.findById(id);
+    try {
+      return this.batchesService.findById(id);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   /*   @Patch(":id")
@@ -100,12 +125,22 @@ export class BatchesController implements OnModuleInit {
   @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(Role.Branch)
   remove(@Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
-    return this.batchesService.delete(id);
+    try {
+      return this.batchesService.delete(id);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @Public()
   @Get("remaining-quantity/:id")
   getRemainingQuantity(@Param("id") id: string) {
-    return this.batchesService.getRemainingQuantity(id);
+    try {
+      return this.batchesService.getRemainingQuantity(id);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 }

@@ -5,11 +5,8 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   UseGuards,
   ParseUUIDPipe,
-  HttpCode,
-  HttpStatus,
   Query,
   OnModuleInit,
   Inject,
@@ -87,8 +84,13 @@ export class OrdersController implements OnModuleInit {
   @UseGuards(JwtAuthGuard, UserGuard)
   @User()
   create(@Body() createOrderDto: CreateOrderDto, @Req() req: Request) {
-    const user = req.user as ReqUser;
-    return this.ordersService.create(user.username, createOrderDto);
+    try {
+      const user = req.user as ReqUser;
+      return this.ordersService.create(user.username, createOrderDto);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @Get()
@@ -96,40 +98,65 @@ export class OrdersController implements OnModuleInit {
   @User()
   findAll(@Query("status") status: OrderStatus | "all", @Req() req: Request) {
     // status = status of orders that we want to get
-    const user = req.user as ReqUser;
-    return this.ordersService.findAll(user.username, status);
+    try {
+      const user = req.user as ReqUser;
+      return this.ordersService.findAll(user.username, status);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
   @User()
   @Patch(":id/cancel")
   cancel(@Param("id") id: string, @Req() req: Request) {
-    const user = req.user as ReqUser;
-    return this.ordersService.cancelOrder(user.username, id);
+    try {
+      const user = req.user as ReqUser;
+      return this.ordersService.cancelOrder(user.username, id);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
   @User()
   @Patch(":id/received")
   markAsReceived(@Param("id") id: string, @Req() req: Request) {
-    const user = req.user as ReqUser;
-    return this.ordersService.markAsReceived(user.username, id);
+    try {
+      const user = req.user as ReqUser;
+      return this.ordersService.markAsReceived(user.username, id);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
   @User()
   @Patch(":id/return")
   return(@Param("id") id: string, @Req() req: Request) {
-    const user = req.user as ReqUser;
-    return this.ordersService.returnOrder(user.username, id);
+    try {
+      const user = req.user as ReqUser;
+      return this.ordersService.returnOrder(user.username, id);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
   @User()
   @Post("resell")
   resell(@Body("order_id") order_id: string, @Req() req: Request) {
-    const user = req.user as ReqUser;
-    return this.ordersService.resellOrder(user.username, order_id);
+    try {
+      const user = req.user as ReqUser;
+      return this.ordersService.resellOrder(user.username, order_id);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)
@@ -176,9 +203,14 @@ export class OrdersController implements OnModuleInit {
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
   @Roles(Role.Branch)
   @Get("branch")
-  branch(@Req() req: Request) {
-    const user = req.user as EmployeePayload;
-    return [];
+  branch(@Req() req: Request, @Query("status") status: OrderStatus | "all", @Query("search") search: string) {
+    try {
+      const user = req.user as EmployeePayload;
+      return this.ordersService.findAllByBranch(user.phone, status, search);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @Get("employee")
@@ -189,32 +221,52 @@ export class OrdersController implements OnModuleInit {
     @Query("status") status: OrderStatus | "all",
     @Query("search") search: string,
   ) {
-    const user = req.user as EmployeePayload;
-    return this.ordersService.findAllByEmployee(user.phone, status, search);
+    try {
+      const user = req.user as EmployeePayload;
+      return this.ordersService.findAllByEmployee(user.phone, status, search);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
-  @Roles(Role.Employee)
+  @Roles(Role.Employee, Role.Branch)
   @Patch(":id/approve")
   approve(@Param("id") id: string, @Req() req: Request) {
-    const user = req.user as EmployeePayload;
-    return this.ordersService.approveOrderByEmployee(user.phone, id);
+    try {
+      const user = req.user as EmployeePayload;
+      return this.ordersService.approveOrderByEmployee(user.phone, id);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
-  @Roles(Role.Employee)
+  @Roles(Role.Employee, Role.Branch)
   @Patch(":id/reject")
   reject(@Param("id") id: string, @Req() req: Request) {
-    const user = req.user as EmployeePayload;
-    return this.ordersService.rejectOrderByEmployee(user.phone, id);
+    try {
+      const user = req.user as EmployeePayload;
+      return this.ordersService.rejectOrderByEmployee(user.phone, id);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
-  @Roles(Role.Employee)
+  @Roles(Role.Employee, Role.Branch)
   @Patch(":id/begin-ship")
   startShipmentByEmployee(@Param("id") id: string, @Req() req: Request) {
-    const user = req.user as EmployeePayload;
-    return this.ordersService.startShipmentByEmployee(user.phone, id);
+    try {
+      const user = req.user as EmployeePayload;
+      return this.ordersService.startShipmentByEmployee(user.phone, id);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   // SHIPPER
@@ -226,72 +278,122 @@ export class OrdersController implements OnModuleInit {
     @Query("page", new ParseIntPipe()) page: number,
     @Req() req: Request,
   ) {
-    const user = req.user as EmployeePayload;
-    return this.ordersService.getOrdersByShipper(user.phone, status, page);
+    try {
+      const user = req.user as EmployeePayload;
+      return this.ordersService.getOrdersByShipper(user.phone, status, page);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @UseGuards(JwtShipperAuthGuard, ShipperGuard)
   @Shipper()
   @Patch(":id/shipper/started")
   startShipmentByShipper(@Param("id") id: string, @Req() req: Request) {
-    const user = req.user as EmployeePayload;
-    return this.ordersService.startShipmentByShipper(user.phone, id);
+    try {
+      const user = req.user as EmployeePayload;
+      return this.ordersService.startShipmentByShipper(user.phone, id);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @UseGuards(JwtShipperAuthGuard, ShipperGuard)
   @Shipper()
   @Patch(":id/shipper/completed")
   completeOrderByShipper(@Param("id") id: string, @Req() req: Request) {
-    const user = req.user as EmployeePayload;
-    return this.ordersService.completeOrderByShipper(user.phone, id);
+    try {
+      const user = req.user as EmployeePayload;
+      return this.ordersService.completeOrderByShipper(user.phone, id);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @UseGuards(JwtShipperAuthGuard, ShipperGuard)
   @Shipper()
   @Patch(":id/shipper/cancelled")
   cancelOrderByShipper(@Param("id") id: string, @Req() req: Request) {
-    const user = req.user as EmployeePayload;
-    return this.ordersService.cancelOrderByShipper(user.phone, id);
+    try {
+      const user = req.user as EmployeePayload;
+      return this.ordersService.cancelOrderByShipper(user.phone, id);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @UseGuards(JwtAuthGuard, UseGuards)
   @User()
   @Get("users/:id")
   findAllByUserId(@Param("id", new ParseUUIDPipe({ version: "4" })) userId: string) {
-    return this.ordersService.findAllByUserId(userId);
+    try {
+      return this.ordersService.findAllByUserId(userId);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @Get("banking")
   @UseGuards(JwtAuthGuard, UserGuard)
   @User()
   findBankingOrderById(@Query("order_id") order_id: string) {
-    return this.ordersService.findBankingOrderById(order_id);
+    try {
+      return this.ordersService.findBankingOrderById(order_id);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @Post("banking/cancel")
   @UseGuards(JwtAuthGuard, UserGuard)
   @User()
   cancelBankingOrder(@Body() cancelDto: { order_id: string }) {
-    console.log("cancelBankingOrderDto", cancelDto);
-    return this.ordersService.cancelBankingOrderById(cancelDto.order_id);
+    try {
+      console.log("cancelBankingOrderDto", cancelDto);
+      return this.ordersService.cancelBankingOrderById(cancelDto.order_id);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @Post("payment")
   makePayment(@Body() paymentDto: { order_id: string }) {
     console.log("PaymentDto", paymentDto);
-    return this.ordersService.makePayment(paymentDto.order_id);
+    try {
+      return this.ordersService.makePayment(paymentDto.order_id);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @UseGuards(JwtShipperAuthGuard, ShipperGuard)
   @Shipper()
   @Get(":id")
   findOne(@Param("id") id: string) {
-    return this.ordersService.findById(id);
+    try {
+      return this.ordersService.findById(id);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @Get("search/:phone")
   getOrdersByPhone(@Param("phone") phone: string) {
-    return this.ordersService.getOrdersByPhone(phone);
+    try {
+      return this.ordersService.getOrdersByPhone(phone);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   /*   @Patch(":id")

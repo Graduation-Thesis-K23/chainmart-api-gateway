@@ -269,13 +269,57 @@ export class OrdersService {
       let orders = await lastValueFrom($orderSource);
 
       if (search) {
-        /* orders = await Promise.all(
-          orders.map(async (order) => ({
-            ...order,
-            address: await this.addressService.findById(order.address_id),
-          })),
-        );
- */
+        orders = orders.filter((order) => {
+          return (
+            order.address.name.toLowerCase().includes(search.toLowerCase()) ||
+            order.address.phone.toLowerCase().includes(search.toLowerCase())
+          );
+        });
+      }
+
+      return orders;
+
+      /* const ids = orders.map((order) => order.order_details.map((detail) => detail.product_id)).flat();
+
+      const $productSource = this.productClient.send("products.findbyids", ids).pipe(timeout(5000));
+      const products = await lastValueFrom($productSource);
+
+      const result = orders.map((order) => {
+        const order_details = order.order_details.map((detail) => {
+          const product = products.find((product) => product.id === detail.product_id);
+          return {
+            ...detail,
+            image: product?.images[0] ?? [],
+            ...product,
+          };
+        });
+        return {
+          ...order,
+          order_details,
+        };
+      });
+
+      return result; */
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException("Failed to find all order by employee");
+    }
+  }
+
+  async findAllByBranch(phone: string, status: OrderStatus | "all", search: string) {
+    const { id: branch_id } = await this.employeeService.findBranchByPhone(phone);
+
+    try {
+      const $orderSource = this.orderClient
+        .send("orders.findallbyemployee", {
+          phone,
+          status,
+          branch_id,
+        })
+        .pipe(timeout(5000));
+      let orders = await lastValueFrom($orderSource);
+
+      if (search) {
         orders = orders.filter((order) => {
           return (
             order.address.name.toLowerCase().includes(search.toLowerCase()) ||
