@@ -60,6 +60,18 @@ export class EmployeeController {
       const { phone } = req.user as EmployeePayload;
       return await this.employeeService.resetPasswordEmployee(phone, id);
     } catch (error) {
+      console.log(error);
+      throw new BadRequestException("error");
+    }
+  }
+
+  @Get("reset-password/:id")
+  @Roles(Role.Admin)
+  async resetPassword(@Req() req: Request, @Param("id", new ParseUUIDPipe({ version: "4" })) id: string) {
+    try {
+      return await this.employeeService.resetPassword(id);
+    } catch (error) {
+      console.log(error);
       throw new BadRequestException("error");
     }
   }

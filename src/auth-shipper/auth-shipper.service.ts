@@ -24,6 +24,10 @@ export class AuthShipperService {
       throw new BadRequestException("Account not exist");
     }
 
+    if (!employeeFound.isActive) {
+      throw new UnauthorizedException("Account is not active");
+    }
+
     if (employeeFound.role !== "SHIPPER") {
       throw new BadRequestException("Account not correct");
     }

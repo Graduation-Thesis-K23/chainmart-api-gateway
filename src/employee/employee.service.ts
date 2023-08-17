@@ -161,6 +161,31 @@ export class EmployeeService {
     };
   }
 
+  async resetPassword(id: string) {
+    const employee = await this.employeeRepository.findOne({
+      where: {
+        id,
+      },
+    });
+    if (!employee) {
+      throw new BadRequestException(`Employee with id ${id} not exist`);
+    }
+
+    employee.password = "Chainmart123@@"; // default password
+
+    const newPassword = await this.employeeRepository.save(employee);
+
+    console.log(newPassword);
+
+    return {
+      id: newPassword.id,
+      name: newPassword.name,
+      phone: newPassword.phone,
+      role: newPassword.role,
+      branch: newPassword.branch,
+    };
+  }
+
   async getBranchIdByEmployeePhone(phone: string): Promise<Branch> {
     const employee = await this.employeeRepository.findOne({
       where: {
@@ -241,8 +266,6 @@ export class EmployeeService {
       ...updateEmployeeDto,
     };
 
-    await this.employeeRepository.save(newEmployee);
-
-    return newEmployee;
+    return await this.employeeRepository.save(newEmployee);
   }
 }

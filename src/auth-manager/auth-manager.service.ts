@@ -4,7 +4,7 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 
 import { SignInDto } from "./dto/sign-in.dto";
-import { EmployeePayload } from "~/shared";
+import { EmployeePayload, Role } from "~/shared";
 import { EmployeeService } from "./../employee/employee.service";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 
@@ -22,6 +22,10 @@ export class AuthManagerService {
     const employeeFound = await this.employeeService.findOneByPhone(phone);
     if (!employeeFound) {
       throw new UnauthorizedException("Account not exist");
+    }
+
+    if (!employeeFound.isActive) {
+      throw new UnauthorizedException("Account is not active");
     }
 
     const isMatch = await bcrypt.compare(password, employeeFound.password);
