@@ -1,31 +1,26 @@
-import { Injectable } from "@nestjs/common";
-import { MailerService } from "@nestjs-modules/mailer";
+import { Inject, Injectable } from "@nestjs/common";
+import { ClientKafka } from "@nestjs/microservices";
 
 @Injectable()
 export class MailService {
-  constructor(private mailerService: MailerService) {}
+  constructor(
+    @Inject("EMAIL_SERVICE")
+    private readonly emailClient: ClientKafka,
+  ) {}
 
   async sendOtp(name: string, otp: string, receiver: string) {
-    return await this.mailerService.sendMail({
-      to: receiver,
-      subject: "Chainmart OTP",
-      template: "./otp",
-      context: {
-        name,
-        otp,
-      },
+    this.emailClient.emit("email.sendOtp", {
+      name,
+      otp,
+      receiver,
     });
   }
 
   async sendNewPassword(name: string, password: string, receiver: string) {
-    return await this.mailerService.sendMail({
-      to: receiver,
-      subject: "Chainmart Password",
-      template: "./password",
-      context: {
-        name,
-        password,
-      },
+    this.emailClient.emit("email.sendNewPassword", {
+      name,
+      password,
+      receiver,
     });
   }
 }
