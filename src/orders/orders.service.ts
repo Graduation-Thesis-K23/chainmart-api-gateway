@@ -306,6 +306,27 @@ export class OrdersService {
     }
   }
 
+  async getAllOrdersByAdmin(status: OrderStatus | "all", search: string) {
+    try {
+      const $orderSource = this.orderClient.send("orders.findallbyadmin", status).pipe(timeout(5000));
+      let orders = await lastValueFrom($orderSource);
+
+      if (search) {
+        orders = orders.filter((order) => {
+          return (
+            order.address.name.toLowerCase().includes(search.toLowerCase()) ||
+            order.address.phone.toLowerCase().includes(search.toLowerCase())
+          );
+        });
+      }
+
+      return orders;
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException("Failed to find all order by admin");
+    }
+  }
+
   async findAllByBranch(phone: string, status: OrderStatus | "all", search: string) {
     const { id: branch_id } = await this.employeeService.findBranchByPhone(phone);
 

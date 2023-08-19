@@ -73,6 +73,7 @@ export class OrdersController implements OnModuleInit {
       "commented",
       "getordersbyphone",
       "findallbyids",
+      "findallbyadmin",
     ];
     orderTopics.forEach((topic) => {
       this.orderClient.subscribeToResponseOf(`orders.${topic}`);
@@ -196,6 +197,19 @@ export class OrdersController implements OnModuleInit {
     } catch (error) {
       console.log(error);
       throw new BadRequestException(error.message);
+    }
+  }
+
+  @Get("admin")
+  @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  getAllOrdersByAdmin(@Query("status") status: OrderStatus | "all", @Query("search") search: string) {
+    // status = status of orders that we want to get
+    try {
+      return this.ordersService.getAllOrdersByAdmin(status, search);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
     }
   }
 
