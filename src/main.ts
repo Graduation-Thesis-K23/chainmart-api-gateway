@@ -3,21 +3,25 @@ import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import * as cookieParser from "cookie-parser";
 import * as session from "express-session";
+import { WinstonModule } from "nest-winston";
 
 import { AppModule } from "./app.module";
+import { winstonConfig } from "./config/winston.config";
 
 async function bootstrap() {
   const logger = new Logger("HTTP");
 
-  const app = await NestFactory.create(AppModule, { logger: ["log", "error", "warn", "debug", "verbose"] });
+  const app = await NestFactory.create(AppModule, {
+    logger: WinstonModule.createLogger(winstonConfig),
+  });
 
   const configService = app.get<ConfigService>(ConfigService);
   const port = configService.get<number>("PORT") || 3000;
-  const clientUrl = configService.get<string>("CLIENT_URL");
-  const managerUrl = configService.get<string>("CUSTOMER_URL");
-  const adminUrl = configService.get<string>("ADMIN_URL");
-  const branchUrl = configService.get<string>("BRANCH_URL");
-  const employeeUrl = configService.get<string>("EMPLOYEE_URL");
+  const clientUrl = configService.get("CLIENT_URL");
+  const managerUrl = configService.get("CUSTOMER_URL");
+  const adminUrl = configService.get("ADMIN_URL");
+  const branchUrl = configService.get("BRANCH_URL");
+  const employeeUrl = configService.get("EMPLOYEE_URL");
 
   app.setGlobalPrefix("/api");
 
@@ -25,6 +29,7 @@ async function bootstrap() {
     origin: [clientUrl, managerUrl, branchUrl, adminUrl, employeeUrl, "*"],
     credentials: true,
   });
+
   app.use(cookieParser());
 
   app.use(
@@ -42,7 +47,7 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(port, () => console.log(`App running at port: ${port}`));
+  await app.listen(port, () => logger.log(`Chainmart-be running at port: ${port}`));
 }
 
 bootstrap();
