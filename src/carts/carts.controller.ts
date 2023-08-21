@@ -6,10 +6,9 @@ import { ClientKafka } from "@nestjs/microservices";
 import { JwtAuthGuard, UserGuard } from "~/auth/guards";
 import { User } from "~/auth/decorators";
 import { ReqUser } from "~/common/req-user.inter";
+import { lastValueFrom, timeout } from "rxjs";
 
-@UseGuards(JwtAuthGuard, UserGuard)
 @Controller("carts")
-@UseGuards(JwtAuthGuard, UserGuard)
 export class CartsController {
   constructor(
     private readonly cartsService: CartsService,
@@ -19,7 +18,7 @@ export class CartsController {
   ) {}
 
   async onModuleInit() {
-    const topics = ["update", "get"];
+    const topics = ["update", "get", "health-check"];
     topics.forEach((topic) => {
       console.log(`Subscribe to carts.${topic}`);
       this.cartsClient.subscribeToResponseOf(`carts.${topic}`);
@@ -27,16 +26,28 @@ export class CartsController {
     await this.cartsClient.connect();
   }
 
+  @Get("health-check")
+  async healthCheck() {
+    console.log("health-check");
+    try {
+      const $res = this.cartsClient.send("carts.health-check", {}).pipe(timeout(5000));
+      return await lastValueFrom($res);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
+  }
+  @UseGuards(JwtAuthGuard, UserGuard)
   @User()
   @Get()
-  @User()
   get(@Req() req: Request) {
     const { username } = req.user as ReqUser;
     return this.cartsService.get(username);
   }
 
-  @Patch()
+  @UseGuards(JwtAuthGuard, UserGuard)
   @User()
+  @Patch()
   update(@Body("carts") carts: string, @Req() req: Request) {
     const { username } = req.user as ReqUser;
 
@@ -48,8 +59,9 @@ export class CartsController {
     }
   }
 
-  @Delete()
+  @UseGuards(JwtAuthGuard, UserGuard)
   @User()
+  @Delete()
   remove(@Req() req: Request) {
     const { username } = req.user as ReqUser;
 

@@ -1,10 +1,11 @@
-import { Controller, Get, Inject, Param, Req, UseGuards } from "@nestjs/common";
+import { BadRequestException, Controller, Get, Inject, Param, Req, UseGuards } from "@nestjs/common";
 import { CommentsService } from "./comments.service";
 import { JwtAuthGuard, UserGuard } from "~/auth/guards";
 import { Public, User } from "~/auth/decorators";
 import { Request } from "express";
 import { ReqUser } from "~/common/req-user.inter";
 import { ClientKafka } from "@nestjs/microservices";
+import { lastValueFrom, timeout } from "rxjs";
 
 @Controller("comments")
 export class CommentsController {
@@ -15,12 +16,26 @@ export class CommentsController {
   ) {}
 
   async onModuleInit() {
-    const orderTopics = ["getratesbyusername", "getratesbyproductid", "get-star-by-ids"];
+    const orderTopics = ["getratesbyusername", "getratesbyproductid", "get-star-by-ids", "health-check"];
     orderTopics.forEach((topic) => {
       this.rateClient.subscribeToResponseOf(`rates.${topic}`);
     });
 
     this.rateClient.connect();
+  }
+
+  @Get("health-check")
+  async healthCheck() {
+    console.log("comments.health-check received");
+
+    try {
+      const $res = this.rateClient.send("rates.health-check", {}).pipe(timeout(5000));
+
+      return await lastValueFrom($res);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @UseGuards(JwtAuthGuard, UserGuard)

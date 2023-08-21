@@ -25,6 +25,7 @@ import { EmployeePayload, Role } from "~/shared";
 import { JwtEmployeeAuthGuard } from "~/auth-manager/guards/jwt-employee.guards";
 import { RolesGuard } from "~/auth-manager/guards/role.guard";
 import { Public } from "~/auth-manager/decorators/public.decorator";
+import { lastValueFrom, timeout } from "rxjs";
 
 @Controller("batches")
 @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
@@ -47,11 +48,26 @@ export class BatchesController implements OnModuleInit {
       "getavailablequantity",
       "get_remaining_quantity",
       "get-sold-by-ids",
+      "health-check",
     ];
     topics.forEach((topic) => {
       this.batchClient.subscribeToResponseOf(`batches.${topic}`);
     });
     await this.batchClient.connect();
+  }
+
+  @Get("health-check")
+  @Public()
+  async healthCheck() {
+    console.log("health-check");
+    try {
+      const $res = this.batchClient.send("batches.health-check", {}).pipe(timeout(5000));
+
+      return await lastValueFrom($res);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @Post()

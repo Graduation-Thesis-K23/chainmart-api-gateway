@@ -25,6 +25,9 @@ import { SearchModule } from "./search/search.module";
 import { CommentsModule } from "./comments/comments.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { SubscribersModule } from "./subscribers/subscribers.module";
+import { HealthModule } from "./health/health.module";
+import { NotificationModule } from "./notification/notification.module";
+import { OrchestrationModule } from "./orchestration/orchestration.module";
 
 @Module({
   imports: [
@@ -55,6 +58,9 @@ import { SubscribersModule } from "./subscribers/subscribers.module";
     CommentsModule,
     DashboardModule,
     SubscribersModule,
+    HealthModule,
+    NotificationModule,
+    OrchestrationModule,
   ],
   exports: [ConfigModule],
 })

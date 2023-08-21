@@ -1,3 +1,4 @@
+import { lastValueFrom, timeout } from "rxjs";
 import {
   Controller,
   Get,
@@ -52,12 +53,26 @@ export class ProductsController implements OnModuleInit {
       "search-and-filter",
       "search",
       "get-products-by-main",
+      "health-check",
     ];
     topics.forEach((topic) => {
       this.productClient.subscribeToResponseOf(`products.${topic}`);
     });
 
     await this.productClient.connect();
+  }
+
+  @Get("health-check")
+  async healthCheck() {
+    console.log("health-check");
+    try {
+      const result = this.productClient.send("products.health-check", {}).pipe(timeout(5000));
+
+      return await lastValueFrom(result);
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @Post()

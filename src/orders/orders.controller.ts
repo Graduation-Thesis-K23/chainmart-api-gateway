@@ -34,6 +34,7 @@ import { JwtEmployeeAuthGuard } from "~/auth-manager/guards/jwt-employee.guards"
 import { JwtShipperAuthGuard } from "~/auth-shipper/guards/jwt-shipper.guards";
 import { Shipper } from "~/auth-shipper/decorators/shipper.decorator";
 import { ShipperGuard } from "~/auth-shipper/guards/shipper.guard";
+import { lastValueFrom, timeout } from "rxjs";
 
 @Controller("orders")
 export class OrdersController implements OnModuleInit {
@@ -74,11 +75,24 @@ export class OrdersController implements OnModuleInit {
       "getordersbyphone",
       "findallbyids",
       "findallbyadmin",
+      "health-check",
     ];
     orderTopics.forEach((topic) => {
       this.orderClient.subscribeToResponseOf(`orders.${topic}`);
     });
     await this.orderClient.connect();
+  }
+
+  @Get("health-check")
+  async healthCheck() {
+    try {
+      const $result = this.orderClient.send("orders.health-check", {}).pipe(timeout(5000));
+
+      return await lastValueFrom($result);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error);
+    }
   }
 
   @Post()
