@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsJSON, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Max, Min } from "class-validator";
+import { IsBoolean, IsJSON, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Max, Min } from "class-validator";
 
 export class CreateProductDto {
   @IsString()
@@ -42,4 +42,8 @@ export class CreateProductDto {
   @Type(() => Number)
   @IsOptional()
   acceptable_expiry_threshold?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  show: boolean;
 }
