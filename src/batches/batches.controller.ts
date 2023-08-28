@@ -59,7 +59,6 @@ export class BatchesController implements OnModuleInit {
   @Get("health-check")
   @Public()
   async healthCheck() {
-    console.log("health-check");
     try {
       const $res = this.batchClient.send("batches.health-check", {}).pipe(timeout(5000));
 
@@ -110,7 +109,6 @@ export class BatchesController implements OnModuleInit {
   @Roles(Role.Employee, Role.Branch)
   getAvailable(@Req() req: Request, @Query("ids") ids: string) {
     try {
-      console.log("req.user", req.user);
       const { phone } = req.user as EmployeePayload;
       return this.batchesService.getAvailable(phone, ids.split(","));
     } catch (error) {

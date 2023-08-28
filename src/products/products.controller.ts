@@ -64,7 +64,6 @@ export class ProductsController implements OnModuleInit {
 
   @Get("health-check")
   async healthCheck() {
-    console.log("health-check");
     try {
       const result = this.productClient.send("products.health-check", {}).pipe(timeout(5000));
 
@@ -141,7 +140,6 @@ export class ProductsController implements OnModuleInit {
   @UseGuards(JwtEmployeeAuthGuard, RolesGuard)
   @Roles(Role.Admin)
   update(@Param("id") id: string, @Body() updateProductDto: UpdateProductDto) {
-    console.log(updateProductDto);
     try {
       return this.productsService.update(id, updateProductDto);
     } catch (error) {

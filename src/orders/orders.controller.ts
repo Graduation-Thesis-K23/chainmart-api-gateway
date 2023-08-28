@@ -383,7 +383,6 @@ export class OrdersController implements OnModuleInit {
   @User()
   cancelBankingOrder(@Body() cancelDto: { order_id: string }) {
     try {
-      console.log("cancelBankingOrderDto", cancelDto);
       return this.ordersService.cancelBankingOrderById(cancelDto.order_id);
     } catch (error) {
       console.log(error);
@@ -393,7 +392,6 @@ export class OrdersController implements OnModuleInit {
 
   @Post("payment")
   makePayment(@Body() paymentDto: { order_id: string }) {
-    console.log("PaymentDto", paymentDto);
     try {
       return this.ordersService.makePayment(paymentDto.order_id);
     } catch (error) {

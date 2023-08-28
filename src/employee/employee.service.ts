@@ -175,8 +175,6 @@ export class EmployeeService {
 
     const newPassword = await this.employeeRepository.save(employee);
 
-    console.log(newPassword);
-
     return {
       id: newPassword.id,
       name: newPassword.name,
@@ -253,7 +251,6 @@ export class EmployeeService {
   }
 
   async update(id: string, updateEmployeeDto: UpdateEmployeeDto) {
-    console.log(updateEmployeeDto);
     console.log(id);
     const employeeExist = await this.getOne(id);
 

@@ -25,7 +25,6 @@ export class SearchController {
 
   @Get("health-check")
   async healthCheck() {
-    console.log("search.health-check received");
     try {
       const $res = this.searchClient.send("search.health-check", {}).pipe(timeout(5000));
 

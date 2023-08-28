@@ -20,7 +20,6 @@ export class CartsController {
   async onModuleInit() {
     const topics = ["update", "get", "health-check"];
     topics.forEach((topic) => {
-      console.log(`Subscribe to carts.${topic}`);
       this.cartsClient.subscribeToResponseOf(`carts.${topic}`);
     });
     await this.cartsClient.connect();
@@ -28,7 +27,6 @@ export class CartsController {
 
   @Get("health-check")
   async healthCheck() {
-    console.log("health-check");
     try {
       const $res = this.cartsClient.send("carts.health-check", {}).pipe(timeout(5000));
       return await lastValueFrom($res);

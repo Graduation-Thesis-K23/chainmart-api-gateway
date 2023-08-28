@@ -26,8 +26,6 @@ export class CommentsController {
 
   @Get("health-check")
   async healthCheck() {
-    console.log("comments.health-check received");
-
     try {
       const $res = this.rateClient.send("rates.health-check", {}).pipe(timeout(5000));
 

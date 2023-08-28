@@ -24,8 +24,6 @@ export class BatchesService {
     try {
       const payload = { ...createBatchDto, employee_create_phone, branch_id };
 
-      console.log("payload", payload);
-
       const $source = this.batchClient.send("batches.create", payload).pipe(timeout(5000));
 
       return await firstValueFrom($source);
@@ -51,8 +49,6 @@ export class BatchesService {
     const { id: branch_id } = await this.employeeService.findBranchByPhone(phone);
 
     const rawData = getAvailableDto.map((product_id) => ({ product_id, branch_id }));
-
-    console.log("getAvailable", rawData);
 
     try {
       const $source = this.batchClient.send("batches.getavailablequantity", rawData).pipe(timeout(5000));
@@ -98,7 +94,6 @@ export class BatchesService {
   }
 
   async getRemainingQuantity(id: string) {
-    console.log("getRemainingQuantity", id);
     try {
       const $source = this.batchClient.send("batches.get_remaining_quantity", id).pipe(timeout(5000));
       return await lastValueFrom($source);

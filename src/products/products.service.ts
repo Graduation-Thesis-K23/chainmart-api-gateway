@@ -72,8 +72,6 @@ export class ProductsService {
         console.log(error);
       }
 
-      console.log(stars, solds);
-
       const result = products.map((product) => {
         const star = stars.find((star) => star.productId === product._id);
         const sold = solds.find((sold) => sold.productId === product._id);
@@ -84,8 +82,6 @@ export class ProductsService {
           sold: sold?.sold || 0,
         };
       });
-
-      console.log(result);
 
       return result;
     } catch (error) {
@@ -155,7 +151,6 @@ export class ProductsService {
   }
 
   async searchAndFilter(query: SearchAndFilterQueryDto) {
-    console.log(query);
     try {
       const $source = this.productClient.send("products.search-and-filter", { ...query }).pipe(timeout(5000));
       return await lastValueFrom($source);

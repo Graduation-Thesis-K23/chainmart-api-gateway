@@ -70,8 +70,6 @@ export class BranchService {
       ...updateBranchDto,
     };
 
-    console.log(newBranch);
-
     try {
       return await this.branchRepository.save(newBranch);
     } catch (error) {

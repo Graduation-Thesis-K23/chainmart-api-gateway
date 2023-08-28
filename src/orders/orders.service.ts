@@ -381,7 +381,6 @@ export class OrdersService {
   async approveOrderByEmployee(phone: string, orderId: string) {
     const { id: branch_id } = await this.employeeService.findBranchByPhone(phone);
 
-    console.log(phone, orderId);
     try {
       const $source = this.orderClient
         .send("orders.approveorderbyemployee", {
@@ -431,7 +430,6 @@ export class OrdersService {
   }
 
   async getOrdersByShipper(phone: string, status: OrderStatus, page: number) {
-    console.log(phone, status, page);
     const { id: branch_id } = await this.employeeService.findBranchByPhone(phone);
 
     try {

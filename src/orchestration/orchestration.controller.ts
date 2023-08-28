@@ -16,7 +16,6 @@ export class OrchestrationController {
 
   @Get("health-check")
   async healCheck() {
-    console.log("orchestration.health-check");
     try {
       const $res = this.orchestrationClient.send("orchestration.health-check", {}).pipe(timeout(5000));
       return await lastValueFrom($res);

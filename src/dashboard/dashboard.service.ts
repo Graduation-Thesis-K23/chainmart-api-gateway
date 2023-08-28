@@ -11,7 +11,6 @@ export class DashboardService {
   constructor(private readonly ordersService: OrdersService, private readonly userService: UsersService) {}
 
   getDashboardDataAdmin(adminGetDataDto: AdminGetDataDto) {
-    console.log("adminGetDataDto", adminGetDataDto);
     const { startDate, endDate, branch } = adminGetDataDto;
 
     switch (adminGetDataDto.dashboardType) {

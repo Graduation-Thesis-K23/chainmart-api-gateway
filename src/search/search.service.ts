@@ -29,8 +29,6 @@ export class SearchService {
 
       const ids = $orders.map((order) => order.id);
 
-      console.log("eOrders", ids);
-
       return this.ordersService.findAllByIds(ids);
     } catch (error) {
       console.error(error);
