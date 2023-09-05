@@ -253,15 +253,18 @@ export class EmployeeService {
   async update(id: string, updateEmployeeDto: UpdateEmployeeDto) {
     console.log(id);
     const employeeExist = await this.getOne(id);
+    const branch = await this.branchService.findOne(updateEmployeeDto.branch_id);
 
     if (!employeeExist) {
       throw new BadRequestException("Employee not exist");
     }
 
-    const newEmployee = {
+    const newEmployee = this.employeeRepository.create({
       ...employeeExist,
       ...updateEmployeeDto,
-    };
+      branch,
+      branch_id: branch.id,
+    });
 
     return await this.employeeRepository.save(newEmployee);
   }
