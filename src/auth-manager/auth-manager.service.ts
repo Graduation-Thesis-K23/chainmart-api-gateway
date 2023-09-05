@@ -7,6 +7,7 @@ import { SignInDto } from "./dto/sign-in.dto";
 import { EmployeePayload, Role } from "~/shared";
 import { EmployeeService } from "./../employee/employee.service";
 import { ChangePasswordDto } from "./dto/change-password.dto";
+import { BranchService } from "~/branch/branch.service";
 
 @Injectable()
 export class AuthManagerService {
@@ -14,6 +15,7 @@ export class AuthManagerService {
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly employeeService: EmployeeService,
+    private readonly branchService: BranchService,
   ) {}
 
   async signIn(signInDto: SignInDto): Promise<[string, EmployeePayload]> {
@@ -33,10 +35,21 @@ export class AuthManagerService {
       throw new UnauthorizedException("Account not correct");
     }
 
+    let branch = null;
+
+    if (employeeFound.role === Role.Admin) {
+      branch = {
+        name: "Admin",
+      };
+    } else {
+      branch = await this.branchService.findOne(employeeFound.branch_id);
+    }
+
     const payload: EmployeePayload = {
       phone: employeeFound.phone,
       name: employeeFound.name,
       role: employeeFound.role,
+      branch: branch.name,
     };
 
     const access_token = await this.signToken(payload);
@@ -60,10 +73,13 @@ export class AuthManagerService {
 
     await this.employeeService.save(employee);
 
+    const branch = await this.branchService.findOne(employee.branch_id);
+
     return {
       phone: employee.phone,
       name: employee.name,
       role: employee.role,
+      branch: branch.name,
     };
   }
 

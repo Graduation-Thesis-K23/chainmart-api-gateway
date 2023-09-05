@@ -7,6 +7,7 @@ import { SignInDto } from "./dto/sign-in.dto";
 import { EmployeePayload } from "~/shared";
 import { EmployeeService } from "./../employee/employee.service";
 import { ChangePasswordDto } from "./dto/change-password.dto";
+import { BranchService } from "~/branch/branch.service";
 
 @Injectable()
 export class AuthShipperService {
@@ -14,12 +15,14 @@ export class AuthShipperService {
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly employeeService: EmployeeService,
+    private readonly branchService: BranchService,
   ) {}
 
   async signIn(signInDto: SignInDto): Promise<[string, EmployeePayload]> {
     const { phone, password } = signInDto;
 
     const employeeFound = await this.employeeService.findOneByPhone(phone);
+    const branch = await this.branchService.findOne(employeeFound.branch_id);
     if (!employeeFound) {
       throw new BadRequestException("Account not exist");
     }
@@ -41,6 +44,7 @@ export class AuthShipperService {
       phone: employeeFound.phone,
       name: employeeFound.name,
       role: employeeFound.role,
+      branch: branch.name,
     };
 
     const access_token = await this.signToken(payload);
@@ -50,6 +54,7 @@ export class AuthShipperService {
 
   async changePassword(phone: string, changePasswordDto: ChangePasswordDto): Promise<EmployeePayload> {
     const employee = await this.employeeService.findOneByPhone(phone);
+    const branch = await this.branchService.findOne(employee.branch_id);
 
     if (!employee) {
       throw new UnauthorizedException("Account not exist");
@@ -68,6 +73,7 @@ export class AuthShipperService {
       phone: employee.phone,
       name: employee.name,
       role: employee.role,
+      branch: branch.name,
     };
   }
 

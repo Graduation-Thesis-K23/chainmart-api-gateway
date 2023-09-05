@@ -27,12 +27,13 @@ export class EmployeeJwtStrategy extends PassportStrategy(Strategy, "jwt-employe
       throw new UnauthorizedException();
     }
 
-    const { phone, name, role } = payload;
+    const { phone, name, role, branch } = payload;
 
     return {
       phone,
       name,
       role,
+      branch,
     };
   }
 }
