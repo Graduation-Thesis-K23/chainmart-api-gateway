@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 
 import { CreateBranchDto } from "./dto/create-branch.dto";
 import { UpdateBranchDto } from "./dto/update-branch.dto";
@@ -16,6 +16,14 @@ export class BranchService {
 
   async findAll(): Promise<Branch[]> {
     return await this.branchRepository.createQueryBuilder("branch").take(30).getMany();
+  }
+
+  async findByIds(ids: string[]): Promise<Branch[]> {
+    return await this.branchRepository.find({
+      where: {
+        id: In(ids),
+      },
+    });
   }
 
   async findOne(id: string): Promise<Branch> {

@@ -1,3 +1,4 @@
+import { BranchService } from "./../branch/branch.service";
 import { EmployeeService } from "../employee/employee.service";
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { ClientKafka } from "@nestjs/microservices";
@@ -24,6 +25,8 @@ export class OrdersService {
     private readonly employeeService: EmployeeService,
 
     private readonly s3Service: S3Service,
+
+    private readonly branchService: BranchService,
   ) {}
 
   async create(username: string, createOrderDto: CreateOrderDto) {
@@ -319,6 +322,19 @@ export class OrdersService {
           );
         });
       }
+
+      const branch_ids = orders.map((order) => order.branch_id);
+
+      const branches = await this.branchService.findByIds(branch_ids);
+
+      orders = orders.map((order) => {
+        const branch = branches.find((branch) => branch.id === order.branch_id);
+
+        return {
+          ...order,
+          branch,
+        };
+      });
 
       return orders;
     } catch (error) {

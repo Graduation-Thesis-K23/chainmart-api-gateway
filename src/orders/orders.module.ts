@@ -9,6 +9,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "~/users/entities/user.entity";
 import { AddressModule } from "~/address/address.module";
 import { EmployeeModule } from "~/employee/employee.module";
+import { BranchModule } from "~/branch/branch.module";
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { EmployeeModule } from "~/employee/employee.module";
     ]),
     S3Module,
     EmployeeModule,
+    BranchModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],
