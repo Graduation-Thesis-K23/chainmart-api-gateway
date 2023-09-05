@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ClientsModule, Transport } from "@nestjs/microservices";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import { CacheModule } from "@nestjs/cache-manager";
 
 import { ProductsService } from "./products.service";
 import { ProductsController } from "./products.controller";
@@ -11,6 +12,7 @@ import { BatchesModule } from "~/batches/batches.module";
 
 @Module({
   imports: [
+    CacheModule.register(),
     ClientsModule.registerAsync([
       {
         name: "PRODUCT_SERVICE",

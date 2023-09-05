@@ -2,6 +2,8 @@ import { BatchesService } from "./../batches/batches.service";
 import { BadRequestException, Inject, Injectable } from "@nestjs/common";
 import { ClientKafka } from "@nestjs/microservices";
 import { firstValueFrom, lastValueFrom, timeout } from "rxjs";
+import { Cache } from "cache-manager";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
 
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
@@ -12,6 +14,9 @@ import { CommentsService } from "~/comments/comments.service";
 
 @Injectable()
 export class ProductsService {
+  private readonly MAIN_PRODUCT_CACHE_KEY = "MAIN_PRODUCT_CACHE_KEY";
+  private readonly MAIN_PRODUCT_CACHE_TTL = 60 * 60 * 6; // 6 hours
+
   constructor(
     @Inject("PRODUCT_SERVICE")
     private readonly productClient: ClientKafka,
@@ -21,6 +26,8 @@ export class ProductsService {
     private readonly s3Service: S3Service,
 
     private readonly commentsService: CommentsService,
+
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
   async create(createProductDto: CreateProductDto, arrBuffer: Buffer[]) {
@@ -58,6 +65,12 @@ export class ProductsService {
 
   async getProductsByMain() {
     try {
+      const productsCache = await this.cacheManager.get(this.MAIN_PRODUCT_CACHE_KEY);
+
+      if (productsCache) {
+        return productsCache;
+      }
+
       const $source = this.productClient.send("products.get-products-by-main", {}).pipe(timeout(5000));
       const products = await lastValueFrom($source);
 
@@ -82,6 +95,8 @@ export class ProductsService {
           sold: sold?.sold || 0,
         };
       });
+
+      await this.cacheManager.set(this.MAIN_PRODUCT_CACHE_KEY, result, this.MAIN_PRODUCT_CACHE_TTL);
 
       return result;
     } catch (error) {
