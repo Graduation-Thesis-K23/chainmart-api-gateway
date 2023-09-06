@@ -97,6 +97,7 @@ export class UsersController {
   ) {
     const imgBuffer: Buffer = image.buffer;
     const user = req.user as ReqUser;
+
     return await this.usersService.changeAvatar(imgBuffer, user.username);
   }
 

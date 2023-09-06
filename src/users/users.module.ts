@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ClientsModule, Transport } from "@nestjs/microservices";
 
 import { UsersService } from "./users.service";
 import { UsersController } from "./users.controller";
 import { User } from "./entities/user.entity";
 import { S3Module } from "../s3/s3.module";
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { ClientsModule, Transport } from "@nestjs/microservices";
 
 @Module({
   imports: [

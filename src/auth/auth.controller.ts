@@ -43,7 +43,8 @@ export class AuthController {
   @UseGuards(JwtAuthGuard, UserGuard)
   @User()
   async checkToken(@Req() req: Request) {
-    return req.user;
+    const { username } = req.user as UserPayload;
+    return await this.authService.checkToken(username);
   }
 
   @Post("reset-password")

@@ -223,6 +223,7 @@ export class UsersService {
 
       user.photo = image;
       await this.save(user);
+
       return {
         image,
       };
