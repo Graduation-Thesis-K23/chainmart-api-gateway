@@ -273,12 +273,13 @@ export class UsersService {
     const user = await this.findOneByUsername(username);
 
     if (!user.password) {
+      console.log("!user.password");
       user.password = newPassword;
 
       await this.save(user);
 
       return {
-        messageCode: "setting.changePasswordSuccess",
+        messageCode: "settings.changePasswordSuccess",
       };
     }
 
@@ -286,16 +287,17 @@ export class UsersService {
 
     if (!isMatch) {
       return {
-        messageCode: "setting.currentPasswordIncorrect",
+        messageCode: "settings.currentPasswordIncorrect",
       };
     }
 
     user.password = newPassword;
+    console.log("user.password", user.password);
 
     await this.save(user);
 
     return {
-      messageCode: "setting.changePasswordSuccess",
+      messageCode: "settings.changePasswordSuccess",
     };
   }
 
