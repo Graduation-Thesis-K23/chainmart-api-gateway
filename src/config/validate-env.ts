@@ -32,4 +32,6 @@ export const configValidationSchema = joi.object({
   MAIL_HOST: joi.string().required(),
   MAIL_USER: joi.string().required(),
   MAIL_PASSWORD: joi.string().required(),
+
+  KAFKA_BROKERS: joi.string().required(),
 });

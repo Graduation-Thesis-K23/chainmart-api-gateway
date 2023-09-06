@@ -71,7 +71,7 @@ export class ProductsService {
         return productsCache;
       }
 
-      const $source = this.productClient.send("products.get-products-by-main", {}).pipe(timeout(5000));
+      const $source = this.productClient.send("products.get-products-by-main", {}).pipe(timeout(10000));
       const products = await lastValueFrom($source);
 
       const ids = products.map((product) => product._id);
@@ -107,7 +107,7 @@ export class ProductsService {
 
   async staticPaths() {
     try {
-      const $source = this.productClient.send("products.staticpaths", {}).pipe(timeout(5000));
+      const $source = this.productClient.send("products.staticpaths", {}).pipe(timeout(10000));
       return await lastValueFrom($source);
     } catch (error) {
       console.error(error);
