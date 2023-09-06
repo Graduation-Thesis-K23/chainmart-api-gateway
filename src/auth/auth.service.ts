@@ -53,7 +53,7 @@ export class AuthService {
 
     const isMatch = await bcrypt.compare(password, userFound.password);
     if (!isMatch) {
-      throw new UnauthorizedException("account.invalid");
+      throw new UnauthorizedException("account.inValid");
     }
 
     const payload: UserPayload = {
