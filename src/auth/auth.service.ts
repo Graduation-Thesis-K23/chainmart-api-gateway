@@ -179,6 +179,32 @@ export class AuthService {
     throw new BadRequestException("account.notValid");
   }
 
+  async checkToken(username: string) {
+    const user = await this.usersService.findOneByUsername(username);
+
+    if (!user) {
+      throw new BadRequestException("account.accountNotExist");
+    }
+
+    return {
+      username: user.username,
+      name: user.name,
+      photo: user.photo || null,
+      role: USER_ROLE,
+    };
+  }
+
+  async signNewToken(user: UserPayload): Promise<string> {
+    const options = {
+      secret: this.configService.get<string>("JWT_SECRET"),
+      issuer: this.configService.get<string>("JWT_ISSUER") || "http://localhost:3000/auth",
+      audience: this.configService.get<string>("JWT_AUDIENCE") || "http://localhost:8080",
+      expiresIn: "365d",
+    };
+
+    return this.jwtService.signAsync(user, options);
+  }
+
   private async signToken(payload: any): Promise<string> {
     const options = {
       secret: this.configService.get<string>("JWT_SECRET"),
